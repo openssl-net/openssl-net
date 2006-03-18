@@ -7,6 +7,16 @@ namespace OpenSSL
 {
 	public class DH : Base, IDisposable
 	{
+		// DH_check error codes
+		[Flags]
+		public enum CheckCode
+		{
+			P_NotPrime = 0x01,
+			P_NotSafePrime = 0x02,
+			UnableToCheckGenerator = 0x04,
+			NotSuitableGenerator = 0x08,
+		}
+		
 		#region dh_st
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -104,6 +114,13 @@ namespace OpenSSL
 		public override void Print(BIO bio)
 		{
 			Native.ExpectSuccess(Native.DHparams_print(bio.Handle, this.ptr));
+		}
+
+		public CheckCode Check()
+		{
+			int ret;
+			Native.ExpectSuccess(Native.DH_check(this.ptr, out ret));
+			return (CheckCode)ret;
 		}
 		#endregion
 

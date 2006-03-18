@@ -430,7 +430,7 @@ namespace OpenSSL
 		public extern static void DH_free(IntPtr dh);
 
 		[DllImport(DLLNAME)]
-		public extern static int DH_check(IntPtr dh, int[] codes);
+		public extern static int DH_check(IntPtr dh, out int codes);
 
 		[DllImport(DLLNAME)]
 		public extern static int DHparams_print(IntPtr bp, IntPtr x);

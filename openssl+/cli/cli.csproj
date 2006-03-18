@@ -7,7 +7,7 @@
     <ProjectGuid>{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>openssl_</RootNamespace>
+    <RootNamespace>OpenSSL.CLI</RootNamespace>
     <AssemblyName>openssl+</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -29,9 +29,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="DH.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
