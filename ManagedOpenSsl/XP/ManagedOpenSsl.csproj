@@ -1,0 +1,103 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>OpenSSL</RootNamespace>
+    <AssemblyName>ManagedOpenSsl</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\BigNum.cs">
+      <Link>BigNum.cs</Link>
+    </Compile>
+    <Compile Include="..\BIO.cs">
+      <Link>BIO.cs</Link>
+    </Compile>
+    <Compile Include="..\Cipher.cs">
+      <Link>Cipher.cs</Link>
+    </Compile>
+    <Compile Include="..\Configuration.cs">
+      <Link>Configuration.cs</Link>
+    </Compile>
+    <Compile Include="..\CryptoKey.cs">
+      <Link>CryptoKey.cs</Link>
+    </Compile>
+    <Compile Include="..\DH.cs">
+      <Link>DH.cs</Link>
+    </Compile>
+    <Compile Include="..\DSA.cs">
+      <Link>DSA.cs</Link>
+    </Compile>
+    <Compile Include="..\Identity.cs">
+      <Link>Identity.cs</Link>
+    </Compile>
+    <Compile Include="..\MessageDigest.cs">
+      <Link>MessageDigest.cs</Link>
+    </Compile>
+    <Compile Include="..\Native.cs">
+      <Link>Native.cs</Link>
+    </Compile>
+    <Compile Include="..\OpenSslException.cs">
+      <Link>OpenSslException.cs</Link>
+    </Compile>
+    <Compile Include="..\Properties\AssemblyInfo.cs">
+      <Link>AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\RSA.cs">
+      <Link>RSA.cs</Link>
+    </Compile>
+    <Compile Include="..\Stack.cs">
+      <Link>Stack.cs</Link>
+    </Compile>
+    <Compile Include="..\X509Certificate.cs">
+      <Link>X509Certificate.cs</Link>
+    </Compile>
+    <Compile Include="..\X509CertificateAuthority.cs">
+      <Link>X509CertificateAuthority.cs</Link>
+    </Compile>
+    <Compile Include="..\X509Chain.cs">
+      <Link>X509Chain.cs</Link>
+    </Compile>
+    <Compile Include="..\X509Name.cs">
+      <Link>X509Name.cs</Link>
+    </Compile>
+    <Compile Include="..\X509Request.cs">
+      <Link>X509Request.cs</Link>
+    </Compile>
+    <Compile Include="..\X509Store.cs">
+      <Link>X509Store.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
