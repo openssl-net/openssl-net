@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sandbox", "sandbox.csproj", "{CC3221B8-02C4-4E89-907B-B55BE461785C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-XP", "..\ManagedOpenSsl\XP\ManagedOpenSsl-XP.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC3221B8-02C4-4E89-907B-B55BE461785C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC3221B8-02C4-4E89-907B-B55BE461785C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC3221B8-02C4-4E89-907B-B55BE461785C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC3221B8-02C4-4E89-907B-B55BE461785C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
