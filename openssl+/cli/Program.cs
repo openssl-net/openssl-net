@@ -48,9 +48,10 @@ namespace OpenSSL.CLI
 
 		Program()
 		{
-			#region Standard Commands
 			std_cmds.Add("dh", new DH());
+			std_cmds.Add("gendh", new GenDH());
 
+			#region Standard Commands
 			AddNullCommand(std_cmds, "asn1parse");
 			AddNullCommand(std_cmds, "ca");
 			AddNullCommand(std_cmds, "ciphers");
@@ -65,7 +66,6 @@ namespace OpenSSL.CLI
 			AddNullCommand(std_cmds, "enc");
 			AddNullCommand(std_cmds, "engine");
 			AddNullCommand(std_cmds, "errstr");
-			AddNullCommand(std_cmds, "gendh");
 			AddNullCommand(std_cmds, "gendsa");
 			AddNullCommand(std_cmds, "genrsa");
 			AddNullCommand(std_cmds, "nseq");

@@ -2,59 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
+using System.Reflection;
+using System.Security.Permissions;
 
 namespace OpenSSL.CLI
 {
 	class DH : ICommand
 	{
-		string inform = "PEM";
-		string outform = "PEM";
-		string infile;
-		string outfile;
-		bool check = false;
-		bool text = false;
-		bool code = false;
-		bool noout = false;
-		string engine;
-
-		void ParseOptions(string[] args)
+		OptionParser options = new OptionParser();
+		public DH()
 		{
-			for (int i = 1; i < args.Length; i++)
-			{
-				switch (args[i])
-				{
-					case "-inform":
-						inform = args[++i];
-						break;
-					case "-outform":
-						outform = args[++i];
-						break;
-					case "-in":
-						infile = args[++i];
-						break;
-					case "-out":
-						outfile = args[++i];
-						break;
-					case "-check":
-						check = true;
-						break;
-					case "-text":
-						text = true;
-						break;
-					case "-C":
-						code = true;
-						break;
-					case "-noout":
-						noout = true;
-						break;
-					case "-engine":
-						engine = args[++i];
-						break;
-					default:
-						Usage();
-						break;
-				}
-			}
+			options.AddOption("-inform", new Option("inform", "PEM"));
+			options.AddOption("-outform", new Option("outform", "PEM"));
+			options.AddOption("-in", new Option("infile", ""));
+			options.AddOption("-out", new Option("outfile", ""));
+			options.AddOption("-check", new Option("check", false));
+			options.AddOption("-text", new Option("text", false));
+			options.AddOption("-C", new Option("code", false));
+			options.AddOption("-noout", new Option("noout", false));
+			options.AddOption("-engine", new Option("engine", ""));
 		}
 
 		#region ICommand Members
@@ -62,7 +28,7 @@ namespace OpenSSL.CLI
 		{
 			try
 			{
-				ParseOptions(args);
+				options.ParseArguments(args);
 			}
 			catch (Exception)
 			{
@@ -70,7 +36,8 @@ namespace OpenSSL.CLI
 			}
 
 			BIO bin;
-			if (infile == null)
+			string infile = this.options.GetString("infile");
+			if(string.IsNullOrEmpty(infile))
 			{
 				string input = Console.In.ReadToEnd();
 				bin = new BIO(Encoding.ASCII.GetBytes(input));
@@ -81,12 +48,12 @@ namespace OpenSSL.CLI
 			}
 			OpenSSL.DH dh = OpenSSL.DH.FromParameters(bin);
 			
-			if (text)
+			if (this.options.IsSet("text"))
 			{
 				Console.WriteLine(dh);
 			}
 
-			if (check)
+			if (this.options.IsSet("check"))
 			{
 				OpenSSL.DH.CheckCode codes = dh.Check();
 				if ((codes & OpenSSL.DH.CheckCode.NotSuitableGenerator) > 0)
@@ -101,11 +68,11 @@ namespace OpenSSL.CLI
 					Console.WriteLine("DH parameters appear to be ok");
 			}
 
-			if (code)
+			if (this.options.IsSet("code"))
 			{
 			}
 
-			if (!noout)
+			if (!this.options.IsSet("noout"))
 			{
 			}
 		}
