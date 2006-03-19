@@ -1082,19 +1082,45 @@ namespace OpenSSL
 	}
 
 	#region Base
+	/// <summary>
+	/// Base class for all openssl wrapped objects. 
+	/// Contains the raw unmanaged pointer and has a Handle property to get access to it. 
+	/// Also overloads the ToString() method with a BIO print.
+	/// </summary>
 	public abstract class Base : IStackable
 	{
+		/// <summary>
+		/// Raw unmanaged pointer
+		/// </summary>
 		protected IntPtr ptr;
+		/// <summary>
+		/// Access to the raw unmanaged pointer. Implements the IStackable interface.
+		/// </summary>
 		public IntPtr Handle 
 		{
 			get { return this.ptr; }
 			set { this.ptr = value; }
 		}
 
+		/// <summary>
+		/// Constructor which takes the raw unmanged pointer. 
+		/// This is the only way to construct this object and all dervied types.
+		/// </summary>
+		/// <param name="ptr"></param>
 		public Base(IntPtr ptr) { this.ptr = ptr; }
 
+		/// <summary>
+		/// This method is used by the ToString() implementation. A great number of
+		/// openssl objects support printing, so this is a conveinence method.
+		/// Dervied types should override this method and not ToString().
+		/// </summary>
+		/// <param name="bio">The BIO stream object to print into</param>
 		public virtual void Print(BIO bio) { }
 
+		/// <summary>
+		/// Override of ToString() which uses Print() into a BIO memory buffer.
+		/// </summary>
+		/// <returns></returns>
 		public override string ToString()
 		{
 			using (BIO bio = BIO.MemoryBuffer())

@@ -5,8 +5,15 @@ using System.Text;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// This interface is used by the generic Stack class. 
+	/// An IStackable must have Handle get and set accessors.
+	/// </summary>
 	public interface IStackable
 	{
+		/// <summary>
+		/// Access to the raw unmanaged pointer.
+		/// </summary>
 		IntPtr Handle { get; set; }
 	}
 
