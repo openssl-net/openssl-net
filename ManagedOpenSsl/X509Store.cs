@@ -20,7 +20,11 @@ namespace OpenSSL
 			public IntPtr untrusted;
 			public int purpose;
 			public int trust;
-			public long check_time;
+#if PocketPC
+			public uint check_time;
+#else
+			public ulong check_time;
+#endif
 			public uint flags;
 			public IntPtr other_ctx;
 			public IntPtr verify;

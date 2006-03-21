@@ -10,6 +10,7 @@ namespace OpenSSL
 		int Next();
 	}
 
+#if !PocketPC
 	public class FileSerialNumber : ISequenceNumber
 	{
 		private FileInfo serialFile;
@@ -38,6 +39,7 @@ namespace OpenSSL
 		}
 		#endregion
 	}
+#endif
 
 	public class SimpleSerialNumber : ISequenceNumber
 	{

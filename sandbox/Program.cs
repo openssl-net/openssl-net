@@ -9,7 +9,7 @@ namespace sandbox
 	{
 		static void Main(string[] args)
 		{
-			Configuration cfg = new Configuration("openssl.cnf");
+			Configuration cfg = new Configuration("\\openssl.cnf");
 			X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
 				cfg, 
 				new SimpleSerialNumber(), 

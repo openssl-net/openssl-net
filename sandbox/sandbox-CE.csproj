@@ -4,16 +4,16 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{7C4F32B5-D1BE-4ABF-8F37-45B4855CFF5F}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{143E6625-F0A1-462F-8993-6BA7672E316E}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ManagedOpenSsl</RootNamespace>
-    <AssemblyName>ManagedOpenSsl</AssemblyName>
+    <RootNamespace>sandbox_CE</RootNamespace>
+    <AssemblyName>sandbox-CE</AssemblyName>
     <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>PocketPC</PlatformFamilyName>
     <PlatformID>3C41C503-53EF-4c2a-8DD4-A8217CAD115E</PlatformID>
     <OSVersion>4.20</OSVersion>
-    <DeployDirSuffix>ManagedOpenSsl</DeployDirSuffix>
+    <DeployDirSuffix>sandbox_CE</DeployDirSuffix>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FormFactorID>
     </FormFactorID>
@@ -48,66 +48,14 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BigNum.cs">
-      <Link>BigNum.cs</Link>
-    </Compile>
-    <Compile Include="..\BIO.cs">
-      <Link>BIO.cs</Link>
-    </Compile>
-    <Compile Include="..\Cipher.cs">
-      <Link>Cipher.cs</Link>
-    </Compile>
-    <Compile Include="..\Configuration.cs">
-      <Link>Configuration.cs</Link>
-    </Compile>
-    <Compile Include="..\DH.cs">
-      <Link>DH.cs</Link>
-    </Compile>
-    <Compile Include="..\DSA.cs">
-      <Link>DSA.cs</Link>
-    </Compile>
-    <Compile Include="..\CryptoKey.cs">
-      <Link>CryptoKey.cs</Link>
-    </Compile>
-    <Compile Include="..\Identity.cs">
-      <Link>Identity.cs</Link>
-    </Compile>
-    <Compile Include="..\MessageDigest.cs">
-      <Link>MessageDigest.cs</Link>
-    </Compile>
-    <Compile Include="..\Native.cs">
-      <Link>Native.cs</Link>
-    </Compile>
-    <Compile Include="..\OpenSslException.cs">
-      <Link>OpenSslException.cs</Link>
-    </Compile>
-    <Compile Include="..\Properties\AssemblyInfo.cs">
-      <Link>AssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\RSA.cs">
-      <Link>RSA.cs</Link>
-    </Compile>
-    <Compile Include="..\Stack.cs">
-      <Link>Stack.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Certificate.cs">
-      <Link>X509Certificate.cs</Link>
-    </Compile>
-    <Compile Include="..\X509CertificateAuthority.cs">
-      <Link>X509CertificateAuthority.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Chain.cs">
-      <Link>X509Chain.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Name.cs">
-      <Link>X509Name.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Request.cs">
-      <Link>X509Request.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Store.cs">
-      <Link>X509Store.cs</Link>
-    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ManagedOpenSsl\CE\ManagedOpenSsl-CE.csproj">
+      <Project>{7C4F32B5-D1BE-4ABF-8F37-45B4855CFF5F}</Project>
+      <Name>ManagedOpenSsl-CE</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
