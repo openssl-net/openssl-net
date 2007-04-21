@@ -5,26 +5,16 @@ using System.Text;
 
 namespace OpenSSL
 {
-	/// <summary>
-	/// This interface is used by the generic Stack class. 
-	/// An IStackable must have Handle get and set accessors.
-	/// </summary>
 	public interface IStackable
 	{
-		/// <summary>
-		/// Access to the raw unmanaged pointer.
-		/// </summary>
 		IntPtr Handle { get; set; }
 	}
 
 	public class Stack<T> : Base, IDisposable, IList<T> where T : IStackable, new()
 	{
 		#region Initialization
-		public Stack() : base(Native.ExpectNonNull(Native.sk_new_null()))
-		{
-		}
-
-		internal Stack(IntPtr ptr) : base(ptr) {}
+		public Stack() : base(Native.ExpectNonNull(Native.sk_new_null()), true) {}
+		internal Stack(IntPtr ptr, bool owner) : base(ptr, owner) { }
 
 		public T Shift()
 		{
@@ -93,7 +83,7 @@ namespace OpenSSL
 		#endregion
 
 		#region IDisposable Members
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.sk_free(this.ptr);
 		}
@@ -150,10 +140,16 @@ namespace OpenSSL
 
 		public bool Contains(T item)
 		{
-			int ret = Native.sk_find(this.ptr, item.Handle);
-			if (ret >= 0 && ret < this.Count)
-				return true;
+			foreach (T element in this)
+			{
+				if (element.Equals(item))
+					return true;
+			}
 			return false;
+			//int ret = Native.sk_find(this.ptr, item.Handle);
+			//if (ret >= 0 && ret < this.Count)
+			//    return true;
+			//return false;
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OpenSSL
 {
-	class OpenSslException : Exception
+	public class OpenSslException : Exception
 	{
 		public OpenSslException()
 			: base(GetErrorMessage())

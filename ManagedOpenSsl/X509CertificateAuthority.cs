@@ -10,7 +10,6 @@ namespace OpenSSL
 		int Next();
 	}
 
-#if !PocketPC
 	public class FileSerialNumber : ISequenceNumber
 	{
 		private FileInfo serialFile;
@@ -29,17 +28,24 @@ namespace OpenSSL
 				int serial = 1;
 				if (this.serialFile.Exists)
 				{
-					string text = File.ReadAllText(this.serialFile.FullName);
-					serial = Convert.ToInt32(text);
-					++serial;
+					using (StreamReader sr = new StreamReader(this.serialFile.FullName))
+					{
+						string text = sr.ReadToEnd();
+						serial = Convert.ToInt32(text);
+						++serial;
+					}
 				}
-				File.WriteAllText(this.serialFile.FullName, serial.ToString());
+
+				using(StreamWriter sr = new StreamWriter(this.serialFile.FullName))
+				{
+					sr.Write(serial.ToString());
+				}
+			
 				return serial;
 			}
 		}
 		#endregion
 	}
-#endif
 
 	public class SimpleSerialNumber : ISequenceNumber
 	{
@@ -82,7 +88,8 @@ namespace OpenSSL
                 start,
 				start + validity);
 
-			cfg.ApplyExtensions("v3_ca", cert, cert, null);
+			if(cfg != null)
+				cfg.ApplyExtensions("v3_ca", cert, cert, null);
 
 			cert.Sign(key, MessageDigest.DSS1);
 
@@ -109,13 +116,13 @@ namespace OpenSSL
 			this.cfg = cfg;
 		}
 
-		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, TimeSpan validity)
+		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime)
 		{
-			using (CryptoKey pkey = request.PublicKey)
-			{
-				if (!request.Verify(pkey))
-					throw new Exception("Request signature validation failed");
-			}
+			//using (CryptoKey pkey = request.PublicKey)
+			//{
+			//    if (!request.Verify(pkey))
+			//        throw new Exception("Request signature validation failed");
+			//}
 
 			X509Certificate cert = new X509Certificate(
 				serial.Next(),
@@ -123,9 +130,10 @@ namespace OpenSSL
 				this.caCert.Subject,
 				request.PublicKey,
 				startTime,
-                startTime + validity);
+				endTime);
 
-			this.cfg.ApplyExtensions("v3_ca", this.caCert, cert, request);
+			if(this.cfg != null)
+				this.cfg.ApplyExtensions("v3_ca", this.caCert, cert, request);
             
 			cert.Sign(this.caKey, MessageDigest.DSS1);
 

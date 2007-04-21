@@ -6,9 +6,6 @@ namespace OpenSSL
 {
 	public class RSA : Base
 	{
-		public RSA()
-			: base(IntPtr.Zero)
-		{
-		}
+		public RSA() : base(IntPtr.Zero, false) {}
 	}
 }

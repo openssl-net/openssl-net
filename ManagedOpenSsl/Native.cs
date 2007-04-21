@@ -143,7 +143,7 @@ namespace OpenSSL
 		public extern static IntPtr ASN1_TIME_set(IntPtr s, long t);
 
 		[DllImport(DLLNAME)]
-		public extern static int ASN1_TIME_print(IntPtr bp, IntPtr a);
+		public extern static int ASN1_UTCTIME_print(IntPtr bp, IntPtr a);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr ASN1_TIME_new();
@@ -193,6 +193,9 @@ namespace OpenSSL
 		#region X509
 		[DllImport(DLLNAME)]
 		public extern static IntPtr X509_new();
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr X509_dup(IntPtr x509);
 
 		[DllImport(DLLNAME)]
 		public extern static int X509_cmp(IntPtr a, IntPtr b);
@@ -343,6 +346,24 @@ namespace OpenSSL
 		#region X509_NAME
 		public const int MBSTRING_FLAG = 0x1000;
 		public const int MBSTRING_ASC = MBSTRING_FLAG | 1;
+
+		public const int ASN1_STRFLGS_RFC2253 = 
+			ASN1_STRFLGS_ESC_2253 |
+			ASN1_STRFLGS_ESC_CTRL |
+			ASN1_STRFLGS_ESC_MSB |
+			ASN1_STRFLGS_UTF8_CONVERT |
+			ASN1_STRFLGS_DUMP_UNKNOWN | 
+			ASN1_STRFLGS_DUMP_DER;
+
+		public const int ASN1_STRFLGS_ESC_2253 = 1;
+		public const int ASN1_STRFLGS_ESC_CTRL = 2;
+		public const int ASN1_STRFLGS_ESC_MSB = 4;
+		public const int ASN1_STRFLGS_ESC_QUOTE = 8;
+		public const int ASN1_STRFLGS_UTF8_CONVERT = 0x10;
+		public const int ASN1_STRFLGS_DUMP_UNKNOWN = 0x100;
+		public const int ASN1_STRFLGS_DUMP_DER = 0x200;
+		public const int XN_FLAG_SEP_COMMA_PLUS = (1 << 16);
+		public const int XN_FLAG_FN_SN = 0;
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr X509_NAME_new();
@@ -594,11 +615,20 @@ namespace OpenSSL
 		#endregion
 		
 		#region PrivateKey
+#if !PocketPC
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+		public delegate int pem_password_cb(
+			IntPtr buf,
+			int size, 
+			int rwflag, 
+			IntPtr userdata);
+
 		[DllImport(DLLNAME)]
 		public extern static int PEM_write_bio_PrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, IntPtr cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_PrivateKey(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_PrivateKey(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region PUBKEY
@@ -618,6 +648,21 @@ namespace OpenSSL
 		public const int EVP_MAX_KEY_LENGTH = 32;
 		public const int EVP_MAX_IV_LENGTH = 16;
 		public const int EVP_MAX_BLOCK_LENGTH = 32;
+
+		public const int EVP_CIPH_STREAM_CIPHER	= 0x0;
+		public const int EVP_CIPH_ECB_MODE = 0x1;
+		public const int EVP_CIPH_CBC_MODE = 0x2;
+		public const int EVP_CIPH_CFB_MODE = 0x3;
+		public const int EVP_CIPH_OFB_MODE = 0x4;
+		public const int EVP_CIPH_MODE = 0x7;
+		public const int EVP_CIPH_VARIABLE_LENGTH = 0x8;
+		public const int EVP_CIPH_CUSTOM_IV = 0x10;
+		public const int EVP_CIPH_ALWAYS_CALL_INIT = 0x20;
+		public const int EVP_CIPH_CTRL_INIT = 0x40;
+		public const int EVP_CIPH_CUSTOM_KEY_LENGTH = 0x80;
+		public const int EVP_CIPH_NO_PADDING = 0x100;
+		public const int EVP_CIPH_FLAG_FIPS = 0x400;
+		public const int EVP_CIPH_FLAG_NON_FIPS_ALLOW = 0x800;
 		#endregion
 
 		#region Message Digests
@@ -937,6 +982,61 @@ namespace OpenSSL
 		public extern static IntPtr BIO_s_mem();
 
 		[DllImport(DLLNAME)]
+		public extern static IntPtr BIO_f_md();
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr BIO_f_null();
+
+		const int BIO_C_SET_MD = 111;
+		const int BIO_C_GET_MD = 112;
+		const int BIO_C_GET_MD_CTX = 120;
+		const int BIO_C_SET_MD_CTX = 148;
+
+		public static void BIO_set_md(IntPtr bp, IntPtr md)
+		{
+			Native.ExpectNonNull(BIO_ctrl(bp, BIO_C_SET_MD, 0, md));
+		}
+
+		public static IntPtr BIO_get_md(IntPtr bp)
+		{
+			IntPtr ptr = Marshal.AllocHGlobal(4);
+			try
+			{
+				ExpectNonNull(BIO_ctrl(bp, BIO_C_GET_MD, 0, ptr));
+				return Marshal.ReadIntPtr(ptr);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(ptr);
+			}
+		}
+
+		public static IntPtr BIO_get_md_ctx(IntPtr bp)
+		{
+			IntPtr ptr = Marshal.AllocHGlobal(4);
+			try
+			{
+				ExpectNonNull(BIO_ctrl(bp, BIO_C_GET_MD_CTX, 0, ptr));
+				return Marshal.ReadIntPtr(ptr);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(ptr);
+			}
+		}
+
+		public static void BIO_set_md_ctx(IntPtr bp, IntPtr mdcp)
+		{
+			Native.ExpectNonNull(BIO_ctrl(bp, BIO_C_SET_MD_CTX, 0, mdcp));
+		}
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr BIO_push(IntPtr bp, IntPtr append);
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr BIO_ctrl(IntPtr bp, int cmd, int larg, IntPtr parg);
+
+		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_new(IntPtr type);
 
 		[DllImport(DLLNAME)]
@@ -1038,14 +1138,14 @@ namespace OpenSSL
 		public static DateTime AsnTimeToDateTime(IntPtr ptr)
 		{
 			BIO bio = BIO.MemoryBuffer();
-			Native.ExpectSuccess(Native.ASN1_TIME_print(bio.Handle, ptr));
+			Native.ExpectSuccess(Native.ASN1_UTCTIME_print(bio.Handle, ptr));
 			string str = bio.ReadString();
 			string[] fmts = 
 			{ 
 				"MMM  d HH:mm:ss yyyy G\\MT",
 				"MMM dd HH:mm:ss yyyy G\\MT"
 			};
-			return DateTime.ParseExact(str, fmts, new DateTimeFormatInfo(), DateTimeStyles.AssumeUniversal);
+			return DateTime.ParseExact(str, fmts, new DateTimeFormatInfo(), DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 		}
 
 		public static IntPtr DateTimeToAsnTime(DateTime value)
@@ -1057,10 +1157,9 @@ namespace OpenSSL
 
 		public static long DateTimeToTimeT(DateTime value)
 		{
-			DateTime utc = value.ToUniversalTime();
 			DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
 			// # of 100 nanoseconds since 1970
-			long ticks = (utc.Ticks - dt1970.Ticks) / 10000000L;
+			long ticks = (value.Ticks - dt1970.Ticks) / 10000000L;
 			return ticks; 
 		}
 		
@@ -1087,19 +1186,33 @@ namespace OpenSSL
 	/// Contains the raw unmanaged pointer and has a Handle property to get access to it. 
 	/// Also overloads the ToString() method with a BIO print.
 	/// </summary>
-	public abstract class Base : IStackable
+	public abstract class Base : IStackable, IDisposable
 	{
 		/// <summary>
 		/// Raw unmanaged pointer
 		/// </summary>
 		protected IntPtr ptr;
+		protected bool owner = false;
+		protected bool isDisposed = false;
+
+		~Base()
+		{
+			Dispose();
+		}
+
 		/// <summary>
 		/// Access to the raw unmanaged pointer. Implements the IStackable interface.
 		/// </summary>
 		public IntPtr Handle 
 		{
 			get { return this.ptr; }
-			set { this.ptr = value; }
+			set 
+			{
+				if (this.owner && this.ptr != IntPtr.Zero)
+					this.OnDispose();
+				this.owner = false;
+				this.ptr = value;
+			}
 		}
 
 		/// <summary>
@@ -1107,7 +1220,11 @@ namespace OpenSSL
 		/// This is the only way to construct this object and all dervied types.
 		/// </summary>
 		/// <param name="ptr"></param>
-		public Base(IntPtr ptr) { this.ptr = ptr; }
+		public Base(IntPtr ptr, bool takeOwnership) 
+		{
+			this.ptr = ptr;
+			this.owner = takeOwnership;
+		}
 
 		/// <summary>
 		/// This method is used by the ToString() implementation. A great number of
@@ -1123,12 +1240,35 @@ namespace OpenSSL
 		/// <returns></returns>
 		public override string ToString()
 		{
-			using (BIO bio = BIO.MemoryBuffer())
+			try
 			{
-				this.Print(bio);
-				return bio.ReadString();
+				if (this.ptr == IntPtr.Zero)
+					return "(null)";
+
+				using (BIO bio = BIO.MemoryBuffer())
+				{
+					this.Print(bio);
+					return bio.ReadString();
+				}
+			}
+			catch (Exception)
+			{
+				return "<exception>";
 			}
 		}
+
+		public virtual void OnDispose() {}
+
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			if (!this.isDisposed && this.owner && this.ptr != IntPtr.Zero)
+				this.OnDispose();
+			this.isDisposed = true;
+		}
+
+		#endregion
 	}
 	#endregion
 }

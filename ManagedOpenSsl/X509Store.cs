@@ -5,9 +5,6 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-	/// <summary>
-	/// This object wraps an X509_STORE object.
-	/// </summary>
 	public class X509Store : Base, IDisposable
 	{
 		#region X509_STORE_CONTEXT
@@ -21,9 +18,9 @@ namespace OpenSSL
 			public int purpose;
 			public int trust;
 #if PocketPC
-			public uint check_time;
+            public uint check_time;
 #else
-			public ulong check_time;
+			public long check_time;
 #endif
 			public uint flags;
 			public IntPtr other_ctx;
@@ -53,7 +50,7 @@ namespace OpenSSL
 		#endregion
 
 		#region Context
-		class Context : IDisposable
+		public class Context : IDisposable
 		{
 			private IntPtr ptr;
 
@@ -107,19 +104,9 @@ namespace OpenSSL
 		private X509Chain untrusted = new X509Chain();
 		//private X509Chain trusted = new X509Chain();
 
-		/// <summary>
-		/// Calls X509_STORE_new()
-		/// </summary>
-		public X509Store() : base(Native.ExpectNonNull(Native.X509_STORE_new()))
-		{
-		}
-
-		/// <summary>
-		/// Constructs an X509Store using an X509Chain.
-		/// </summary>
-		/// <param name="chain">All certificates in this chain will be added to the trusted chain.</param>
-		public X509Store(X509Chain chain) :
-			base(Native.ExpectNonNull(Native.X509_STORE_new()))
+		public X509Store() : base(Native.ExpectNonNull(Native.X509_STORE_new()), true) {}
+		public X509Store(X509Chain chain)
+			: base(Native.ExpectNonNull(Native.X509_STORE_new()), true)
 		{
 			foreach (X509Certificate cert in chain)
 			{
@@ -127,12 +114,6 @@ namespace OpenSSL
 			}
 		}
 
-		/// <summary>
-		/// Creates a new X509_STORE_CTX and uses it to verify that a certificate is valid.
-		/// </summary>
-		/// <param name="cert">The certificate to be verified.</param>
-		/// <param name="error">If verify returns false, then this argument will be filled in with the reason for the certificate being invalid.</param>
-		/// <returns>true if the certificate is valid, false otherwise. The error argument will be filled in with the reason for failure if false is returned.</returns>
 		public bool Verify(X509Certificate cert, out string error)
 		{
 			Context ctx = new Context();
@@ -146,19 +127,17 @@ namespace OpenSSL
 			return false;
 		}
 
-		/// <summary>
-		/// Calls X509_STORE_add_cert()
-		/// </summary>
-		/// <param name="cert"></param>
+		public void AddTrusted(X509Chain chain)
+		{
+			foreach (X509Certificate cert in chain)
+				AddTrusted(cert);
+		}
+
 		public void AddTrusted(X509Certificate cert)
 		{
 			Native.ExpectSuccess(Native.X509_STORE_add_cert(this.ptr, cert.Handle));
 		}
 
-		/// <summary>
-		/// Adds a certificate to the untrusted chain.
-		/// </summary>
-		/// <param name="cert">Certificate to be added as untrusted.</param>
 		public void AddUntrusted(X509Certificate cert)
 		{
 			this.untrusted.Add(cert);
@@ -170,9 +149,6 @@ namespace OpenSSL
 		//    set { this.trusted = value; }
 		//}
 
-		/// <summary>
-		/// Access to the untrusted chain.
-		/// </summary>
 		public X509Chain Untrusted
 		{
 			get { return this.untrusted; }
@@ -180,10 +156,7 @@ namespace OpenSSL
 		}
 
 		#region IDisposable Members
-		/// <summary>
-		/// Calls X509_STORE_free()
-		/// </summary>
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.X509_STORE_free(this.ptr);
 		}

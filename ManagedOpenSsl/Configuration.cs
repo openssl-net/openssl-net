@@ -8,7 +8,7 @@ namespace OpenSSL
 	public class Configuration : Base, IDisposable
 	{
 		private Configuration()
-			: base(Native.NCONF_new(IntPtr.Zero))
+			: base(Native.NCONF_new(IntPtr.Zero), true)
 		{ }
 
 		public Configuration(string filename)
@@ -42,12 +42,12 @@ namespace OpenSSL
 		class X509v3Context : Base, IDisposable
 		{
 			public X509v3Context()
-				: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))))
+				: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))), true)
 			{ }
 
 			#region IDisposable Members
 
-			public void Dispose()
+			public override void OnDispose()
 			{
 				Native.OPENSSL_free(this.ptr);
 			}
@@ -80,7 +80,7 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.NCONF_free(this.ptr);
 		}

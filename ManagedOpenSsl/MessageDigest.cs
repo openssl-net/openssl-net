@@ -9,7 +9,7 @@ namespace OpenSSL
 	public class MessageDigest : Base
 	{
 		private EVP_MD raw;
-		private MessageDigest(IntPtr ptr) : base(ptr) 
+		internal MessageDigest(IntPtr ptr, bool owner) : base(ptr, owner) 
 		{
 			this.raw = (EVP_MD)Marshal.PtrToStructure(this.ptr, typeof(EVP_MD));
 		}
@@ -42,16 +42,16 @@ namespace OpenSSL
 		#endregion
 
 		#region MessageDigests
-		public static MessageDigest Null = new MessageDigest(Native.EVP_md_null());
-		public static MessageDigest MD2 = new MessageDigest(Native.EVP_md2());
-		public static MessageDigest MD4 = new MessageDigest(Native.EVP_md4());
-		public static MessageDigest MD5 = new MessageDigest(Native.EVP_md5());
-		public static MessageDigest SHA = new MessageDigest(Native.EVP_sha());
-		public static MessageDigest SHA1 = new MessageDigest(Native.EVP_sha1());
-		public static MessageDigest DSS = new MessageDigest(Native.EVP_dss());
-		public static MessageDigest DSS1 = new MessageDigest(Native.EVP_dss1());
-		public static MessageDigest MDC2 = new MessageDigest(Native.EVP_mdc2());
-		public static MessageDigest RipeMD160 = new MessageDigest(Native.EVP_ripemd160());
+		public static MessageDigest Null = new MessageDigest(Native.EVP_md_null(), false);
+		public static MessageDigest MD2 = new MessageDigest(Native.EVP_md2(), false);
+		public static MessageDigest MD4 = new MessageDigest(Native.EVP_md4(), false);
+		public static MessageDigest MD5 = new MessageDigest(Native.EVP_md5(), false);
+		public static MessageDigest SHA = new MessageDigest(Native.EVP_sha(), false);
+		public static MessageDigest SHA1 = new MessageDigest(Native.EVP_sha1(), false);
+		public static MessageDigest DSS = new MessageDigest(Native.EVP_dss(), false);
+		public static MessageDigest DSS1 = new MessageDigest(Native.EVP_dss1(), false);
+		public static MessageDigest MDC2 = new MessageDigest(Native.EVP_mdc2(), false);
+		public static MessageDigest RipeMD160 = new MessageDigest(Native.EVP_ripemd160(), false);
 		#endregion
 
 		#region Properties
@@ -100,8 +100,14 @@ namespace OpenSSL
 
 		private MessageDigest md;
 
+		public MessageDigestContext(BIO bio)
+			: base(Native.ExpectNonNull(Native.BIO_get_md_ctx(bio.Handle)), false)
+		{
+			this.md = new MessageDigest(Native.ExpectNonNull(Native.BIO_get_md(bio.Handle)), false);
+		}
+
 		public MessageDigestContext(MessageDigest md)
-			: base(Native.EVP_MD_CTX_create())
+			: base(Native.EVP_MD_CTX_create(), true)
 		{
 			Native.EVP_MD_CTX_init(this.ptr);
 			this.md = md;
@@ -136,6 +142,28 @@ namespace OpenSSL
 			return ret;
 		}
 
+		public static byte[] Sign(MessageDigest md, BIO bio, CryptoKey pkey)
+		{
+			BIO bmd = BIO.MessageDigest(md);
+			bmd.Push(bio);
+
+			while (true)
+			{
+				ArraySegment<byte> bytes = bmd.ReadBytes(1024 * 4);
+				if (bytes.Count == 0)
+					break;
+			}
+
+			MessageDigestContext ctx = new MessageDigestContext(bmd);
+
+			byte[] sig = new byte[pkey.Size];
+			uint len = (uint)sig.Length;
+			Native.ExpectSuccess(Native.EVP_SignFinal(ctx.Handle, sig, ref len, pkey.Handle));
+			byte[] ret = new byte[len];
+			Buffer.BlockCopy(sig, 0, ret, 0, (int)len);
+			return ret;
+		}
+
 		public bool Verify(byte[] msg, byte[] sig, CryptoKey pkey) 
 		{
 			Native.ExpectSuccess(Native.EVP_DigestInit_ex(this.ptr, this.md.Handle, IntPtr.Zero));
@@ -146,11 +174,31 @@ namespace OpenSSL
 			return ret == 1;
 		}
 
+		public static bool Verify(MessageDigest md, BIO bio, byte[] sig, CryptoKey pkey)
+		{
+			BIO bmd = BIO.MessageDigest(md);
+			bmd.Push(bio);
+
+			while (true)
+			{
+				ArraySegment<byte> bytes = bmd.ReadBytes(1024 * 4);
+				if (bytes.Count == 0)
+					break;
+			}
+
+			MessageDigestContext ctx = new MessageDigestContext(bmd);
+
+			int ret = Native.EVP_VerifyFinal(ctx.Handle, sig, (uint)sig.Length, pkey.Handle);
+			if (ret < 0)
+				throw new OpenSslException();
+			return ret == 1;
+		}
+
 		#endregion
 
 		#region IDisposable Members
 
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.EVP_MD_CTX_cleanup(this.ptr);
 			Native.EVP_MD_CTX_destroy(this.ptr);

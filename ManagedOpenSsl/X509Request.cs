@@ -8,8 +8,8 @@ namespace OpenSSL
 	public class X509Request : Base, IDisposable
 	{
 		#region Initialization
-		public X509Request() : base(Native.ExpectNonNull(Native.X509_REQ_new())) { }
-		internal X509Request(IntPtr ptr) : base(ptr) { }
+		public X509Request() : base(Native.ExpectNonNull(Native.X509_REQ_new()), true) { }
+		internal X509Request(IntPtr ptr, bool owner) : base(ptr, owner) { }
 
 		public X509Request(int version, X509Name subject, CryptoKey key)
 			: this()
@@ -20,7 +20,7 @@ namespace OpenSSL
 		}
 
 		public X509Request(BIO bio)
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)))
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true)
 		{
 		}
 
@@ -90,7 +90,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new CryptoKey(Native.ExpectNonNull(Native.X509_REQ_get_pubkey(this.ptr)));
+				return new CryptoKey(Native.ExpectNonNull(Native.X509_REQ_get_pubkey(this.ptr)), true);
 			}
 			set
 			{
@@ -102,13 +102,21 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new X509Name(Native.X509_NAME_dup(this.RawInfo.subject));
+				return new X509Name(Native.X509_NAME_dup(this.RawInfo.subject), true);
 			}
 			set
 			{
 				Native.ExpectSuccess(Native.X509_REQ_set_subject_name(this.ptr, value.Handle));
 			}
 		}
+
+        public string DSAPublicKeyString
+        {
+            get
+            {
+                return PublicKey.GetDSA().PemPublicKey;
+            }
+        }
 
 		public string PEM
 		{
@@ -157,13 +165,13 @@ namespace OpenSSL
 
 		public X509Certificate CreateCertificate(int days, CryptoKey pkey)
 		{
-			return new X509Certificate(Native.ExpectNonNull(Native.X509_REQ_to_X509(this.ptr, days, pkey.Handle)));
+			return new X509Certificate(Native.ExpectNonNull(Native.X509_REQ_to_X509(this.ptr, days, pkey.Handle)), true);
 		}
 		#endregion
 
 		#region IDisposable Members
 
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.X509_REQ_free(this.ptr);
 		}

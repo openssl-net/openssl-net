@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
@@ -8,7 +9,7 @@ namespace OpenSSL
 	public class DSAParameters : Base, IDisposable
 	{
 		public DSAParameters(BIO bio) 
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_DSAparams(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)))
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_DSAparams(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true)
 		{
 		}
 
@@ -25,7 +26,7 @@ namespace OpenSSL
 				IntPtr.Zero,
 				IntPtr.Zero,
 				IntPtr.Zero,
-				IntPtr.Zero)))
+				IntPtr.Zero)), true)
 		{
 		}
 
@@ -59,7 +60,7 @@ namespace OpenSSL
 		}
 
 		#region IDisposable Members
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.DSA_free(this.ptr);
 		}
@@ -69,12 +70,41 @@ namespace OpenSSL
 
 	public class DSA : Base, IDisposable
 	{
+		#region dsa_st
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct dsa_st
+		{
+			public int pad;
+			public int version;
+			public int write_params;
+			public IntPtr p;
+			public IntPtr q;	
+			public IntPtr g;
+
+			public IntPtr pub_key;  
+			public IntPtr priv_key; 
+
+			public IntPtr kinv;	
+			public IntPtr r;	
+
+			public int flags;
+			public IntPtr method_mont_p;
+			public int references;
+			#region CRYPTO_EX_DATA ex_data;
+			public IntPtr ex_data_sk;
+			public int ex_data_dummy;
+			#endregion
+			public IntPtr meth;
+			public IntPtr engine;
+		}
+		#endregion
+
 		#region Initialization
 
-		private DSA(IntPtr ptr) : base(ptr) {}
-
+		internal DSA(IntPtr ptr, bool owner) : base(ptr, owner) {}
 		public DSA(DSAParameters parameters)
-			: base(parameters.TakeOwnership())
+			: base(parameters.TakeOwnership(), true)
 		{
 			this.GenerateKeys();
 		}
@@ -86,7 +116,7 @@ namespace OpenSSL
 
 		public static DSA FromPublicKey(BIO bio)
 		{
-			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSA_PUBKEY(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)));
+			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSA_PUBKEY(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
 		}
 
 		public static DSA FromPrivateKey(string pem)
@@ -96,12 +126,70 @@ namespace OpenSSL
 		
 		public static DSA FromPrivateKey(BIO bio)
 		{
-			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSAPrivateKey(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)));
+			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSAPrivateKey(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
 		}
 
 		#endregion
 
 		#region Properites
+		private dsa_st Raw
+		{
+			get { return (dsa_st)Marshal.PtrToStructure(this.ptr, typeof(dsa_st)); }
+			set { Marshal.StructureToPtr(value, this.ptr, false); }
+		}
+
+		public BigNumber P
+		{
+			get
+			{
+				return new BigNumber(this.Raw.p, false);
+			}
+		}
+
+		public BigNumber Q
+		{
+			get
+			{
+				return new BigNumber(this.Raw.q, false);
+			}
+		}
+
+		public BigNumber G
+		{
+			get
+			{
+				return new BigNumber(this.Raw.g, false);
+			}
+		}
+
+		public BigNumber PublicKey
+		{
+			get
+			{
+				return new BigNumber(this.Raw.pub_key, false);
+			}
+			set
+			{
+				dsa_st raw = this.Raw;
+				raw.pub_key = Native.BN_dup(value.Handle);
+				this.Raw = raw;
+			}
+		}
+
+		public BigNumber PrivateKey
+		{
+			get
+			{
+				return new BigNumber(this.Raw.priv_key, false);
+			}
+			set
+			{
+				dsa_st raw = this.Raw;
+				raw.priv_key = Native.BN_dup(value.Handle);
+				this.Raw = raw;
+			}
+		}
+
 		public string PemPublicKey
 		{
 			get
@@ -157,7 +245,7 @@ namespace OpenSSL
 		#endregion
 
 		#region IDisposable Members
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.DSA_free(this.ptr);
 		}

@@ -7,16 +7,6 @@ namespace OpenSSL
 {
 	public class DH : Base, IDisposable
 	{
-		// DH_check error codes
-		[Flags]
-		public enum CheckCode
-		{
-			P_NotPrime = 0x01,
-			P_NotSafePrime = 0x02,
-			UnableToCheckGenerator = 0x04,
-			NotSuitableGenerator = 0x08,
-		}
-		
 		#region dh_st
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -49,34 +39,47 @@ namespace OpenSSL
 		#endregion
 
 		#region Initialization
-		private DH(IntPtr ptr) : base(ptr) { }
+		internal DH(IntPtr ptr, bool owner) : base(ptr, owner) { }
 		public DH(int primeLen, int generator)
-			: base(Native.ExpectNonNull(Native.DH_generate_parameters(primeLen, generator, IntPtr.Zero, IntPtr.Zero)))
+			: base(Native.ExpectNonNull(Native.DH_generate_parameters(primeLen, generator, IntPtr.Zero, IntPtr.Zero)), true)
 		{
 			this.GenerateKeys();
 		}
 
 		public DH() 
-			: base(Native.ExpectNonNull(Native.DH_new())) 
+			: base(Native.ExpectNonNull(Native.DH_new()), true) 
 		{
 			dh_st raw = this.Raw;
-			raw.p = BigNumber.One.Handle;
-			raw.g = BigNumber.One.Handle;
+			raw.p = Native.BN_dup(BigNumber.One.Handle);
+			raw.g = Native.BN_dup(BigNumber.One.Handle);
 			this.Raw = raw;
 
 			this.GenerateKeys();
 		}
 
         public DH(BigNumber p, BigNumber g)
-            : base(Native.ExpectNonNull(Native.DH_new()))
+            : base(Native.ExpectNonNull(Native.DH_new()), true)
         {
             dh_st raw = this.Raw;
-            raw.p = p.Handle;
-            raw.g = g.Handle;
+            raw.p = Native.BN_dup(p.Handle);
+            raw.g = Native.BN_dup(g.Handle);
             this.Raw = raw;
 
 			this.GenerateKeys();
         }
+
+		public DH(BigNumber p, BigNumber g, BigNumber pub_key, BigNumber priv_key)
+			: base(Native.ExpectNonNull(Native.DH_new()), true)
+		{
+			dh_st raw = this.Raw;
+			raw.p = Native.BN_dup(p.Handle);
+			raw.g = Native.BN_dup(g.Handle);
+			raw.pub_key = Native.BN_dup(pub_key.Handle);
+			raw.priv_key = Native.BN_dup(priv_key.Handle);
+			this.Raw = raw;
+
+			this.GenerateKeys();
+		}
 
 		public static DH FromParameters(string pem)
 		{
@@ -86,7 +89,7 @@ namespace OpenSSL
 		public static DH FromParameters(BIO bio)
 		{
 			DH dh = new DH(Native.ExpectNonNull(Native.PEM_read_bio_DHparams(
-				bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)));
+				bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
 			dh.GenerateKeys();
 			return dh;
 		}
@@ -115,13 +118,6 @@ namespace OpenSSL
 		{
 			Native.ExpectSuccess(Native.DHparams_print(bio.Handle, this.ptr));
 		}
-
-		public CheckCode Check()
-		{
-			int ret;
-			Native.ExpectSuccess(Native.DH_check(this.ptr, out ret));
-			return (CheckCode)ret;
-		}
 		#endregion
 
 		#region Properties
@@ -135,7 +131,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new BigNumber(this.Raw.p);
+				return new BigNumber(this.Raw.p, false);
 			}
 		}
 
@@ -143,7 +139,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new BigNumber(this.Raw.g);
+				return new BigNumber(this.Raw.g, false);
 			}
 		}
 
@@ -151,12 +147,12 @@ namespace OpenSSL
 		{
 			get
             {
-                return new BigNumber(this.Raw.pub_key);
+				return new BigNumber(this.Raw.pub_key, false);
             }
             set
             {
                 dh_st raw = this.Raw;
-                raw.pub_key = value.Handle;
+                raw.pub_key = Native.BN_dup(value.Handle);
                 this.Raw = raw;
             }
         }
@@ -165,12 +161,12 @@ namespace OpenSSL
 		{
 			get
             {
-                return new BigNumber(this.Raw.priv_key);
+				return new BigNumber(this.Raw.priv_key, false);
             }
 			set
             {
                 dh_st raw = this.Raw;
-                raw.priv_key = value.Handle;
+                raw.priv_key = Native.BN_dup(value.Handle);
                 this.Raw = raw;
             }
 		}
@@ -190,7 +186,7 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.DH_free(this.ptr);
 		}

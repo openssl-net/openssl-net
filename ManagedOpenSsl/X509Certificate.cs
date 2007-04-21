@@ -8,19 +8,24 @@ namespace OpenSSL
 	public class X509Certificate : Base, IDisposable, IStackable, IComparable<X509Certificate>
 	{
 		#region Initialization
-		internal X509Certificate(IntPtr ptr) : base(ptr) {}
+		internal X509Certificate(IntPtr ptr, bool owner) : base(ptr, owner) {}
 
 		/// <summary>
 		/// 
 		/// </summary>
 		public X509Certificate()
-			: base(Native.ExpectNonNull(Native.X509_new()))
+			: base(Native.ExpectNonNull(Native.X509_new()), true)
 		{
 		}
 
 		public X509Certificate(BIO bio)
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)))
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true)
 		{
+		}
+
+		~X509Certificate()
+		{
+			Dispose();
 		}
 
 		public X509Certificate(
@@ -132,7 +137,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new X509Name(Native.ExpectNonNull(Native.X509_get_subject_name(this.ptr)));
+				return new X509Name(Native.ExpectNonNull(Native.X509_get_subject_name(this.ptr)), false);
 			}
 			set
 			{
@@ -147,7 +152,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new X509Name(Native.ExpectNonNull(Native.X509_get_issuer_name(this.ptr)));
+				return new X509Name(Native.ExpectNonNull(Native.X509_get_issuer_name(this.ptr)), false);
 			}
 			set
 			{
@@ -207,7 +212,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				return new CryptoKey(Native.ExpectNonNull(Native.X509_get_pubkey(this.ptr)));
+				return new CryptoKey(Native.ExpectNonNull(Native.X509_get_pubkey(this.ptr)), true);
 			}
 			set
 			{
@@ -226,6 +231,14 @@ namespace OpenSSL
 				}
 			}
 		}
+
+        public string DSAPublicKeyString
+        {
+            get
+            {
+                return PublicKey.GetDSA().PemPublicKey;
+            }
+        }
 		#endregion
 
 		#region Methods
@@ -279,7 +292,7 @@ namespace OpenSSL
 
 		public X509Request CreateRequest(CryptoKey pkey, MessageDigest digest)
 		{
-			return new X509Request(Native.ExpectNonNull(Native.X509_to_X509_REQ(this.ptr, pkey.Handle, digest.Handle)));
+			return new X509Request(Native.ExpectNonNull(Native.X509_to_X509_REQ(this.ptr, pkey.Handle, digest.Handle)), true);
 		}
 
 		public void AddExtension(X509Extension ext)
@@ -295,9 +308,26 @@ namespace OpenSSL
 		#endregion
 
 		#region IDisposable Members
-		public void Dispose()
+		public override void OnDispose()
 		{
-			Native.X509_free(this.ptr);
+			IntPtr ptr = this.ptr;
+			this.ptr = IntPtr.Zero;
+			Native.X509_free(ptr);
+		}
+		#endregion
+
+		#region Overrides
+		public override bool Equals(object obj)
+		{
+			X509Certificate rhs = obj as X509Certificate;
+			if (rhs == null)
+				return false;
+			return this.CompareTo(rhs) == 0;
+		}
+
+		public override int GetHashCode()
+		{
+			return this.Issuer.OneLine.GetHashCode() ^ this.SerialNumber;
 		}
 		#endregion
 
@@ -315,12 +345,12 @@ namespace OpenSSL
 	public class X509Extension : Base, IDisposable, IStackable
 	{
 		public X509Extension()
-			: base(Native.ExpectNonNull(Native.X509_EXTENSION_new()))
+			: base(Native.ExpectNonNull(Native.X509_EXTENSION_new()), true)
 		{ }
 
 		#region IDisposable Members
 
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.X509_EXTENSION_free(this.ptr);
 		}

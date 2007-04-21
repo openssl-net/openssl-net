@@ -7,18 +7,18 @@ namespace OpenSSL
 	public class BigNumber : Base, IDisposable, IComparable<BigNumber>
 	{
 		#region Predefined Values
-		public static BigNumber One = new BigNumber(Native.BN_value_one());
+		public static BigNumber One = new BigNumber(Native.BN_value_one(), false);
 		#endregion
 
 		#region Initialization
-		internal BigNumber(IntPtr ptr) : base(ptr) { }
+		internal BigNumber(IntPtr ptr, bool owner) : base(ptr, owner) { }
 		public BigNumber()
-			: base(Native.ExpectNonNull(Native.BN_new()))
+			: base(Native.ExpectNonNull(Native.BN_new()), true)
 		{
 		}
 
 		public BigNumber(BigNumber rhs)
-			: base(Native.BN_dup(rhs.ptr))
+			: base(Native.BN_dup(rhs.ptr), true)
 		{
 		}
 
@@ -37,7 +37,7 @@ namespace OpenSSL
             int ret = Native.BN_dec2bn(out ptr, buf);
             if (ret <= 0)
                 throw new OpenSslException();
-            return new BigNumber(ptr);
+            return new BigNumber(ptr, true);
 		}
 
 		public static BigNumber FromHexString(string str)
@@ -47,7 +47,7 @@ namespace OpenSSL
             int ret = Native.BN_hex2bn(out ptr, buf);
             if (ret <= 0)
                 throw new OpenSslException();
-			return new BigNumber(ptr);
+			return new BigNumber(ptr, true);
 		}
 
 		public string ToDecimalString()
@@ -112,12 +112,29 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.BN_sub(ret.Handle, lhs.Handle, rhs.Handle));
 			return ret;
 		}
+
+        public static bool operator ==(BigNumber lhs, BigNumber rhs)
+        {
+			if (object.ReferenceEquals(lhs, rhs))
+				return true;
+			if ((object)lhs == null || (object)rhs == null)
+				return false;
+			return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(BigNumber lhs, BigNumber rhs)
+        {
+			return !(lhs == rhs);
+        }
 		#endregion
 
 		#region Overrides
 		public override bool Equals(object obj)
 		{
-			return Native.BN_cmp(this.ptr, ((BigNumber)obj).ptr) == 0;
+			BigNumber rhs = obj as BigNumber;
+			if ((object)rhs == null)
+				return false;
+			return Native.BN_cmp(this.ptr, rhs.ptr) == 0;
 		}
 
 		public override int GetHashCode()
@@ -133,7 +150,7 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
-		public void Dispose()
+		public override void OnDispose()
 		{
 			Native.BN_free(this.ptr);
 		}
