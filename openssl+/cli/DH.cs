@@ -53,20 +53,20 @@ namespace OpenSSL.CLI
 				Console.WriteLine(dh);
 			}
 
-			if (this.options.IsSet("check"))
-			{
-				OpenSSL.DH.CheckCode codes = dh.Check();
-				if ((codes & OpenSSL.DH.CheckCode.NotSuitableGenerator) > 0)
-					Console.WriteLine("the g value is not a generator");
-				if ((codes & OpenSSL.DH.CheckCode.P_NotPrime) > 0)
-					Console.WriteLine("p value is not prime");
-				if ((codes & OpenSSL.DH.CheckCode.P_NotSafePrime) > 0)
-					Console.WriteLine("p value is not a safe prime");
-				if ((codes & OpenSSL.DH.CheckCode.UnableToCheckGenerator) > 0)
-					Console.WriteLine("unable to check the generator value");
-				if (codes == 0)
-					Console.WriteLine("DH parameters appear to be ok");
-			}
+			//if (this.options.IsSet("check"))
+			//{
+			//    OpenSSL.DH.CheckCode codes = dh.Check();
+			//    if ((codes & OpenSSL.DH.CheckCode.NotSuitableGenerator) > 0)
+			//        Console.WriteLine("the g value is not a generator");
+			//    if ((codes & OpenSSL.DH.CheckCode.P_NotPrime) > 0)
+			//        Console.WriteLine("p value is not prime");
+			//    if ((codes & OpenSSL.DH.CheckCode.P_NotSafePrime) > 0)
+			//        Console.WriteLine("p value is not a safe prime");
+			//    if ((codes & OpenSSL.DH.CheckCode.UnableToCheckGenerator) > 0)
+			//        Console.WriteLine("unable to check the generator value");
+			//    if (codes == 0)
+			//        Console.WriteLine("DH parameters appear to be ok");
+			//}
 
 			if (this.options.IsSet("code"))
 			{
