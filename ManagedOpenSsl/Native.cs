@@ -8,7 +8,7 @@ namespace OpenSSL
 {
 	class Native
 	{
-		const string DLLNAME = "crypto-0.9.7g.dll";
+		const string DLLNAME = "libeay32.dll";
 
 		#region Initialization
 		static Native()
