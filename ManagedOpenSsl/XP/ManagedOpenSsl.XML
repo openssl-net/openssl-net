@@ -4,11 +4,6 @@
         <name>ManagedOpenSsl</name>
     </assembly>
     <members>
-        <member name="T:OpenSSL.CryptoKey">
-            <summary>
-            Wraps the native OpenSSL EVP_PKEY object
-            </summary>
-        </member>
         <member name="T:OpenSSL.Base">
             <summary>
             Base class for all openssl wrapped objects. 
@@ -60,6 +55,11 @@
         <member name="P:OpenSSL.X509Certificate.Issuer">
             <summary>
             
+            </summary>
+        </member>
+        <member name="T:OpenSSL.CryptoKey">
+            <summary>
+            Wraps the native OpenSSL EVP_PKEY object
             </summary>
         </member>
     </members>
