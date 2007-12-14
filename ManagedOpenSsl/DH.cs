@@ -129,26 +129,17 @@ namespace OpenSSL
 
 		public BigNumber P
 		{
-			get
-			{
-				return new BigNumber(this.Raw.p, false);
-			}
+			get { return new BigNumber(this.Raw.p, false); }
 		}
 
 		public BigNumber G
 		{
-			get
-			{
-				return new BigNumber(this.Raw.g, false);
-			}
+			get { return new BigNumber(this.Raw.g, false); }
 		}
 
 		public BigNumber PublicKey
 		{
-			get
-            {
-				return new BigNumber(this.Raw.pub_key, false);
-            }
+			get { return new BigNumber(this.Raw.pub_key, false); }
             set
             {
                 dh_st raw = this.Raw;
@@ -159,10 +150,7 @@ namespace OpenSSL
 
 		public BigNumber PrivateKey
 		{
-			get
-            {
-				return new BigNumber(this.Raw.priv_key, false);
-            }
+			get { return new BigNumber(this.Raw.priv_key, false); } 
 			set
             {
                 dh_st raw = this.Raw;

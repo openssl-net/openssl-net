@@ -280,6 +280,12 @@ namespace OpenSSL
 		
 		[DllImport(DLLNAME)]
 		public extern static IntPtr X509_gmtime_adj(IntPtr s, int adj);
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr d2i_X509_bio(IntPtr bp, ref IntPtr x509);
+
+		[DllImport(DLLNAME)]
+		public extern static int i2d_X509_bio(IntPtr x509, IntPtr bp);
 		#endregion
 
 		#region X509_EXTENSION
@@ -700,6 +706,8 @@ namespace OpenSSL
 		#region Ciphers
 
 		[DllImport(DLLNAME)]
+		public extern static IntPtr EVP_get_cipherbyname(byte[] name);
+		[DllImport(DLLNAME)]
 		public extern static IntPtr EVP_enc_null();
 		[DllImport(DLLNAME)]
 		public extern static IntPtr EVP_des_ecb();
@@ -904,13 +912,13 @@ namespace OpenSSL
 		public extern static int EVP_CIPHER_type(IntPtr ctx);
 		
 		[DllImport(DLLNAME)]
-		public extern static  int EVP_CipherInit_ex(IntPtr ctx, IntPtr type, IntPtr impl, byte[] key, byte[] iv, int enc);
+		public extern static int EVP_CipherInit_ex(IntPtr ctx, IntPtr type, IntPtr impl, byte[] key, byte[] iv, int enc);
 		
 		[DllImport(DLLNAME)]
-		public extern static  int EVP_CipherUpdate(IntPtr ctx, byte[] outb, out int outl, byte[] inb, int inl);
+		public extern static int EVP_CipherUpdate(IntPtr ctx, byte[] outb, out int outl, byte[] inb, int inl);
 		
 		[DllImport(DLLNAME)]
-		public extern static  int EVP_CipherFinal_ex(IntPtr ctx, byte[] outm, ref int outl);
+		public extern static int EVP_CipherFinal_ex(IntPtr ctx, byte[] outm, ref int outl);
 
 		[DllImport(DLLNAME)]
 		public extern static int EVP_OpenInit(IntPtr ctx, IntPtr type, byte[] ek, int ekl, byte[] iv, IntPtr priv);
@@ -1053,6 +1061,12 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static void BIO_free(IntPtr bio);
+
+		[DllImport(DLLNAME)]
+		public extern static uint BIO_number_read(IntPtr bio);
+
+		[DllImport(DLLNAME)]
+		public extern static uint BIO_number_written(IntPtr bio);
 		#endregion
 
 		#region ERR

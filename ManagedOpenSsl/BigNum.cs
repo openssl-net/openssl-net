@@ -50,6 +50,12 @@ namespace OpenSSL
 			return new BigNumber(ptr, true);
 		}
 
+		public static BigNumber FromArray(byte[] buf)
+		{
+			IntPtr ptr = Native.BN_bin2bn(buf, buf.Length, IntPtr.Zero);
+			return new BigNumber(Native.ExpectNonNull(ptr), true);
+		}
+
 		public string ToDecimalString()
 		{
 			return Native.PtrToStringAnsi(Native.BN_bn2dec(this.ptr), true);

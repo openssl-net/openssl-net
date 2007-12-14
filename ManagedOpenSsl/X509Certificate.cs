@@ -23,6 +23,13 @@ namespace OpenSSL
 		{
 		}
 
+		public static X509Certificate FromDER(BIO bio)
+		{
+			IntPtr pX509 = IntPtr.Zero;
+			IntPtr ptr = Native.ExpectNonNull(Native.d2i_X509_bio(bio.Handle, ref pX509));
+			return new X509Certificate(ptr, true);
+		}
+
 		~X509Certificate()
 		{
 			Dispose();

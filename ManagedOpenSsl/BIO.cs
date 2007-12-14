@@ -50,6 +50,18 @@ namespace OpenSSL
 		//}
 		#endregion
 
+		#region Properties
+		public uint NumberRead
+		{
+			get { return Native.BIO_number_read(this.Handle); }
+		}
+
+		public uint NumberWritten
+		{
+			get { return Native.BIO_number_written(this.Handle); }
+		}
+		#endregion
+
 		#region Methods
 		public void Push(BIO bio)
 		{

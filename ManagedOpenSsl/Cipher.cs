@@ -20,6 +20,12 @@ namespace OpenSSL
 			bio.Write(this.LongName);
 		}
 
+		public static Cipher ByName(string name)
+		{
+			byte[] buf = Encoding.ASCII.GetBytes(name);
+			return new Cipher(Native.EVP_get_cipherbyname(buf), false);
+		}
+
 		#region EVP_CIPHER
 		[StructLayout(LayoutKind.Sequential)]
 		struct EVP_CIPHER
@@ -268,24 +274,63 @@ namespace OpenSSL
 			return this.Crypt(input, key, iv, doEncrypt, -1);
 		}
 
+		private byte[] SetupKey(byte[] key)
+		{
+			byte[] real_key;
+			bool isStreamCipher = (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER;
+			if (isStreamCipher)
+			{
+				real_key = new byte[this.Cipher.KeyLength];
+				if (key == null)
+					real_key.Initialize();
+				else
+					Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
+			}
+			else
+			{
+				if (key == null)
+				{
+					real_key = new byte[this.Cipher.KeyLength];
+					real_key.Initialize();
+				}
+				else
+				{
+					if (this.Cipher.KeyLength != key.Length)
+					{
+						real_key = new byte[this.Cipher.KeyLength];
+						real_key.Initialize();
+						Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
+					}
+					else
+					{
+						real_key = key;
+					}
+				}
+				// FIXME: what was this for??
+//				total += this.cipher.BlockSize;
+			}
+			return real_key;
+		}
+
+		private byte[] SetupIV(byte[] iv)
+		{
+			if (this.cipher.IVLength > iv.Length)
+			{
+				byte[] ret = new byte[this.cipher.IVLength];
+				ret.Initialize();
+				Buffer.BlockCopy(iv, 0, ret, 0, iv.Length);
+				return ret;
+			}
+			return iv;
+		}
+
 		public byte[] Crypt(byte[] input, byte[] key, byte[] iv, bool doEncrypt, int padding)
 		{
 			int enc = doEncrypt ? 1 : 0;
 
 			int total = input.Length;
-			byte[] real_key = new byte[this.Cipher.KeyLength];
-			bool isStreamCipher = (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER;
-			if (isStreamCipher)
-			{
-				if(key != null)
-					Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
-			}
-			else
-			{
-				if(key != null)
-					real_key = key;
-				total += this.cipher.BlockSize;
-			}
+			byte[] real_key = SetupKey(key);
+			byte[] real_iv = SetupIV(iv);
 
 			byte[] buf = new byte[total];
 			MemoryStream memory = new MemoryStream(total);
@@ -296,6 +341,7 @@ namespace OpenSSL
 			if (padding >= 0)
 				Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_padding(this.ptr, padding));
 
+			bool isStreamCipher = (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER;
 			if (isStreamCipher)
 			{
 				for (int i = 0; i < Math.Min(real_key.Length, iv.Length); i++)
@@ -309,7 +355,7 @@ namespace OpenSSL
 			else
 			{
 				Native.ExpectSuccess(Native.EVP_CipherInit_ex(
-					this.ptr, this.cipher.Handle, IntPtr.Zero, real_key, iv, enc));
+					this.ptr, this.cipher.Handle, IntPtr.Zero, real_key, real_iv, enc));
 			}
 
 			int len = buf.Length;

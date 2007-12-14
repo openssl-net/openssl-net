@@ -169,6 +169,16 @@ namespace OpenSSL
 			: this(new BIO(pem))
 		{
 		}
+
+		public X509List(byte[] der)
+		{
+			BIO bio = new BIO(der);
+			while (bio.NumberRead < der.Length)
+			{
+				X509Certificate x509 = X509Certificate.FromDER(bio);
+				this.Add(x509);
+			}
+		}
 		#endregion
 	}
 }
