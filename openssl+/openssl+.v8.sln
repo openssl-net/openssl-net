@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli", "cli\cli.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-XP", "..\ManagedOpenSsl\XP\ManagedOpenSsl-XP.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
