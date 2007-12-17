@@ -6,9 +6,18 @@ using System.Globalization;
 
 namespace OpenSSL
 {
-	class Native
+	public class Native
 	{
-		const string DLLNAME = "libeay32.dll";
+		public const string DLLNAME = "libeay32.dll";
+
+		[DllImport("kernel32.dll")]
+		public extern static IntPtr LoadLibrary(string lpFileName);
+
+		[DllImport("kernel32.dll")]
+		public extern static int FreeLibrary(IntPtr hModule);
+
+		[DllImport("kernel32.dll")]
+		public extern static IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 
 		#region Initialization
 		static Native()
@@ -44,6 +53,46 @@ namespace OpenSSL
 		
 		[DllImport(DLLNAME)]
 		public extern static IntPtr CRYPTO_malloc(int num, IntPtr file, int line);
+
+		//#define CRYPTO_malloc_debug_init()	do {\
+		//    CRYPTO_set_mem_debug_functions(\
+		//        CRYPTO_dbg_malloc,\
+		//        CRYPTO_dbg_realloc,\
+		//        CRYPTO_dbg_free,\
+		//        CRYPTO_dbg_set_options,\
+		//        CRYPTO_dbg_get_options);\
+		//    } while(0)
+		[DllImport(DLLNAME)]
+		public extern static int CRYPTO_set_mem_debug_functions(IntPtr m, IntPtr r, IntPtr f, IntPtr so, IntPtr go);
+
+		public static void CRYPTO_malloc_debug_init()
+		{
+			IntPtr hModule = LoadLibrary(DLLNAME);
+			IntPtr m = GetProcAddress(hModule, "CRYPTO_dbg_malloc");
+			IntPtr r = GetProcAddress(hModule, "CRYPTO_dbg_realloc");
+			IntPtr f = GetProcAddress(hModule, "CRYPTO_dbg_free");
+			IntPtr so = GetProcAddress(hModule, "CRYPTO_dbg_set_options");
+			IntPtr go = GetProcAddress(hModule, "CRYPTO_dbg_get_options");
+			FreeLibrary(hModule);
+			
+			ExpectSuccess(CRYPTO_set_mem_debug_functions(m, r, f, so, go));
+		}
+
+		public const int V_CRYPTO_MDEBUG_TIME = 0x1;
+		public const int V_CRYPTO_MDEBUG_THREAD = 0x2;
+		public const int V_CRYPTO_MDEBUG_ALL = (V_CRYPTO_MDEBUG_TIME | V_CRYPTO_MDEBUG_THREAD);
+
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_dbg_set_options(int bits);
+
+		public const int CRYPTO_MEM_CHECK_OFF = 0x0;
+		public const int CRYPTO_MEM_CHECK_ON = 0x1;
+		public const int CRYPTO_MEM_CHECK_ENABLE = 0x2;
+		public const int CRYPTO_MEM_CHECK_DISABLE = 0x3;
+
+		[DllImport(DLLNAME)]
+		public extern static int CRYPTO_mem_ctrl(int mode);
+
 		#endregion
 
 		#region OBJ
@@ -445,6 +494,9 @@ namespace OpenSSL
 		public extern static IntPtr DH_generate_parameters(int prime_len, int generator, IntPtr callback, IntPtr cb_arg);
 
 		[DllImport(DLLNAME)]
+		public extern static int DH_generate_parameters_ex(IntPtr dh, int prime_len, int generator, IntPtr cb);
+
+		[DllImport(DLLNAME)]
 		public extern static int DH_generate_key(IntPtr dh);
 
 		[DllImport(DLLNAME)]
@@ -528,6 +580,48 @@ namespace OpenSSL
 		public extern static int BN_set_word(IntPtr a, uint w);
 		[DllImport(DLLNAME)]
 		public extern static uint BN_get_word(IntPtr a);
+		//#define BN_GENCB_set(gencb, callback, cb_arg) { \
+		//        BN_GENCB *tmp_gencb = (gencb); \
+		//        tmp_gencb->ver = 2; \
+		//        tmp_gencb->arg = (cb_arg); \
+		//        tmp_gencb->cb.cb_2 = (callback); }
+		#endregion
+
+		#region DER
+		//#define d2i_DHparams_bio(bp,x) ASN1_d2i_bio_of(DH,DH_new,d2i_DHparams,bp,x)
+		//#define i2d_DHparams_bio(bp,x) ASN1_i2d_bio_of_const(DH,i2d_DHparams,bp,x)
+		
+		//#define ASN1_d2i_bio_of(type,xnew,d2i,in,x) \
+		//    ((type*)ASN1_d2i_bio( CHECKED_NEW_OF(type, xnew), \
+		//              CHECKED_D2I_OF(type, d2i), \
+		//              in, \
+		//              CHECKED_PPTR_OF(type, x)))
+
+		//#define ASN1_i2d_bio_of_const(type,i2d,out,x) \
+		//    (ASN1_i2d_bio(CHECKED_I2D_OF(const type, i2d), \
+		//          out, \
+		//          CHECKED_PTR_OF(const type, x)))
+
+		//#define CHECKED_I2D_OF(type, i2d) \
+		//    ((i2d_of_void*) (1 ? i2d : ((I2D_OF(type))0)))
+
+		//#define I2D_OF(type) int (*)(type *,unsigned char **)
+
+		//#define CHECKED_PTR_OF(type, p) \
+		//    ((void*) (1 ? p : (type*)0))
+
+
+		//int i2d_DHparams(const DH *a,unsigned char **pp);
+		[DllImport(DLLNAME)]
+		public extern static int i2d_DHparams(IntPtr a, IntPtr pp);
+
+		//void *ASN1_d2i_bio(void *(*xnew)(void), d2i_of_void *d2i, BIO *in, void **x);
+		[DllImport(DLLNAME)]
+		public extern static IntPtr ASN1_d2i_bio(IntPtr xnew, IntPtr d2i, IntPtr bp, IntPtr x);
+
+		//int ASN1_i2d_bio(i2d_of_void *i2d,BIO *out, unsigned char *x);
+		[DllImport(DLLNAME)]
+		public extern static int ASN1_i2d_bio(IntPtr i2d, IntPtr bp, IntPtr x);
 		#endregion
 
 		#region PEM
@@ -989,28 +1083,42 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_s_mem();
 
+		// Unsupported!
+		//[DllImport(DLLNAME)]
+		//public extern static IntPtr BIO_s_fd();
+
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_f_md();
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_f_null();
 
+		const int BIO_C_SET_FD = 104;
 		const int BIO_C_SET_MD = 111;
 		const int BIO_C_GET_MD = 112;
 		const int BIO_C_GET_MD_CTX = 120;
 		const int BIO_C_SET_MD_CTX = 148;
 
+		public const int BIO_NOCLOSE = 0x00;
+		public const int BIO_CLOSE = 0x01;
+
 		public static void BIO_set_md(IntPtr bp, IntPtr md)
 		{
-			Native.ExpectNonNull(BIO_ctrl(bp, BIO_C_SET_MD, 0, md));
+			Native.ExpectSuccess(BIO_ctrl(bp, BIO_C_SET_MD, 0, md));
 		}
+
+		// Unsupported!
+		//public static void BIO_set_fd(IntPtr bp, int fd, int c)
+		//{
+		//    Native.ExpectSuccess(BIO_int_ctrl(bp, BIO_C_SET_FD, c, fd));
+		//}
 
 		public static IntPtr BIO_get_md(IntPtr bp)
 		{
 			IntPtr ptr = Marshal.AllocHGlobal(4);
 			try
 			{
-				ExpectNonNull(BIO_ctrl(bp, BIO_C_GET_MD, 0, ptr));
+				ExpectSuccess(BIO_ctrl(bp, BIO_C_GET_MD, 0, ptr));
 				return Marshal.ReadIntPtr(ptr);
 			}
 			finally
@@ -1024,7 +1132,7 @@ namespace OpenSSL
 			IntPtr ptr = Marshal.AllocHGlobal(4);
 			try
 			{
-				ExpectNonNull(BIO_ctrl(bp, BIO_C_GET_MD_CTX, 0, ptr));
+				ExpectSuccess(BIO_ctrl(bp, BIO_C_GET_MD_CTX, 0, ptr));
 				return Marshal.ReadIntPtr(ptr);
 			}
 			finally
@@ -1035,14 +1143,17 @@ namespace OpenSSL
 
 		public static void BIO_set_md_ctx(IntPtr bp, IntPtr mdcp)
 		{
-			Native.ExpectNonNull(BIO_ctrl(bp, BIO_C_SET_MD_CTX, 0, mdcp));
+			Native.ExpectSuccess(BIO_ctrl(bp, BIO_C_SET_MD_CTX, 0, mdcp));
 		}
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_push(IntPtr bp, IntPtr append);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr BIO_ctrl(IntPtr bp, int cmd, int larg, IntPtr parg);
+		public extern static int BIO_ctrl(IntPtr bp, int cmd, int larg, IntPtr parg);
+
+		[DllImport(DLLNAME)]
+		public extern static int BIO_int_ctrl(IntPtr bp, int cmd, int larg, int parg);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_new(IntPtr type);
@@ -1206,9 +1317,20 @@ namespace OpenSSL
 		/// Raw unmanaged pointer
 		/// </summary>
 		protected IntPtr ptr;
+
+		/// <summary>
+		/// If this object is the owner, then call the appropriate native free function.
+		/// </summary>
 		protected bool owner = false;
+
+		/// <summary>
+		/// This is to prevent double-deletion issues.
+		/// </summary>
 		protected bool isDisposed = false;
 
+		/// <summary>
+		/// This destructor just calls Dispose().
+		/// </summary>
 		~Base()
 		{
 			Dispose();
@@ -1234,6 +1356,7 @@ namespace OpenSSL
 		/// This is the only way to construct this object and all dervied types.
 		/// </summary>
 		/// <param name="ptr"></param>
+		/// <param name="takeOwnership"></param>
 		public Base(IntPtr ptr, bool takeOwnership) 
 		{
 			this.ptr = ptr;
@@ -1271,10 +1394,18 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Default base implementation does nothing.
+		/// </summary>
 		public virtual void OnDispose() {}
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Implementation of the IDisposable interface.
+		/// If the native pointer is not null, we haven't been disposed, and we are the owner,
+		/// then call the virtual OnDispose() method.
+		/// </summary>
 		public void Dispose()
 		{
 			if (!this.isDisposed && this.owner && this.ptr != IntPtr.Zero)

@@ -48,8 +48,8 @@ namespace OpenSSL.CLI
 
 		Program()
 		{
-			std_cmds.Add("dh", new DH());
-			std_cmds.Add("gendh", new GenDH());
+			std_cmds.Add("dh", new CmdDH());
+			std_cmds.Add("gendh", new CmdGenDH());
 
 			#region Standard Commands
 			AddNullCommand(std_cmds, "asn1parse");

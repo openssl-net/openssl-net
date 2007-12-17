@@ -34,6 +34,10 @@ namespace OpenSSL
 			return new BIO(ptr, true);
 		}
 
+		private const int FD_STDIN = 0;
+		private const int FD_STDOUT = 1;
+		private const int FD_STDERR = 2;
+
 		public static BIO MessageDigest(MessageDigest md)
 		{
 			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_f_md()));

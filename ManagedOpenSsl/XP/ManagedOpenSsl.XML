@@ -4,6 +4,66 @@
         <name>ManagedOpenSsl</name>
     </assembly>
     <members>
+        <member name="T:OpenSSL.OpenSslError">
+            <summary>
+            This is a struct that contains a uint for the native openssl error code.
+            It provides helper methods to convert this error code into strings.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.OpenSslError.#ctor(System.UInt32)">
+            <summary>
+            Constructs an OpenSslError object.
+            </summary>
+            <param name="err">The native error code</param>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.ErrorCode">
+            <summary>
+            Returns the native error code
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Library">
+            <summary>
+            Returns the result of ERR_lib_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Reason">
+            <summary>
+            Returns the results of ERR_reason_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Function">
+            <summary>
+            Returns the results of ERR_func_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Message">
+            <summary>
+            Returns the results of ERR_error_string_n()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.OpenSslException">
+            <summary>
+            Exception class to provide OpenSSL specific information when errors occur.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.OpenSslException.#ctor">
+            <summary>
+            When this class is instantiated, GetErrorMessage() is called automatically.
+            This will call ERR_get_error() on the native openssl interface, once for every
+            error that is in the current context. The exception message is the concatination
+            of each of these errors turned into strings using ERR_error_string_n().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslException.Errors">
+            <summary>
+            Returns the list of errors associated with this exception.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.DH">
+            <summary>
+            Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
+            </summary>
+        </member>
         <member name="T:OpenSSL.Base">
             <summary>
             Base class for all openssl wrapped objects. 
@@ -11,9 +71,34 @@
             Also overloads the ToString() method with a BIO print.
             </summary>
         </member>
+        <member name="T:OpenSSL.IStackable">
+            <summary>
+            Simple interface used for the internal implementation of the generic OpenSSL.Stack
+            </summary>
+        </member>
+        <member name="P:OpenSSL.IStackable.Handle">
+            <summary>
+            Underlying native pointer
+            </summary>
+        </member>
         <member name="F:OpenSSL.Base.ptr">
             <summary>
             Raw unmanaged pointer
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.owner">
+            <summary>
+            If this object is the owner, then call the appropriate native free function.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.isDisposed">
+            <summary>
+            This is to prevent double-deletion issues.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Base.Finalize">
+            <summary>
+            This destructor just calls Dispose().
             </summary>
         </member>
         <member name="M:OpenSSL.Base.#ctor(System.IntPtr,System.Boolean)">
@@ -22,6 +107,7 @@
             This is the only way to construct this object and all dervied types.
             </summary>
             <param name="ptr"></param>
+            <param name="takeOwnership"></param>
         </member>
         <member name="M:OpenSSL.Base.Print(OpenSSL.BIO)">
             <summary>
@@ -37,9 +123,94 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:OpenSSL.Base.OnDispose">
+            <summary>
+            Default base implementation does nothing.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Base.Dispose">
+            <summary>
+            Implementation of the IDisposable interface.
+            If the native pointer is not null, we haven't been disposed, and we are the owner,
+            then call the virtual OnDispose() method.
+            </summary>
+        </member>
         <member name="P:OpenSSL.Base.Handle">
             <summary>
             Access to the raw unmanaged pointer. Implements the IStackable interface.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Calls DH_generate_parameters()
+            </summary>
+            <param name="primeLen"></param>
+            <param name="generator"></param>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
+            <summary>
+            Calls DH_generate_parameters_ex()
+            </summary>
+            <param name="primeLen"></param>
+            <param name="generator"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor">
+            <summary>
+            Calls DH_new(). Then calls GenerateKeys() with p and g equal to 1.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls DH_new(). Then calls GenerateKeys() with the provided parameters.
+            </summary>
+            <param name="p"></param>
+            <param name="g"></param>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls DH_new(). Then calls GenerateKeys() with the provide parameters
+            and public/private key pair.
+            </summary>
+            <param name="p"></param>
+            <param name="g"></param>
+            <param name="pub_key"></param>
+            <param name="priv_key"></param>
+        </member>
+        <member name="M:OpenSSL.DH.FromParameters(System.String)">
+            <summary>
+            Factory method that calls FromParametersPEM() to deserialize
+            a DH object from a PEM-formatted string.
+            </summary>
+            <param name="pem"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.FromParametersPEM(OpenSSL.BIO)">
+            <summary>
+            Factory method that calls PEM_read_bio_DHparams() to deserialize 
+            a DH object from a PEM-formatted string using the BIO interface.
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.FromParametersDER(OpenSSL.BIO)">
+            <summary>
+            Factory method that calls XXX() to deserialize
+            a DH object from a DER-formatted buffer using the BIO interface.
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="F:OpenSSL.BigNumber.GeneratorThunk.bn_gencb_st.arg">
+            To handle binary (in)compatibility 
+        </member>
+        <member name="F:OpenSSL.BigNumber.GeneratorThunk.bn_gencb_st.cb">
+            callback-specific data 
+        </member>
+        <member name="T:OpenSSL.CryptoKey">
+            <summary>
+            Wraps the native OpenSSL EVP_PKEY object
             </summary>
         </member>
         <member name="M:OpenSSL.X509Certificate.#ctor">
@@ -55,11 +226,6 @@
         <member name="P:OpenSSL.X509Certificate.Issuer">
             <summary>
             
-            </summary>
-        </member>
-        <member name="T:OpenSSL.CryptoKey">
-            <summary>
-            Wraps the native OpenSSL EVP_PKEY object
             </summary>
         </member>
     </members>

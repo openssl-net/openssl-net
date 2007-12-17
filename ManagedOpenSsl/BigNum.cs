@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace OpenSSL
 {
@@ -168,6 +170,65 @@ namespace OpenSSL
 		public int CompareTo(BigNumber other)
 		{
 			return Native.BN_cmp(this.ptr, other.ptr);
+		}
+
+		#endregion
+
+		#region Callbacks
+
+		public delegate int GeneratorHandler(int p, int n, object arg);
+
+		internal class GeneratorThunk : IDisposable
+		{
+			[StructLayout(LayoutKind.Sequential)]
+			private struct bn_gencb_st
+			{
+				public uint ver; /// To handle binary (in)compatibility 
+				public IntPtr arg; /// callback-specific data 
+				public IntPtr cb;
+			}
+
+			private delegate int NativeHandler(int p, int n, IntPtr arg);
+
+			private GeneratorHandler OnGenerator;
+			private object arg;
+			private IntPtr ptr;
+
+			public IntPtr Handle
+			{
+				get { return this.ptr; }
+			}
+
+			public GeneratorThunk(GeneratorHandler client, object arg) 
+			{
+				this.OnGenerator = client;
+				this.arg = arg;
+
+				Delegate d = new NativeHandler(this.OnGeneratorThunk);
+
+				bn_gencb_st raw = new bn_gencb_st();
+				raw.ver = 2;
+				raw.arg = IntPtr.Zero;
+				raw.cb = Marshal.GetFunctionPointerForDelegate(d);
+
+				this.ptr = Native.OPENSSL_malloc(12);
+				Marshal.StructureToPtr(raw, ptr, false);
+			}
+
+			internal int OnGeneratorThunk(int p, int n, IntPtr arg)
+			{
+				Debug.Assert(this.ptr == arg);
+				return OnGenerator(p, n, this.arg);
+			}
+
+			#region IDisposable Members
+
+			public void Dispose()
+			{
+				Native.OPENSSL_free(this.ptr);
+			}
+
+			#endregion
 		}
 
 		#endregion

@@ -4,13 +4,14 @@ using System.Text;
 using OpenSSL;
 using System.Reflection;
 using System.Security.Permissions;
+using System.IO;
 
 namespace OpenSSL.CLI
 {
-	class DH : ICommand
+	class CmdDH : ICommand
 	{
 		OptionParser options = new OptionParser();
-		public DH()
+		public CmdDH()
 		{
 			options.AddOption("-inform", new Option("inform", "PEM"));
 			options.AddOption("-outform", new Option("outform", "PEM"));
@@ -23,6 +24,21 @@ namespace OpenSSL.CLI
 			options.AddOption("-engine", new Option("engine", ""));
 		}
 
+		void Usage()
+		{
+			Console.WriteLine("dh [options] <infile >outfile");
+			Console.WriteLine("where options are");
+			Console.WriteLine(" -inform arg   input format - one of DER | PEM");
+			Console.WriteLine(" -outform arg  output format - one of DER | PEM");
+			Console.WriteLine(" -in arg       input file");
+			Console.WriteLine(" -out arg      output file");
+			Console.WriteLine(" -check        check the DH parameters");
+			Console.WriteLine(" -text         print a text form of the DH parameters");
+			Console.WriteLine(" -C            output C# code");
+			Console.WriteLine(" -noout        no output");
+			Console.WriteLine(" -engine e     use engine e, possibly a hardware device.");
+		}
+
 		#region ICommand Members
 		public void Execute(string[] args)
 		{
@@ -33,28 +49,47 @@ namespace OpenSSL.CLI
 			catch (Exception)
 			{
 				Usage();
+				return;
 			}
 
-			BIO bin;
 			string infile = this.options.GetString("infile");
-			if(string.IsNullOrEmpty(infile))
+			BIO bin;
+			if (string.IsNullOrEmpty(infile))
 			{
-				string input = Console.In.ReadToEnd();
-				bin = new BIO(Encoding.ASCII.GetBytes(input));
+				bin = BIO.MemoryBuffer();
+				Stream cin = Console.OpenStandardInput();
+				byte[] buf = new byte[1024];
+				while (true)
+				{
+					int len = cin.Read(buf, 0, buf.Length);
+					if (len == 0)
+						break;
+					bin.Write(buf, len);
+				}
 			}
 			else
-			{
 				bin = BIO.File(infile, "r");
+
+			OpenSSL.DH dh;
+			string inform = this.options["inform"] as string;
+			if (inform == "PEM")
+				dh = OpenSSL.DH.FromParametersPEM(bin);
+			else if (inform == "DER")
+				dh = OpenSSL.DH.FromParametersDER(bin);
+			else
+			{
+				Usage();
+				return;
 			}
-			OpenSSL.DH dh = OpenSSL.DH.FromParameters(bin);
 			
 			if (this.options.IsSet("text"))
 			{
 				Console.WriteLine(dh);
 			}
 
-			//if (this.options.IsSet("check"))
-			//{
+			if (this.options.IsSet("check"))
+			{
+				Console.WriteLine("-check is currently not implemented.");
 			//    OpenSSL.DH.CheckCode codes = dh.Check();
 			//    if ((codes & OpenSSL.DH.CheckCode.NotSuitableGenerator) > 0)
 			//        Console.WriteLine("the g value is not a generator");
@@ -66,31 +101,45 @@ namespace OpenSSL.CLI
 			//        Console.WriteLine("unable to check the generator value");
 			//    if (codes == 0)
 			//        Console.WriteLine("DH parameters appear to be ok");
-			//}
+			}
 
 			if (this.options.IsSet("code"))
 			{
+				Console.WriteLine("-code is currently not implemented.");
 			}
 
 			if (!this.options.IsSet("noout"))
 			{
+				string outfile = this.options["outfile"] as string;
+				BIO bout;
+				bool outmem = false;
+				if (string.IsNullOrEmpty(outfile))
+				{
+					bout = BIO.MemoryBuffer();
+					outmem = true;
+				}
+				else
+					bout = BIO.File(outfile, "w");
+
+				string outform = this.options["outform"] as string;
+				if (outform == "DER")
+					dh.WriteParametersDER(bout);
+				else if (outform == "PEM")
+					dh.WriteParametersPEM(bout);
+				else
+				{
+					Usage();
+					return;
+				}
+
+				if (outmem)
+				{
+					Stream cout = Console.OpenStandardOutput();
+					ArraySegment<byte> segment = bout.ReadBytes((int)bout.NumberWritten);
+					cout.Write(segment.Array, segment.Offset, segment.Count);
+				}
 			}
 		}
 		#endregion
-
-		void Usage()
-		{
-			Console.WriteLine("dh [options] <infile >outfile");
-			Console.WriteLine("where options are");
-			Console.WriteLine(" -inform arg   input format - one of DER | PEM");
-			Console.WriteLine(" -outform arg  output format - one of DER | PEM");
-			Console.WriteLine(" -in arg       input file");
-			Console.WriteLine(" -out arg      output file");
-			Console.WriteLine(" -check        check the DH parameters");
-			Console.WriteLine(" -text         print a text form of the DH parameters");
-			Console.WriteLine(" -C            output C code");
-			Console.WriteLine(" -noout        no output");
-			Console.WriteLine(" -engine e     use engine e, possibly a hardware device.");
-		}
 	}
 }

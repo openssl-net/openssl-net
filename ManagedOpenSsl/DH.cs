@@ -5,8 +5,28 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
+	/// </summary>
 	public class DH : Base, IDisposable
 	{
+		public const int Generator2 = 2;
+		public const int Generator5 = 5;
+		
+		private const int FlagCacheMont_P = 0x01;
+		private const int FlagNoExpConstTime = 0x02;
+
+		[Flags]
+		public enum CheckCode
+		{
+			CheckP_NotPrime = 1,
+			CheckP_NotSafePrime = 2,
+			UnableToCheckGenerator = 4,
+			NotSuitableGenerator = 8,
+		}
+
+		private BigNumber.GeneratorThunk thunk = null;
+
 		#region dh_st
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -40,12 +60,34 @@ namespace OpenSSL
 
 		#region Initialization
 		internal DH(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		/// <summary>
+		/// Calls DH_generate_parameters()
+		/// </summary>
+		/// <param name="primeLen"></param>
+		/// <param name="generator"></param>
 		public DH(int primeLen, int generator)
 			: base(Native.ExpectNonNull(Native.DH_generate_parameters(primeLen, generator, IntPtr.Zero, IntPtr.Zero)), true)
 		{
-			this.GenerateKeys();
+			//this.GenerateKeys();
 		}
 
+		/// <summary>
+		/// Calls DH_generate_parameters_ex()
+		/// </summary>
+		/// <param name="primeLen"></param>
+		/// <param name="generator"></param>
+		/// <param name="callback"></param>
+		/// <param name="arg"></param>
+		public DH(int primeLen, int generator, BigNumber.GeneratorHandler callback, object arg)
+			: base(Native.ExpectNonNull(Native.DH_new()), true)
+		{
+			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
+			Native.DH_generate_parameters_ex(this.ptr, primeLen, generator, this.thunk.Handle);
+		}
+
+		/// <summary>
+		/// Calls DH_new(). Then calls GenerateKeys() with p and g equal to 1.
+		/// </summary>
 		public DH() 
 			: base(Native.ExpectNonNull(Native.DH_new()), true) 
 		{
@@ -54,9 +96,14 @@ namespace OpenSSL
 			raw.g = Native.BN_dup(BigNumber.One.Handle);
 			this.Raw = raw;
 
-			this.GenerateKeys();
+			//this.GenerateKeys();
 		}
 
+		/// <summary>
+		/// Calls DH_new(). Then calls GenerateKeys() with the provided parameters.
+		/// </summary>
+		/// <param name="p"></param>
+		/// <param name="g"></param>
         public DH(BigNumber p, BigNumber g)
             : base(Native.ExpectNonNull(Native.DH_new()), true)
         {
@@ -65,9 +112,17 @@ namespace OpenSSL
             raw.g = Native.BN_dup(g.Handle);
             this.Raw = raw;
 
-			this.GenerateKeys();
+			//this.GenerateKeys();
         }
 
+		/// <summary>
+		/// Calls DH_new(). Then calls GenerateKeys() with the provide parameters
+		/// and public/private key pair.
+		/// </summary>
+		/// <param name="p"></param>
+		/// <param name="g"></param>
+		/// <param name="pub_key"></param>
+		/// <param name="priv_key"></param>
 		public DH(BigNumber p, BigNumber g, BigNumber pub_key, BigNumber priv_key)
 			: base(Native.ExpectNonNull(Native.DH_new()), true)
 		{
@@ -78,25 +133,56 @@ namespace OpenSSL
 			raw.priv_key = Native.BN_dup(priv_key.Handle);
 			this.Raw = raw;
 
-			this.GenerateKeys();
+			//this.GenerateKeys();
 		}
 
+		/// <summary>
+		/// Factory method that calls FromParametersPEM() to deserialize
+		/// a DH object from a PEM-formatted string.
+		/// </summary>
+		/// <param name="pem"></param>
+		/// <returns></returns>
 		public static DH FromParameters(string pem)
 		{
-			return FromParameters(new BIO(pem));
+			return FromParametersPEM(new BIO(pem));
 		}
 
-		public static DH FromParameters(BIO bio)
+		/// <summary>
+		/// Factory method that calls PEM_read_bio_DHparams() to deserialize 
+		/// a DH object from a PEM-formatted string using the BIO interface.
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <returns></returns>
+		public static DH FromParametersPEM(BIO bio)
 		{
 			DH dh = new DH(Native.ExpectNonNull(Native.PEM_read_bio_DHparams(
 				bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
-			dh.GenerateKeys();
+//			dh.GenerateKeys();
+			return dh;
+		}
+
+		/// <summary>
+		/// Factory method that calls XXX() to deserialize
+		/// a DH object from a DER-formatted buffer using the BIO interface.
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <returns></returns>
+		public static DH FromParametersDER(BIO bio)
+		{
+			IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
+			IntPtr d2i = Native.GetProcAddress(hModule, "d2i_DHparams");
+			IntPtr xnew = Native.GetProcAddress(hModule, "DH_new");
+			Native.FreeLibrary(hModule);
+
+			IntPtr ptr = Native.ExpectNonNull(Native.ASN1_d2i_bio(xnew, d2i, bio.Handle, IntPtr.Zero));
+			DH dh = new DH(ptr, true);
+//			dh.GenerateKeys();
 			return dh;
 		}
 		#endregion
 
 		#region Methods
-		private void GenerateKeys()
+		public void GenerateKeys()
 		{
 			Native.ExpectSuccess(Native.DH_generate_key(this.ptr));
 		}
@@ -109,14 +195,30 @@ namespace OpenSSL
 			return key;
 		}
 
-		public void WriteParameters(BIO bio)
+		public void WriteParametersPEM(BIO bio)
 		{
 			Native.ExpectSuccess(Native.PEM_write_bio_DHparams(bio.Handle, this.ptr));
+		}
+
+		public void WriteParametersDER(BIO bio)
+		{
+			IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
+			IntPtr i2d = Native.GetProcAddress(hModule, "i2d_DHparams");
+			Native.FreeLibrary(hModule);
+			
+			Native.ExpectSuccess(Native.ASN1_i2d_bio(i2d, bio.Handle, this.ptr));
 		}
 
 		public override void Print(BIO bio)
 		{
 			Native.ExpectSuccess(Native.DHparams_print(bio.Handle, this.ptr));
+		}
+
+		public CheckCode Check()
+		{
+			int codes = 0;
+			Native.ExpectSuccess(Native.DH_check(this.ptr, out codes));
+			return (CheckCode)codes;
 		}
 		#endregion
 
@@ -130,11 +232,23 @@ namespace OpenSSL
 		public BigNumber P
 		{
 			get { return new BigNumber(this.Raw.p, false); }
+			set 
+			{
+				dh_st raw = this.Raw;
+				raw.p = Native.BN_dup(value.Handle);
+				this.Raw = raw;
+			}
 		}
 
 		public BigNumber G
 		{
 			get { return new BigNumber(this.Raw.g, false); }
+			set 
+			{
+				dh_st raw = this.Raw;
+				raw.g = Native.BN_dup(value.Handle);
+				this.Raw = raw;
+			}
 		}
 
 		public BigNumber PublicKey
@@ -165,11 +279,38 @@ namespace OpenSSL
 			{
 				using (BIO bio = BIO.MemoryBuffer())
 				{
-					this.WriteParameters(bio);
+					this.WriteParametersPEM(bio);
 					return bio.ReadString();
 				}
 			}
 		}
+	
+		public byte[] DER
+		{
+			get
+			{
+				using (BIO bio = BIO.MemoryBuffer())
+				{
+					this.WriteParametersPEM(bio);
+					return bio.ReadBytes((int)bio.NumberWritten).Array;
+				}
+			}
+		}
+
+		public bool ConstantTime
+		{
+			get { return (this.Raw.flags & FlagNoExpConstTime) != 0; }
+			set
+			{
+				dh_st raw = this.Raw;
+				if (value)
+					raw.flags |= FlagNoExpConstTime;
+				else
+					raw.flags &= ~FlagNoExpConstTime;
+				this.Raw = raw;
+			}
+		}
+
 		#endregion
 
 		#region IDisposable Members

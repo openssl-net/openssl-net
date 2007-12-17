@@ -5,8 +5,14 @@ using System.Text;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Simple interface used for the internal implementation of the generic OpenSSL.Stack
+	/// </summary>
 	public interface IStackable
 	{
+		/// <summary>
+		/// Underlying native pointer
+		/// </summary>
 		IntPtr Handle { get; set; }
 	}
 
