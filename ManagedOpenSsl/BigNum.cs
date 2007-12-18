@@ -212,7 +212,13 @@ namespace OpenSSL
 				raw.cb = Marshal.GetFunctionPointerForDelegate(d);
 
 				this.ptr = Native.OPENSSL_malloc(12);
-				Marshal.StructureToPtr(raw, ptr, false);
+				Marshal.StructureToPtr(raw, this.ptr, false);
+			}
+
+			~GeneratorThunk()
+			{
+				if (this.ptr != IntPtr.Zero)
+					this.Dispose();
 			}
 
 			internal int OnGeneratorThunk(int p, int n, IntPtr arg)
@@ -226,6 +232,7 @@ namespace OpenSSL
 			public void Dispose()
 			{
 				Native.OPENSSL_free(this.ptr);
+				this.ptr = IntPtr.Zero;
 			}
 
 			#endregion

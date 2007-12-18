@@ -476,16 +476,31 @@ namespace OpenSSL
 		public extern static IntPtr DSA_generate_parameters(int bits, byte[] seed, int seed_len, IntPtr counter_ret, IntPtr h_ret, IntPtr callback, IntPtr cb_arg);
 
 		[DllImport(DLLNAME)]
+		public extern static int DSA_generate_parameters_ex(IntPtr dsa, int bits, byte[] seed, int seed_len, out int counter_ret, out int h_ret, IntPtr callback);
+
+		[DllImport(DLLNAME)]
 		public extern static int DSA_generate_key(IntPtr dsa);
 
 		[DllImport(DLLNAME)]
+		public extern static IntPtr DSA_new();
+
+		[DllImport(DLLNAME)]
 		public extern static void DSA_free(IntPtr dsa);
+
+		[DllImport(DLLNAME)]
+		public extern static int DSA_size(IntPtr dsa);
 		
 		[DllImport(DLLNAME)]
 		public extern static int DSAparams_print(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
 		public extern static int DSA_print(IntPtr bp, IntPtr x, int off);
+
+		[DllImport(DLLNAME)]
+		public extern static int DSA_sign(int type, byte[] dgst, int dlen, byte[] sig, out uint siglen, IntPtr dsa);
+
+		[DllImport(DLLNAME)]
+		public extern static int DSA_verify(int type, byte[] dgst, int dgst_len, byte[] sigbuf, int siglen, IntPtr dsa);
 		#endregion
 
 		#region DH
@@ -1255,7 +1270,7 @@ namespace OpenSSL
 
 		public static int ExpectSuccess(int ret)
 		{
-			if (ret != 1)
+			if (ret < 0)
 				throw new OpenSslException();
 			return ret;
 		}

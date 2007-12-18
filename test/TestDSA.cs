@@ -1,0 +1,132 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using OpenSSL;
+using System.IO;
+
+namespace test
+{
+	class TestDSA : ICommand
+	{
+		const string rnd_seed = "string to make the random number generator think it has entropy";
+		const string str1 = "12345678901234567890";
+
+		readonly byte[] seed = 
+		{ 
+			0xd5,0x01,0x4e,0x4b,0x60,0xef,0x2b,0xa8,0xb6,0x21,0x1b,0x40,
+			0x62,0xba,0x32,0x24,0xe0,0x42,0x7d,0xd3,
+		};
+
+		readonly byte[] out_p =
+		{
+			0x8d,0xf2,0xa4,0x94,0x49,0x22,0x76,0xaa,
+			0x3d,0x25,0x75,0x9b,0xb0,0x68,0x69,0xcb,
+			0xea,0xc0,0xd8,0x3a,0xfb,0x8d,0x0c,0xf7,
+			0xcb,0xb8,0x32,0x4f,0x0d,0x78,0x82,0xe5,
+			0xd0,0x76,0x2f,0xc5,0xb7,0x21,0x0e,0xaf,
+			0xc2,0xe9,0xad,0xac,0x32,0xab,0x7a,0xac,
+			0x49,0x69,0x3d,0xfb,0xf8,0x37,0x24,0xc2,
+			0xec,0x07,0x36,0xee,0x31,0xc8,0x02,0x91,
+		};
+
+		readonly byte[] out_q = 
+		{
+			0xc7,0x73,0x21,0x8c,0x73,0x7e,0xc8,0xee,
+			0x99,0x3b,0x4f,0x2d,0xed,0x30,0xf4,0x8e,
+			0xda,0xce,0x91,0x5f,
+		};
+
+		readonly byte[] out_g =
+		{
+			0x62,0x6d,0x02,0x78,0x39,0xea,0x0a,0x13,
+			0x41,0x31,0x63,0xa5,0x5b,0x4c,0xb5,0x00,
+			0x29,0x9d,0x55,0x22,0x95,0x6c,0xef,0xcb,
+			0x3b,0xff,0x10,0xf3,0x99,0xce,0x2c,0x2e,
+			0x71,0xcb,0x9d,0xe5,0xfa,0x24,0xba,0xbf,
+			0x58,0xe5,0xb7,0x95,0x21,0x92,0x5c,0x9c,
+			0xc4,0x2e,0x9f,0x6f,0x46,0x4b,0x08,0x8c,
+			0xc5,0x72,0xaf,0x53,0xe6,0xd7,0x88,0x02,
+			};
+
+		#region ICommand Members
+
+		public void Execute(string[] args)
+		{
+			Native.CRYPTO_malloc_debug_init();
+			Native.CRYPTO_dbg_set_options(Native.V_CRYPTO_MDEBUG_ALL);
+			Native.CRYPTO_mem_ctrl(Native.CRYPTO_MEM_CHECK_ON);
+
+			byte[] tmp = Encoding.ASCII.GetBytes(rnd_seed);
+			Native.RAND_seed(tmp, tmp.Length);
+		
+			Console.WriteLine("test generation of DSA parameters");
+
+			DSA dsa = new DSA(512, seed, 0, new BigNumber.GeneratorHandler(this.OnStatus), null);
+
+			Console.WriteLine("seed");
+			Console.WriteLine(BitConverter.ToString(seed));
+			Console.WriteLine("counter={0} h={1}", dsa.Counter, dsa.H);
+
+			Console.WriteLine(dsa);
+
+			if (dsa.Counter != 105)
+				throw new Exception("counter should be 105");
+
+			if (dsa.H != 2)
+				throw new Exception("h should be 2");
+
+			BigNumber q = BigNumber.FromArray(this.out_q);
+			if (dsa.Q != q)
+				throw new Exception("q value is wrong");
+
+			BigNumber p = BigNumber.FromArray(this.out_p);
+			if (dsa.P != p)
+				throw new Exception("p value is wrong");
+
+			BigNumber g = BigNumber.FromArray(this.out_g);
+			if (dsa.G != g)
+				throw new Exception("g value is wrong");
+
+			byte[] msg = Encoding.ASCII.GetBytes(str1);
+
+			dsa.ConstantTime = true;
+			dsa.GenerateKeys();
+
+			byte[] sig = dsa.Sign(msg);
+			if (!dsa.Verify(msg, sig))
+				throw new Exception("DSA signature failed to verify");
+
+			dsa.ConstantTime = false;
+			dsa.GenerateKeys();
+			sig = dsa.Sign(msg);
+			if (!dsa.Verify(msg, sig))
+				throw new Exception("DSA signature failed to verify");
+		}
+
+		#endregion
+
+		private int ok = 0;
+		private int num = 0;
+
+		private int OnStatus(int p, int n, object arg)
+		{
+			TextWriter cout = Console.Out;
+
+			switch (p)
+			{
+				case 0: cout.Write('.'); num++; break;
+				case 1: cout.Write('+'); break;
+				case 2: cout.Write('*'); ok++; break;
+				case 3: cout.WriteLine(); break;
+			}
+
+			if (ok == 0 && (p == 0) && (num > 1))
+			{
+				Console.WriteLine("Error in dsatest");
+				return 0;
+			}
+
+			return 1;
+		}
+	}
+}

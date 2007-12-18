@@ -45,12 +45,12 @@ namespace test
 		Program()
 		{
 			tests.Add("dh", new TestDH());
+			tests.Add("dsa", new TestDSA());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
 			AddNullCommand(tests, "cast");
 			AddNullCommand(tests, "des");
-			AddNullCommand(tests, "dsa");
 			AddNullCommand(tests, "dummy");
 			AddNullCommand(tests, "ecdh");
 			AddNullCommand(tests, "ecdsa");

@@ -100,13 +100,38 @@ namespace OpenSSL
 		}
 		#endregion
 
+		private const int FlagCacheMont_P = 0x01;
+		private const int FlagNoExpConstTime = 0x02;
+		private int counter = 0;
+		private int h = 0;
+		private BigNumber.GeneratorThunk thunk = null;
+
 		#region Initialization
 
 		internal DSA(IntPtr ptr, bool owner) : base(ptr, owner) {}
 		public DSA(DSAParameters parameters)
 			: base(parameters.TakeOwnership(), true)
 		{
-			this.GenerateKeys();
+//			this.GenerateKeys();
+		}
+
+		public DSA(int bits, byte[] seed, int counter, BigNumber.GeneratorHandler callback, object arg)
+			: base(Native.ExpectNonNull(Native.DSA_new()), true)
+		{
+			this.counter = counter;
+			//GCHandle gchCounter = GCHandle.Alloc(this.counter);
+			//GCHandle gchHvalue = GCHandle.Alloc(this.h);
+			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
+			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
+				this.ptr, 
+				bits, 
+				seed, seed.Length, 
+				out this.counter,
+				out this.h, 
+				this.thunk.Handle)
+			);
+			//gchCounter.Free();
+			//gchHvalue.Free();
 		}
 
 		public static DSA FromPublicKey(string pem)
@@ -140,34 +165,27 @@ namespace OpenSSL
 
 		public BigNumber P
 		{
-			get
-			{
-				return new BigNumber(this.Raw.p, false);
-			}
+			get { return new BigNumber(this.Raw.p, false); }
 		}
 
 		public BigNumber Q
 		{
-			get
-			{
-				return new BigNumber(this.Raw.q, false);
-			}
+			get { return new BigNumber(this.Raw.q, false); }
 		}
 
 		public BigNumber G
 		{
-			get
-			{
-				return new BigNumber(this.Raw.g, false);
-			}
+			get { return new BigNumber(this.Raw.g, false); }
+		}
+
+		public int Size
+		{
+			get { return Native.ExpectSuccess(Native.DSA_size(this.ptr)); }
 		}
 
 		public BigNumber PublicKey
 		{
-			get
-			{
-				return new BigNumber(this.Raw.pub_key, false);
-			}
+			get { return new BigNumber(this.Raw.pub_key, false); }
 			set
 			{
 				dsa_st raw = this.Raw;
@@ -178,10 +196,7 @@ namespace OpenSSL
 
 		public BigNumber PrivateKey
 		{
-			get
-			{
-				return new BigNumber(this.Raw.priv_key, false);
-			}
+			get { return new BigNumber(this.Raw.priv_key, false); }
 			set
 			{
 				dsa_st raw = this.Raw;
@@ -213,12 +228,57 @@ namespace OpenSSL
 				}
 			}
 		}
+
+		public int Counter
+		{
+			get { return this.counter; }
+		}
+
+		public int H
+		{
+			get { return this.h; }
+		}
+
+		public bool ConstantTime
+		{
+			get { return (this.Raw.flags & FlagNoExpConstTime) != 0; }
+			set
+			{
+				dsa_st raw = this.Raw;
+				if (value)
+					raw.flags |= FlagNoExpConstTime;
+				else
+					raw.flags &= ~FlagNoExpConstTime;
+				this.Raw = raw;
+			}
+		}
 		#endregion
 
 		#region Methods
-		private void GenerateKeys()
+		public void GenerateKeys()
 		{
 			Native.ExpectSuccess(Native.DSA_generate_key(this.ptr));
+		}
+
+		public byte[] Sign(byte[] msg)
+		{
+			byte[] sig = new byte[this.Size];
+			uint siglen;
+			Native.ExpectSuccess(Native.DSA_sign(0, msg, msg.Length, sig, out siglen, this.ptr));
+			if (sig.Length != siglen)
+			{
+				byte[] ret = new byte[siglen];
+				Buffer.BlockCopy(sig, 0, ret, 0, (int)siglen);
+				return ret;
+			}
+			return sig;
+		}
+
+		public bool Verify(byte[] msg, byte[] sig)
+		{
+			return Native.ExpectSuccess(
+				Native.DSA_verify(0, msg, msg.Length, sig, sig.Length, this.ptr)
+			) == 1;
 		}
 		
 		public void WritePublicKey(BIO bio)

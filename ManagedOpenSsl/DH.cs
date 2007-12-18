@@ -82,7 +82,12 @@ namespace OpenSSL
 			: base(Native.ExpectNonNull(Native.DH_new()), true)
 		{
 			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
-			Native.DH_generate_parameters_ex(this.ptr, primeLen, generator, this.thunk.Handle);
+			Native.ExpectSuccess(Native.DH_generate_parameters_ex(
+				this.ptr,
+				primeLen,
+				generator,
+				this.thunk.Handle)
+			);
 		}
 
 		/// <summary>
