@@ -40,7 +40,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestDH.cs" />
     <Compile Include="TestDSA.cs" />
+    <Compile Include="TestSHA.cs" />
     <Compile Include="TestSHA1.cs" />
+    <Compile Include="TestSHA256.cs" />
+    <Compile Include="TestSHA512.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ManagedOpenSsl\XP\ManagedOpenSsl-XP.csproj">

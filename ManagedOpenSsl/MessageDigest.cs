@@ -48,11 +48,12 @@ namespace OpenSSL
 		public static MessageDigest MD5 = new MessageDigest(Native.EVP_md5(), false);
 		public static MessageDigest SHA = new MessageDigest(Native.EVP_sha(), false);
 		public static MessageDigest SHA1 = new MessageDigest(Native.EVP_sha1(), false);
+		public static MessageDigest SHA224 = new MessageDigest(Native.EVP_sha224(), false);
 		public static MessageDigest SHA256 = new MessageDigest(Native.EVP_sha256(), false);
+		public static MessageDigest SHA384 = new MessageDigest(Native.EVP_sha384(), false);
 		public static MessageDigest SHA512 = new MessageDigest(Native.EVP_sha512(), false);
 		public static MessageDigest DSS = new MessageDigest(Native.EVP_dss(), false);
 		public static MessageDigest DSS1 = new MessageDigest(Native.EVP_dss1(), false);
-		//public static MessageDigest MDC2 = new MessageDigest(Native.EVP_mdc2(), false);
 		public static MessageDigest RipeMD160 = new MessageDigest(Native.EVP_ripemd160(), false);
 		#endregion
 

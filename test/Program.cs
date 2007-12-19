@@ -47,6 +47,9 @@ namespace test
 			tests.Add("dh", new TestDH());
 			tests.Add("dsa", new TestDSA());
 			tests.Add("sha1", new TestSHA1());
+			tests.Add("sha", new TestSHA());
+			tests.Add("sha256", new TestSHA256());
+			tests.Add("sha512", new TestSHA512());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
@@ -74,9 +77,6 @@ namespace test
 			AddNullCommand(tests, "rc5");
 			AddNullCommand(tests, "rmd");
 			AddNullCommand(tests, "rsa");
-			AddNullCommand(tests, "sha256");
-			AddNullCommand(tests, "sha512");
-			AddNullCommand(tests, "sha");
 		}
 
 		void PrintCommands(IEnumerable<string> cmds)

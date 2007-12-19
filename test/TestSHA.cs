@@ -5,7 +5,7 @@ using OpenSSL;
 
 namespace test
 {
-	class TestSHA1 : ICommand
+	class TestSHA : ICommand
 	{
 		readonly string[] tests = 
 		{
@@ -15,17 +15,16 @@ namespace test
 
 		readonly string[] results =
 		{
-			"A9-99-3E-36-47-06-81-6A-BA-3E-25-71-78-50-C2-6C-9C-D0-D8-9D",
-			"84-98-3E-44-1C-3B-D2-6E-BA-AE-4A-A1-F9-51-29-E5-E5-46-70-F1",
+			"01-64-B8-A9-14-CD-2A-5E-74-C4-F7-FF-08-2C-4D-97-F1-ED-F8-80",
+			"D2-51-6E-E1-AC-FA-5B-AF-33-DF-C1-C4-71-E4-38-44-9E-F1-34-C8",
 		};
 
-		const string bigret = "34-AA-97-3C-D4-C4-DA-A4-F6-1E-EB-2B-DB-AD-27-31-65-34-01-6F";
-
+		const string bigret = "32-32-AF-FA-48-62-8A-26-65-3B-5A-AA-44-54-1F-D9-0D-69-06-03";
 		#region ICommand Members
 
 		public void Execute(string[] args)
 		{
-			MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA1);
+			MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA);
 
 			for (int i = 0; i < tests.Length; i++)
 			{
@@ -35,7 +34,7 @@ namespace test
 				string str = BitConverter.ToString(ret);
 				if (str != this.results[i])
 				{
-					Console.WriteLine("error calculating SHA1 on {0}", this.tests[i]);
+					Console.WriteLine("error calculating SHA on {0}", this.tests[i]);
 					Console.WriteLine("got {0} instead of {1}", str, this.results[i]);
 				}
 				else
@@ -53,7 +52,7 @@ namespace test
 			string strx = BitConverter.ToString(retx);
 			if (strx != bigret)
 			{
-				Console.WriteLine("error calculating SHA1 'a' * 1000");
+				Console.WriteLine("error calculating SHA 'a' * 1000");
 				Console.WriteLine("got {0} instead of {1}", strx, bigret);
 			}
 			else

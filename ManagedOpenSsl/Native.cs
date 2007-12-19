@@ -800,7 +800,13 @@ namespace OpenSSL
 		public extern static IntPtr EVP_sha1();
 
 		[DllImport(DLLNAME)]
+		public extern static IntPtr EVP_sha224();
+
+		[DllImport(DLLNAME)]
 		public extern static IntPtr EVP_sha256();
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr EVP_sha384();
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr EVP_sha512();
