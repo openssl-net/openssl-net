@@ -46,6 +46,7 @@ namespace test
 		{
 			tests.Add("dh", new TestDH());
 			tests.Add("dsa", new TestDSA());
+			tests.Add("sha1", new TestSHA1());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
@@ -73,7 +74,6 @@ namespace test
 			AddNullCommand(tests, "rc5");
 			AddNullCommand(tests, "rmd");
 			AddNullCommand(tests, "rsa");
-			AddNullCommand(tests, "sha1");
 			AddNullCommand(tests, "sha256");
 			AddNullCommand(tests, "sha512");
 			AddNullCommand(tests, "sha");

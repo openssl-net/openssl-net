@@ -48,9 +48,11 @@ namespace OpenSSL
 		public static MessageDigest MD5 = new MessageDigest(Native.EVP_md5(), false);
 		public static MessageDigest SHA = new MessageDigest(Native.EVP_sha(), false);
 		public static MessageDigest SHA1 = new MessageDigest(Native.EVP_sha1(), false);
+		public static MessageDigest SHA256 = new MessageDigest(Native.EVP_sha256(), false);
+		public static MessageDigest SHA512 = new MessageDigest(Native.EVP_sha512(), false);
 		public static MessageDigest DSS = new MessageDigest(Native.EVP_dss(), false);
 		public static MessageDigest DSS1 = new MessageDigest(Native.EVP_dss1(), false);
-		public static MessageDigest MDC2 = new MessageDigest(Native.EVP_mdc2(), false);
+		//public static MessageDigest MDC2 = new MessageDigest(Native.EVP_mdc2(), false);
 		public static MessageDigest RipeMD160 = new MessageDigest(Native.EVP_ripemd160(), false);
 		#endregion
 
@@ -130,6 +132,39 @@ namespace OpenSSL
 			return digest;
 		}
 
+		public void Init()
+		{
+			Native.ExpectSuccess(Native.EVP_DigestInit_ex(this.ptr, this.md.Handle, IntPtr.Zero));
+		}
+
+		public void Update(byte[] msg)
+		{
+			Native.ExpectSuccess(Native.EVP_DigestUpdate(this.ptr, msg, (uint)msg.Length));
+		}
+
+		public byte[] DigestFinal()
+		{
+			byte[] digest = new byte[this.md.Size];
+			uint len = (uint)digest.Length;
+			Native.ExpectSuccess(Native.EVP_DigestFinal_ex(this.ptr, digest, ref len));
+			return digest;
+		}
+
+		public byte[] SignFinal(CryptoKey pkey)
+		{
+			byte[] digest = new byte[this.md.Size];
+			byte[] sig = new byte[pkey.Size];
+			uint len = (uint)sig.Length;
+			Native.ExpectSuccess(Native.EVP_SignFinal(this.ptr, sig, ref len, pkey.Handle));
+			return sig;
+		}
+
+		public bool VerifyFinal(byte[] sig, CryptoKey pkey)
+		{
+			int ret = Native.ExpectSuccess(Native.EVP_VerifyFinal(this.ptr, sig, (uint)sig.Length, pkey.Handle));
+			return ret == 1;
+		}
+
 		public byte[] Sign(byte[] msg, CryptoKey pkey) 
 		{
 			byte[] sig = new byte[pkey.Size];
@@ -168,9 +203,7 @@ namespace OpenSSL
 		{
 			Native.ExpectSuccess(Native.EVP_DigestInit_ex(this.ptr, this.md.Handle, IntPtr.Zero));
 			Native.ExpectSuccess(Native.EVP_DigestUpdate(this.ptr, msg, (uint)msg.Length));
-			int ret = Native.EVP_VerifyFinal(this.ptr, sig, (uint)sig.Length, pkey.Handle);
-			if (ret < 0)
-				throw new OpenSslException();
+			int ret = Native.ExpectSuccess(Native.EVP_VerifyFinal(this.ptr, sig, (uint)sig.Length, pkey.Handle));
 			return ret == 1;
 		}
 
@@ -188,9 +221,7 @@ namespace OpenSSL
 
 			MessageDigestContext ctx = new MessageDigestContext(bmd);
 
-			int ret = Native.EVP_VerifyFinal(ctx.Handle, sig, (uint)sig.Length, pkey.Handle);
-			if (ret < 0)
-				throw new OpenSslException();
+			int ret = Native.ExpectSuccess(Native.EVP_VerifyFinal(ctx.Handle, sig, (uint)sig.Length, pkey.Handle));
 			return ret == 1;
 		}
 
