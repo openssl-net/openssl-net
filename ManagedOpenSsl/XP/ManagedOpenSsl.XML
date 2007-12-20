@@ -4,64 +4,9 @@
         <name>ManagedOpenSsl</name>
     </assembly>
     <members>
-        <member name="T:OpenSSL.OpenSslError">
+        <member name="T:OpenSSL.CryptoKey">
             <summary>
-            This is a struct that contains a uint for the native openssl error code.
-            It provides helper methods to convert this error code into strings.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.OpenSslError.#ctor(System.UInt32)">
-            <summary>
-            Constructs an OpenSslError object.
-            </summary>
-            <param name="err">The native error code</param>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.ErrorCode">
-            <summary>
-            Returns the native error code
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Library">
-            <summary>
-            Returns the result of ERR_lib_error_string()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Reason">
-            <summary>
-            Returns the results of ERR_reason_error_string()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Function">
-            <summary>
-            Returns the results of ERR_func_error_string()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Message">
-            <summary>
-            Returns the results of ERR_error_string_n()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.OpenSslException">
-            <summary>
-            Exception class to provide OpenSSL specific information when errors occur.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.OpenSslException.#ctor">
-            <summary>
-            When this class is instantiated, GetErrorMessage() is called automatically.
-            This will call ERR_get_error() on the native openssl interface, once for every
-            error that is in the current context. The exception message is the concatination
-            of each of these errors turned into strings using ERR_error_string_n().
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslException.Errors">
-            <summary>
-            Returns the list of errors associated with this exception.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.DH">
-            <summary>
-            Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
+            Wraps the native OpenSSL EVP_PKEY object
             </summary>
         </member>
         <member name="T:OpenSSL.Base">
@@ -140,6 +85,66 @@
             Access to the raw unmanaged pointer. Implements the IStackable interface.
             </summary>
         </member>
+        <member name="T:OpenSSL.OpenSslError">
+            <summary>
+            This is a struct that contains a uint for the native openssl error code.
+            It provides helper methods to convert this error code into strings.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.OpenSslError.#ctor(System.UInt32)">
+            <summary>
+            Constructs an OpenSslError object.
+            </summary>
+            <param name="err">The native error code</param>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.ErrorCode">
+            <summary>
+            Returns the native error code
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Library">
+            <summary>
+            Returns the result of ERR_lib_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Reason">
+            <summary>
+            Returns the results of ERR_reason_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Function">
+            <summary>
+            Returns the results of ERR_func_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Message">
+            <summary>
+            Returns the results of ERR_error_string_n()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.OpenSslException">
+            <summary>
+            Exception class to provide OpenSSL specific information when errors occur.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.OpenSslException.#ctor">
+            <summary>
+            When this class is instantiated, GetErrorMessage() is called automatically.
+            This will call ERR_get_error() on the native openssl interface, once for every
+            error that is in the current context. The exception message is the concatination
+            of each of these errors turned into strings using ERR_error_string_n().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslException.Errors">
+            <summary>
+            Returns the list of errors associated with this exception.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.DH">
+            <summary>
+            Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
+            </summary>
+        </member>
         <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32)">
             <summary>
             Calls DH_generate_parameters()
@@ -202,17 +207,6 @@
             <param name="bio"></param>
             <returns></returns>
         </member>
-        <member name="F:OpenSSL.Native.bn_gencb_st.arg">
-            To handle binary (in)compatibility 
-        </member>
-        <member name="F:OpenSSL.Native.bn_gencb_st.cb">
-            callback-specific data 
-        </member>
-        <member name="T:OpenSSL.CryptoKey">
-            <summary>
-            Wraps the native OpenSSL EVP_PKEY object
-            </summary>
-        </member>
         <member name="M:OpenSSL.X509Certificate.#ctor">
             <summary>
             
@@ -227,6 +221,12 @@
             <summary>
             
             </summary>
+        </member>
+        <member name="F:OpenSSL.Native.bn_gencb_st.arg">
+            To handle binary (in)compatibility 
+        </member>
+        <member name="F:OpenSSL.Native.bn_gencb_st.cb">
+            callback-specific data 
         </member>
     </members>
 </doc>
