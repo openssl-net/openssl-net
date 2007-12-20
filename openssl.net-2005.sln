@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-XP.v8", "ManagedOpenSsl\XP\ManagedOpenSsl-XP.v8.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-2005", "ManagedOpenSsl\XP\ManagedOpenSsl-2005.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli.v8", "openssl+\cli\cli.v8.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli-2005", "openssl+\cli\cli-2005.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sandbox.v8", "sandbox\sandbox.v8.csproj", "{CC3221B8-02C4-4E89-907B-B55BE461785C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sandbox-2005", "sandbox\sandbox-2005.csproj", "{CC3221B8-02C4-4E89-907B-B55BE461785C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.v8", "test\test.v8.csproj", "{72087340-51A8-427D-8886-2B45C494CDF5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-2005", "test\test-2005.csproj", "{72087340-51A8-427D-8886-2B45C494CDF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
