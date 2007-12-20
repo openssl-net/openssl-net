@@ -1,12 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-XP", "ManagedOpenSsl\XP\ManagedOpenSsl-XP.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-2008", "ManagedOpenSsl\XP\ManagedOpenSsl-2008.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli", "openssl+\cli\cli.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli-2008", "openssl+\cli\cli-2008.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{E60945CE-E10D-452B-9631-E34AE55DCED8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-2008", "test\test-2008.csproj", "{E60945CE-E10D-452B-9631-E34AE55DCED8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sandbox", "sandbox\sandbox.csproj", "{CC3221B8-02C4-4E89-907B-B55BE461785C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sandbox-2008", "sandbox\sandbox-2008.csproj", "{CC3221B8-02C4-4E89-907B-B55BE461785C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
