@@ -85,8 +85,8 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.DH_generate_parameters_ex(
 				this.ptr,
 				primeLen,
-				generator,
-				this.thunk.Handle)
+ 				generator,
+				this.thunk.CallbackStruct)
 			);
 		}
 

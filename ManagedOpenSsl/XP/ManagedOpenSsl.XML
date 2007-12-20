@@ -202,10 +202,10 @@
             <param name="bio"></param>
             <returns></returns>
         </member>
-        <member name="F:OpenSSL.BigNumber.GeneratorThunk.bn_gencb_st.arg">
+        <member name="F:OpenSSL.Native.bn_gencb_st.arg">
             To handle binary (in)compatibility 
         </member>
-        <member name="F:OpenSSL.BigNumber.GeneratorThunk.bn_gencb_st.cb">
+        <member name="F:OpenSSL.Native.bn_gencb_st.cb">
             callback-specific data 
         </member>
         <member name="T:OpenSSL.CryptoKey">

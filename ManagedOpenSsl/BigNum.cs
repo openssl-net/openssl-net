@@ -178,25 +178,15 @@ namespace OpenSSL
 
 		public delegate int GeneratorHandler(int p, int n, object arg);
 
-		internal class GeneratorThunk : IDisposable
+		internal class GeneratorThunk
 		{
-			[StructLayout(LayoutKind.Sequential)]
-			private struct bn_gencb_st
-			{
-				public uint ver; /// To handle binary (in)compatibility 
-				public IntPtr arg; /// callback-specific data 
-				public IntPtr cb;
-			}
-
-			private delegate int NativeHandler(int p, int n, IntPtr arg);
-
+			private Native.bn_gencb_st gencb = new Native.bn_gencb_st();
 			private GeneratorHandler OnGenerator;
 			private object arg;
-			private IntPtr ptr;
 
-			public IntPtr Handle
+			public Native.bn_gencb_st CallbackStruct
 			{
-				get { return this.ptr; }
+				get { return this.gencb; }
 			}
 
 			public GeneratorThunk(GeneratorHandler client, object arg) 
@@ -204,38 +194,23 @@ namespace OpenSSL
 				this.OnGenerator = client;
 				this.arg = arg;
 
-				Delegate d = new NativeHandler(this.OnGeneratorThunk);
-
-				bn_gencb_st raw = new bn_gencb_st();
-				raw.ver = 2;
-				raw.arg = IntPtr.Zero;
-				raw.cb = Marshal.GetFunctionPointerForDelegate(d);
-
-				this.ptr = Native.OPENSSL_malloc(12);
-				Marshal.StructureToPtr(raw, this.ptr, false);
-			}
-
-			~GeneratorThunk()
-			{
-				if (this.ptr != IntPtr.Zero)
-					this.Dispose();
+				this.gencb.ver = 2;
+				this.gencb.arg = IntPtr.Zero;
+				this.gencb.cb = this.OnGeneratorThunk;
 			}
 
 			internal int OnGeneratorThunk(int p, int n, IntPtr arg)
 			{
-				Debug.Assert(this.ptr == arg);
-				return OnGenerator(p, n, this.arg);
+				try
+				{
+					//				Debug.Assert(this.ptr == arg);
+					return OnGenerator(p, n, this.arg);
+				}
+				catch (Exception ex)
+				{
+					return 0;
+				}
 			}
-
-			#region IDisposable Members
-
-			public void Dispose()
-			{
-				Native.OPENSSL_free(this.ptr);
-				this.ptr = IntPtr.Zero;
-			}
-
-			#endregion
 		}
 
 		#endregion

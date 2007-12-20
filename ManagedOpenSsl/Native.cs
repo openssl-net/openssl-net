@@ -476,7 +476,7 @@ namespace OpenSSL
 		public extern static IntPtr DSA_generate_parameters(int bits, byte[] seed, int seed_len, IntPtr counter_ret, IntPtr h_ret, IntPtr callback, IntPtr cb_arg);
 
 		[DllImport(DLLNAME)]
-		public extern static int DSA_generate_parameters_ex(IntPtr dsa, int bits, byte[] seed, int seed_len, out int counter_ret, out int h_ret, IntPtr callback);
+		public extern static int DSA_generate_parameters_ex(IntPtr dsa, int bits, byte[] seed, int seed_len, out int counter_ret, out int h_ret, bn_gencb_st callback);
 
 		[DllImport(DLLNAME)]
 		public extern static int DSA_generate_key(IntPtr dsa);
@@ -509,7 +509,7 @@ namespace OpenSSL
 		public extern static IntPtr DH_generate_parameters(int prime_len, int generator, IntPtr callback, IntPtr cb_arg);
 
 		[DllImport(DLLNAME)]
-		public extern static int DH_generate_parameters_ex(IntPtr dh, int prime_len, int generator, IntPtr cb);
+		public extern static int DH_generate_parameters_ex(IntPtr dh, int prime_len, int generator, bn_gencb_st cb);
 
 		[DllImport(DLLNAME)]
 		public extern static int DH_generate_key(IntPtr dh);
@@ -600,6 +600,16 @@ namespace OpenSSL
 		//        tmp_gencb->ver = 2; \
 		//        tmp_gencb->arg = (cb_arg); \
 		//        tmp_gencb->cb.cb_2 = (callback); }
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate int GeneratorHandler(int p, int n, IntPtr arg);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public class bn_gencb_st
+		{
+			public uint ver; /// To handle binary (in)compatibility 
+			public IntPtr arg; /// callback-specific data 
+			public GeneratorHandler cb;
+		}
 		#endregion
 
 		#region DER

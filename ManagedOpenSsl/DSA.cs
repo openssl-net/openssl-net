@@ -119,19 +119,15 @@ namespace OpenSSL
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
 			this.counter = counter;
-			//GCHandle gchCounter = GCHandle.Alloc(this.counter);
-			//GCHandle gchHvalue = GCHandle.Alloc(this.h);
 			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
-				this.ptr, 
-				bits, 
-				seed, seed.Length, 
+				this.ptr,
+				bits,
+				seed, seed.Length,
 				out this.counter,
-				out this.h, 
-				this.thunk.Handle)
+				out this.h,
+				this.thunk.CallbackStruct)
 			);
-			//gchCounter.Free();
-			//gchHvalue.Free();
 		}
 
 		public static DSA FromPublicKey(string pem)
