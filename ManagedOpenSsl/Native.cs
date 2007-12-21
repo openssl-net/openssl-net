@@ -118,6 +118,21 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static int CRYPTO_mem_ctrl(int mode);
 
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_cleanup_all_ex_data();
+
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_mem_leaks_fp(IntPtr fp);
+
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_mem_leaks(IntPtr bio);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void CRYPTO_MEM_LEAK_CB(uint order, string file, int line, int num_bytes, IntPtr addr);
+
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_mem_leaks_cb(CRYPTO_MEM_LEAK_CB cb);
+
 		#endregion
 
 		#region OBJ
@@ -528,8 +543,43 @@ namespace OpenSSL
 		public extern static int DSA_verify(int type, byte[] dgst, int dgst_len, byte[] sigbuf, int siglen, IntPtr dsa);
 		#endregion
 
-		#region DH
+		#region RSA
+		[DllImport(DLLNAME)]
+		public extern static IntPtr RSA_new();
+
+		[DllImport(DLLNAME)]
+		public extern static void RSA_free(IntPtr rsa);
+
+		[DllImport(DLLNAME)]
+		public extern static int RSA_size(IntPtr rsa);
+
+		[DllImport(DLLNAME)]
+		public extern static int RSA_generate_key_ex(IntPtr rsa, int bits, IntPtr e, bn_gencb_st cb);
+
+		[DllImport(DLLNAME)]
+		public extern static int RSA_check_key(IntPtr rsa);
+	
+		[DllImport(DLLNAME)]
+		public extern static int RSA_public_encrypt(int flen, byte[] from, byte[] to, IntPtr rsa, int padding);
 		
+		[DllImport(DLLNAME)]
+		public extern static int RSA_private_encrypt(int flen, byte[] from, byte[] to, IntPtr rsa, int padding);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RSA_public_decrypt(int flen, byte[] from, byte[] to, IntPtr rsa, int padding);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RSA_private_decrypt(int flen, byte[] from, byte[] to, IntPtr rsa, int padding);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RSA_sign(int type, byte[] m, uint m_length, byte[] sigret, out uint siglen, IntPtr rsa);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RSA_verify(int type, byte[] m, uint m_length, byte[] sigbuf, uint siglen, IntPtr rsa);
+		#endregion
+
+		#region DH
+
 		[DllImport(DLLNAME)]
 		public extern static IntPtr DH_generate_parameters(int prime_len, int generator, IntPtr callback, IntPtr cb_arg);
 
@@ -1260,6 +1310,10 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr ERR_reason_error_string(uint e);
+
+		[DllImport(DLLNAME)]
+		public extern static void ERR_remove_state(uint pid);
+
 		#endregion ERR
 
 		#region NCONF

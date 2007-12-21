@@ -228,7 +228,6 @@ namespace OpenSSL
 			{
 				try
 				{
-					//				Debug.Assert(this.ptr == arg);
 					return OnGenerator(p, n, this.arg);
 				}
 				catch (Exception ex)

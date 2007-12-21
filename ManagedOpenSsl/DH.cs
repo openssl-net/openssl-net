@@ -35,18 +35,43 @@ namespace OpenSSL
 	/// </summary>
 	public class DH : Base, IDisposable
 	{
+		/// <summary>
+		/// Constant generator value of 2.
+		/// </summary>
 		public const int Generator2 = 2;
+
+		/// <summary>
+		/// Constant generator value of 5.
+		/// </summary>
 		public const int Generator5 = 5;
 		
 		private const int FlagCacheMont_P = 0x01;
 		private const int FlagNoExpConstTime = 0x02;
 
+		/// <summary>
+		/// Flags for the return value of DH_check().
+		/// </summary>
 		[Flags]
 		public enum CheckCode
 		{
+			/// <summary>
+			/// 
+			/// </summary>
 			CheckP_NotPrime = 1,
+
+			/// <summary>
+			/// 
+			/// </summary>
 			CheckP_NotSafePrime = 2,
+
+			/// <summary>
+			/// 
+			/// </summary>
 			UnableToCheckGenerator = 4,
+
+			/// <summary>
+			/// 
+			/// </summary>
 			NotSuitableGenerator = 8,
 		}
 
@@ -93,7 +118,6 @@ namespace OpenSSL
 		public DH(int primeLen, int generator)
 			: base(Native.ExpectNonNull(Native.DH_generate_parameters(primeLen, generator, IntPtr.Zero, IntPtr.Zero)), true)
 		{
-			//this.GenerateKeys();
 		}
 
 		/// <summary>
@@ -116,7 +140,7 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Calls DH_new(). Then calls GenerateKeys() with p and g equal to 1.
+		/// Calls DH_new().
 		/// </summary>
 		public DH() 
 			: base(Native.ExpectNonNull(Native.DH_new()), true) 
@@ -125,12 +149,10 @@ namespace OpenSSL
 			raw.p = Native.BN_dup(BigNumber.One.Handle);
 			raw.g = Native.BN_dup(BigNumber.One.Handle);
 			this.Raw = raw;
-
-			//this.GenerateKeys();
 		}
 
 		/// <summary>
-		/// Calls DH_new(). Then calls GenerateKeys() with the provided parameters.
+		/// Calls DH_new().
 		/// </summary>
 		/// <param name="p"></param>
 		/// <param name="g"></param>
@@ -141,13 +163,10 @@ namespace OpenSSL
             raw.p = Native.BN_dup(p.Handle);
             raw.g = Native.BN_dup(g.Handle);
             this.Raw = raw;
-
-			//this.GenerateKeys();
         }
 
 		/// <summary>
-		/// Calls DH_new(). Then calls GenerateKeys() with the provide parameters
-		/// and public/private key pair.
+		/// Calls DH_new().
 		/// </summary>
 		/// <param name="p"></param>
 		/// <param name="g"></param>
@@ -162,8 +181,6 @@ namespace OpenSSL
 			raw.pub_key = Native.BN_dup(pub_key.Handle);
 			raw.priv_key = Native.BN_dup(priv_key.Handle);
 			this.Raw = raw;
-
-			//this.GenerateKeys();
 		}
 
 		/// <summary>
@@ -187,7 +204,6 @@ namespace OpenSSL
 		{
 			DH dh = new DH(Native.ExpectNonNull(Native.PEM_read_bio_DHparams(
 				bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
-//			dh.GenerateKeys();
 			return dh;
 		}
 
@@ -206,17 +222,24 @@ namespace OpenSSL
 
 			IntPtr ptr = Native.ExpectNonNull(Native.ASN1_d2i_bio(xnew, d2i, bio.Handle, IntPtr.Zero));
 			DH dh = new DH(ptr, true);
-//			dh.GenerateKeys();
 			return dh;
 		}
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Calls DH_generate_key().
+		/// </summary>
 		public void GenerateKeys()
 		{
 			Native.ExpectSuccess(Native.DH_generate_key(this.ptr));
 		}
 
+		/// <summary>
+		/// Calls DH_compute_key().
+		/// </summary>
+		/// <param name="pubkey"></param>
+		/// <returns></returns>
 		public byte[] ComputeKey(BigNumber pubkey)
 		{
 			int len = Native.DH_size(this.ptr);
@@ -225,11 +248,19 @@ namespace OpenSSL
 			return key;
 		}
 
+		/// <summary>
+		/// Calls PEM_write_bio_DHparams().
+		/// </summary>
+		/// <param name="bio"></param>
 		public void WriteParametersPEM(BIO bio)
 		{
 			Native.ExpectSuccess(Native.PEM_write_bio_DHparams(bio.Handle, this.ptr));
 		}
 
+		/// <summary>
+		/// Calls ASN1_i2d_bio() with the i2d = i2d_DHparams().
+		/// </summary>
+		/// <param name="bio"></param>
 		public void WriteParametersDER(BIO bio)
 		{
 			IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
@@ -239,11 +270,19 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.ASN1_i2d_bio(i2d, bio.Handle, this.ptr));
 		}
 
+		/// <summary>
+		/// Calls DHparams_print().
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			Native.ExpectSuccess(Native.DHparams_print(bio.Handle, this.ptr));
 		}
 
+		/// <summary>
+		/// Calls DH_check().
+		/// </summary>
+		/// <returns></returns>
 		public CheckCode Check()
 		{
 			int codes = 0;
@@ -259,6 +298,9 @@ namespace OpenSSL
             set { Marshal.StructureToPtr(value, this.ptr, false); }
 		}
 
+		/// <summary>
+		/// Accessor for the p value.
+		/// </summary>
 		public BigNumber P
 		{
 			get { return new BigNumber(this.Raw.p, false); }
@@ -270,6 +312,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the g value.
+		/// </summary>
 		public BigNumber G
 		{
 			get { return new BigNumber(this.Raw.g, false); }
@@ -281,6 +326,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the pub_key value.
+		/// </summary>
 		public BigNumber PublicKey
 		{
 			get { return new BigNumber(this.Raw.pub_key, false); }
@@ -292,6 +340,9 @@ namespace OpenSSL
             }
         }
 
+		/// <summary>
+		/// Accessor for the priv_key value.
+		/// </summary>
 		public BigNumber PrivateKey
 		{
 			get { return new BigNumber(this.Raw.priv_key, false); } 
@@ -303,6 +354,10 @@ namespace OpenSSL
             }
 		}
 
+		/// <summary>
+		/// Creates a BIO.MemoryBuffer(), calls WriteParametersPEM() into this buffer, 
+		/// then returns the buffer as a string.
+		/// </summary>
 		public string PEM
 		{
 			get
@@ -314,20 +369,27 @@ namespace OpenSSL
 				}
 			}
 		}
-	
+
+		/// <summary>
+		/// Creates a BIO.MemoryBuffer(), calls WriteParametersDER() into this buffer, 
+		/// then returns the buffer.
+		/// </summary>
 		public byte[] DER
 		{
 			get
 			{
 				using (BIO bio = BIO.MemoryBuffer())
 				{
-					this.WriteParametersPEM(bio);
+					this.WriteParametersDER(bio);
 					return bio.ReadBytes((int)bio.NumberWritten).Array;
 				}
 			}
 		}
 
-		public bool ConstantTime
+		/// <summary>
+		/// Sets or clears the FlagNoExpConstTime bit in the flags field.
+		/// </summary>
+		public bool NoExpConstantTime
 		{
 			get { return (this.Raw.flags & FlagNoExpConstTime) != 0; }
 			set
@@ -345,6 +407,9 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls DH_free().
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.DH_free(this.ptr);

@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenSSL;
 
 namespace test
 {
@@ -75,6 +76,7 @@ namespace test
 			tests.Add("sha", new TestSHA());
 			tests.Add("sha256", new TestSHA256());
 			tests.Add("sha512", new TestSHA512());
+			tests.Add("rsa", new TestRSA());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
@@ -101,7 +103,6 @@ namespace test
 			AddNullCommand(tests, "rc4");
 			AddNullCommand(tests, "rc5");
 			AddNullCommand(tests, "rmd");
-			AddNullCommand(tests, "rsa");
 		}
 
 		void PrintCommands(IEnumerable<string> cmds)
@@ -144,7 +145,38 @@ namespace test
 				return;
 			}
 
+			MemoryTracker.Start();
 			cmd.Execute(args);
+			MemoryTracker.Finish();
+		}
+	}
+
+	public class MemoryTracker
+	{
+		private static int leaked = 0;
+
+		public static void Start()
+		{
+			Native.CRYPTO_malloc_debug_init();
+			Native.CRYPTO_dbg_set_options(Native.V_CRYPTO_MDEBUG_ALL);
+			Native.CRYPTO_mem_ctrl(Native.CRYPTO_MEM_CHECK_ON);
+		}
+
+		public static void Finish()
+		{
+			Native.CRYPTO_cleanup_all_ex_data();
+			Native.ERR_remove_state(0);
+
+			GC.Collect();
+			Native.CRYPTO_mem_leaks_cb(new Native.CRYPTO_MEM_LEAK_CB(OnMemoryLeak));
+			if (leaked > 0)
+				Console.WriteLine("Leaked total bytes: {0}", leaked);
+		}
+
+		private static void OnMemoryLeak(uint order, string file, int line, int num_bytes, IntPtr addr)
+		{
+			Console.WriteLine("file: {1} line: {2} bytes: {3}", order, file, line, num_bytes);
+			leaked += num_bytes;
 		}
 	}
 }

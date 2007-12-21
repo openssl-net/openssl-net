@@ -49,39 +49,41 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA);
-
-			for (int i = 0; i < tests.Length; i++)
+			using (MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA))
 			{
-				byte[] msg = Encoding.ASCII.GetBytes(this.tests[i]);
-				byte[] ret = ctx.Digest(msg);
 
-				string str = BitConverter.ToString(ret);
-				if (str != this.results[i])
+				for (int i = 0; i < tests.Length; i++)
 				{
-					Console.WriteLine("error calculating SHA on {0}", this.tests[i]);
-					Console.WriteLine("got {0} instead of {1}", str, this.results[i]);
+					byte[] msg = Encoding.ASCII.GetBytes(this.tests[i]);
+					byte[] ret = ctx.Digest(msg);
+
+					string str = BitConverter.ToString(ret);
+					if (str != this.results[i])
+					{
+						Console.WriteLine("error calculating SHA on {0}", this.tests[i]);
+						Console.WriteLine("got {0} instead of {1}", str, this.results[i]);
+					}
+					else
+						Console.WriteLine("test {0} ok", i);
+				}
+
+				byte[] buf = Encoding.ASCII.GetBytes(new string('a', 1000));
+				ctx.Init();
+				for (int i = 0; i < 1000; i++)
+				{
+					ctx.Update(buf);
+				}
+
+				byte[] retx = ctx.DigestFinal();
+				string strx = BitConverter.ToString(retx);
+				if (strx != bigret)
+				{
+					Console.WriteLine("error calculating SHA 'a' * 1000");
+					Console.WriteLine("got {0} instead of {1}", strx, bigret);
 				}
 				else
-					Console.WriteLine("test {0} ok", i);
+					Console.WriteLine("test 3 ok");
 			}
-
-			byte[] buf = Encoding.ASCII.GetBytes(new string('a', 1000));
-			ctx.Init();
-			for (int i = 0; i < 1000; i++)
-			{
-				ctx.Update(buf);
-			}
-
-			byte[] retx = ctx.DigestFinal();
-			string strx = BitConverter.ToString(retx);
-			if (strx != bigret)
-			{
-				Console.WriteLine("error calculating SHA 'a' * 1000");
-				Console.WriteLine("got {0} instead of {1}", strx, bigret);
-			}
-			else
-				Console.WriteLine("test 3 ok");
 		}
 
 		#endregion

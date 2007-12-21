@@ -73,21 +73,8 @@ namespace test
 			0xc5,0x72,0xaf,0x53,0xe6,0xd7,0x88,0x02,
 			};
 
-		#region ICommand Members
-
-		public void Execute(string[] args)
+		private void DoTest(DSA dsa)
 		{
-			Native.CRYPTO_malloc_debug_init();
-			Native.CRYPTO_dbg_set_options(Native.V_CRYPTO_MDEBUG_ALL);
-			Native.CRYPTO_mem_ctrl(Native.CRYPTO_MEM_CHECK_ON);
-
-			byte[] tmp = Encoding.ASCII.GetBytes(rnd_seed);
-			Native.RAND_seed(tmp, tmp.Length);
-		
-			Console.WriteLine("test generation of DSA parameters");
-
-			DSA dsa = new DSA(512, seed, 0, new BigNumber.GeneratorHandler(this.OnStatus), null);
-
 			Console.WriteLine("seed");
 			Console.WriteLine(BitConverter.ToString(seed));
 			Console.WriteLine("counter={0} h={1}", dsa.Counter, dsa.H);
@@ -100,17 +87,23 @@ namespace test
 			if (dsa.H != 2)
 				throw new Exception("h should be 2");
 
-			BigNumber q = BigNumber.FromArray(this.out_q);
-			if (dsa.Q != q)
-				throw new Exception("q value is wrong");
+			using (BigNumber q = BigNumber.FromArray(this.out_q))
+			{
+				if (dsa.Q != q)
+					throw new Exception("q value is wrong");
+			}
 
-			BigNumber p = BigNumber.FromArray(this.out_p);
-			if (dsa.P != p)
-				throw new Exception("p value is wrong");
+			using (BigNumber p = BigNumber.FromArray(this.out_p))
+			{
+				if (dsa.P != p)
+					throw new Exception("p value is wrong");
+			}
 
-			BigNumber g = BigNumber.FromArray(this.out_g);
-			if (dsa.G != g)
-				throw new Exception("g value is wrong");
+			using (BigNumber g = BigNumber.FromArray(this.out_g))
+			{
+				if (dsa.G != g)
+					throw new Exception("g value is wrong");
+			}
 
 			byte[] msg = Encoding.ASCII.GetBytes(str1);
 
@@ -126,6 +119,21 @@ namespace test
 			sig = dsa.Sign(msg);
 			if (!dsa.Verify(msg, sig))
 				throw new Exception("DSA signature failed to verify");
+		}
+
+		#region ICommand Members
+
+		public void Execute(string[] args)
+		{
+			byte[] tmp = Encoding.ASCII.GetBytes(rnd_seed);
+			Native.RAND_seed(tmp, tmp.Length);
+		
+			Console.WriteLine("test generation of DSA parameters");
+
+			using (DSA dsa = new DSA(512, seed, 0, new BigNumber.GeneratorHandler(this.OnStatus), null))
+			{
+				DoTest(dsa);
+			}
 		}
 
 		#endregion

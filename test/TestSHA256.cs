@@ -80,17 +80,11 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			this.GenericTest(
-				"SHA-256",
-				new MessageDigestContext(MessageDigest.SHA256),
-				this.app
-			);
+			using (MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA256))
+				this.GenericTest("SHA-256", ctx, this.app);
 
-			this.GenericTest(
-				"SHA-224",
-				new MessageDigestContext(MessageDigest.SHA224),
-				this.addenum
-			);
+			using (MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA224))
+				this.GenericTest("SHA-224", ctx, this.addenum);
 		}
 
 		#endregion

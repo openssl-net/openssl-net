@@ -40,10 +40,6 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			Native.CRYPTO_malloc_debug_init();
-			Native.CRYPTO_dbg_set_options(Native.V_CRYPTO_MDEBUG_ALL);
-			Native.CRYPTO_mem_ctrl(Native.CRYPTO_MEM_CHECK_ON);
-
 			byte[] seed = Encoding.ASCII.GetBytes(rnd_seed);
 			Native.RAND_seed(seed, seed.Length);
 
@@ -64,13 +60,10 @@ namespace test
 			Console.WriteLine("p    ={0}", a.P);
 			Console.WriteLine("g    ={0}", a.G);
 
-			DH b = new DH();
+			DH b = new DH(a.P, a.G);
 
-			b.P = a.P;
-			b.G = a.G;
-
-			a.ConstantTime = false;
-			b.ConstantTime = true;
+			a.NoExpConstantTime = false;
+			b.NoExpConstantTime = true;
 
 			a.GenerateKeys();
 			Console.WriteLine("pri 1={0}", a.PrivateKey);
@@ -89,9 +82,10 @@ namespace test
 			Console.WriteLine("key2 ={0}", bstr);
 
 			if (aout.Length < 4 || astr != bstr)
-			{
 				throw new Exception("Error in DH routines");
-			}
+
+			a.Dispose();
+			b.Dispose();
 		}
 
 		#endregion

@@ -140,6 +140,16 @@
             Access to the raw unmanaged pointer. Implements the IStackable interface.
             </summary>
         </member>
+        <member name="F:OpenSSL.DH.Generator2">
+            <summary>
+            Constant generator value of 2.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.Generator5">
+            <summary>
+            Constant generator value of 5.
+            </summary>
+        </member>
         <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32)">
             <summary>
             Calls DH_generate_parameters()
@@ -158,20 +168,19 @@
         </member>
         <member name="M:OpenSSL.DH.#ctor">
             <summary>
-            Calls DH_new(). Then calls GenerateKeys() with p and g equal to 1.
+            Calls DH_new().
             </summary>
         </member>
         <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber)">
             <summary>
-            Calls DH_new(). Then calls GenerateKeys() with the provided parameters.
+            Calls DH_new().
             </summary>
             <param name="p"></param>
             <param name="g"></param>
         </member>
         <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber)">
             <summary>
-            Calls DH_new(). Then calls GenerateKeys() with the provide parameters
-            and public/private key pair.
+            Calls DH_new().
             </summary>
             <param name="p"></param>
             <param name="g"></param>
@@ -201,6 +210,109 @@
             </summary>
             <param name="bio"></param>
             <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.GenerateKeys">
+            <summary>
+            Calls DH_generate_key().
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DH.ComputeKey(OpenSSL.BigNumber)">
+            <summary>
+            Calls DH_compute_key().
+            </summary>
+            <param name="pubkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.WriteParametersPEM(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_DHparams().
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.DH.WriteParametersDER(OpenSSL.BIO)">
+            <summary>
+            Calls ASN1_i2d_bio() with the i2d = i2d_DHparams().
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.DH.Print(OpenSSL.BIO)">
+            <summary>
+            Calls DHparams_print().
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.DH.Check">
+            <summary>
+            Calls DH_check().
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.OnDispose">
+            <summary>
+            Calls DH_free().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.P">
+            <summary>
+            Accessor for the p value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.G">
+            <summary>
+            Accessor for the g value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.PublicKey">
+            <summary>
+            Accessor for the pub_key value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.PrivateKey">
+            <summary>
+            Accessor for the priv_key value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.PEM">
+            <summary>
+            Creates a BIO.MemoryBuffer(), calls WriteParametersPEM() into this buffer, 
+            then returns the buffer as a string.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.DER">
+            <summary>
+            Creates a BIO.MemoryBuffer(), calls WriteParametersDER() into this buffer, 
+            then returns the buffer.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.NoExpConstantTime">
+            <summary>
+            Sets or clears the FlagNoExpConstTime bit in the flags field.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.DH.CheckCode">
+            <summary>
+            Flags for the return value of DH_check().
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.CheckP_NotPrime">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.CheckP_NotSafePrime">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.UnableToCheckGenerator">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.NotSuitableGenerator">
+            <summary>
+            
+            </summary>
         </member>
         <member name="F:OpenSSL.Native.bn_gencb_st.arg">
             To handle binary (in)compatibility 
