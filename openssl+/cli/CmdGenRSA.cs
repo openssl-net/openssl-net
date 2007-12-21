@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace OpenSSL.CLI
 {
@@ -116,9 +117,13 @@ namespace OpenSSL.CLI
 
 			using (BIO bio = BIO.MemoryBuffer())
 			{
-				rsa.WritePrivateKey(bio, enc, Program.OnPassword, null);
-				string str = bio.ReadString();
-				Console.WriteLine(str);
+				rsa.WritePrivateKey(bio, enc, Program.OnPassword, this.options["passout"]);
+
+				string outfile = this.options["out"] as string;
+				if (string.IsNullOrEmpty(outfile))
+					Console.WriteLine(bio.ReadString());
+				else
+					File.WriteAllText(outfile, bio.ReadString());
 			}
 		}
 

@@ -231,6 +231,10 @@ namespace OpenSSL.CLI
 
 		public static string OnPassword(bool verify, object arg)
 		{
+			string passout = arg as string;
+			if (!string.IsNullOrEmpty(passout))
+				return File.ReadAllText(passout);
+
 			string passwd = null;
 			while (true)
 			{
