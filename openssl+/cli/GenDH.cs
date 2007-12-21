@@ -86,7 +86,7 @@ namespace OpenSSL.CLI
 			Console.WriteLine("Generating DH parameters, {0} bit long safe prime, generator {1}", bits, g);
 			Console.WriteLine("This is going to take a long time");
 
-			OpenSSL.DH dh = new OpenSSL.DH(bits, g, new BigNumber.GeneratorHandler(this.OnStatus), null);
+			OpenSSL.DH dh = new OpenSSL.DH(bits, g, Program.OnGenerator, null);
 
 			string outfile = this.options["out"] as string;
 			if (string.IsNullOrEmpty(outfile))
@@ -97,21 +97,6 @@ namespace OpenSSL.CLI
 			{
 				File.WriteAllText(outfile, dh.PEM);
 			}
-		}
-
-		private int OnStatus(int p, int n, object arg)
-		{
-			TextWriter cout = Console.Out;
-
-			switch (p)
-			{
-				case 0: cout.Write('.'); break;
-				case 1: cout.Write('+'); break;
-				case 2: cout.Write('*'); break;
-				case 3: cout.WriteLine(); break;
-			}
-
-			return 1;
 		}
 
 		#endregion

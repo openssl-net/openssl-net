@@ -112,10 +112,10 @@ namespace OpenSSL
 		public static Cipher Cast5_CBC = new Cipher(Native.EVP_cast5_cbc(), false);
 		public static Cipher Cast5_OFB64 = new Cipher(Native.EVP_cast5_cfb64(), false);
 		public static Cipher Cast5_OFB = new Cipher(Native.EVP_cast5_ofb(), false);
-		public static Cipher RC5_32_12_16_CBC = new Cipher(Native.EVP_rc5_32_12_16_cbc(), false);
-		public static Cipher RC5_32_12_16_ECB = new Cipher(Native.EVP_rc5_32_12_16_ecb(), false);
-		public static Cipher RC5_32_12_16_CFB64 = new Cipher(Native.EVP_rc5_32_12_16_cfb64(), false);
-		public static Cipher RC5_32_12_16_OFB = new Cipher(Native.EVP_rc5_32_12_16_ofb(), false);
+		//public static Cipher RC5_32_12_16_CBC = new Cipher(Native.EVP_rc5_32_12_16_cbc(), false);
+		//public static Cipher RC5_32_12_16_ECB = new Cipher(Native.EVP_rc5_32_12_16_ecb(), false);
+		//public static Cipher RC5_32_12_16_CFB64 = new Cipher(Native.EVP_rc5_32_12_16_cfb64(), false);
+		//public static Cipher RC5_32_12_16_OFB = new Cipher(Native.EVP_rc5_32_12_16_ofb(), false);
 		public static Cipher AES_128_ECB = new Cipher(Native.EVP_aes_128_ecb(), false);
 		public static Cipher AES_128_CBC = new Cipher(Native.EVP_aes_128_cbc(), false);
 		public static Cipher AES_128_CFB1 = new Cipher(Native.EVP_aes_128_cfb1(), false);

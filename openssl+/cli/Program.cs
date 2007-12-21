@@ -27,6 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.CLI
 {
@@ -75,6 +77,8 @@ namespace OpenSSL.CLI
 		{
 			std_cmds.Add("dh", new CmdDH());
 			std_cmds.Add("gendh", new CmdGenDH());
+			std_cmds.Add("rsa", new CmdRSA());
+			std_cmds.Add("genrsa", new CmdGenRSA());
 
 			#region Standard Commands
 			AddNullCommand(std_cmds, "asn1parse");
@@ -92,7 +96,6 @@ namespace OpenSSL.CLI
 			AddNullCommand(std_cmds, "engine");
 			AddNullCommand(std_cmds, "errstr");
 			AddNullCommand(std_cmds, "gendsa");
-			AddNullCommand(std_cmds, "genrsa");
 			AddNullCommand(std_cmds, "nseq");
 			AddNullCommand(std_cmds, "ocsp");
 			AddNullCommand(std_cmds, "passwd");
@@ -102,7 +105,6 @@ namespace OpenSSL.CLI
 			AddNullCommand(std_cmds, "prime");
 			AddNullCommand(std_cmds, "rand");
 			AddNullCommand(std_cmds, "req");
-			AddNullCommand(std_cmds, "rsa");
 			AddNullCommand(std_cmds, "rsautl");
 			AddNullCommand(std_cmds, "s_client");
 			AddNullCommand(std_cmds, "s_server");
@@ -188,6 +190,74 @@ namespace OpenSSL.CLI
 			}
 
 			cmd.Execute(args);
+		}
+
+		public static int OnGenerator(int p, int n, object arg)
+		{
+			TextWriter cout = Console.Out;
+
+			switch (p)
+			{
+				case 0: cout.Write('.'); break;
+				case 1: cout.Write('+'); break;
+				case 2: cout.Write('*'); break;
+				case 3: cout.WriteLine(); break;
+			}
+
+			return 1;
+		}
+
+		private static string ReadPassword()
+		{
+			Console.TreatControlCAsInput = true;
+			StringBuilder sb = new StringBuilder();
+			while (true)
+			{
+				ConsoleKeyInfo key = Console.ReadKey(true);
+				if (key.Key == ConsoleKey.Enter)
+					break;
+
+				if (key.Key == ConsoleKey.C && key.Modifiers == ConsoleModifiers.Control)
+				{
+					Console.WriteLine();
+					throw new Exception("Cancelled");
+				}
+
+				sb.Append(key.KeyChar);
+			}
+			Console.TreatControlCAsInput = false;
+			return sb.ToString();
+		}
+
+		public static string OnPassword(bool verify, object arg)
+		{
+			string passwd = null;
+			while (true)
+			{
+				Console.Write("Enter pass phrase:");
+				string str1 = ReadPassword();
+				Console.WriteLine();
+
+				if (str1.Length == 0)
+					continue;
+
+				if (!verify)
+					break;
+
+				Console.Write("Verifying - Enter pass phrase:");
+				string str2 = ReadPassword();
+				Console.WriteLine();
+	
+				if (str1 == str2)
+				{
+					passwd = str1;
+					break;
+				}
+
+				Console.WriteLine("Passwords don't match, try again.");
+			}
+
+			return passwd;
 		}
 	}
 }

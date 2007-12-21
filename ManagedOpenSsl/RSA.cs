@@ -74,11 +74,14 @@ namespace OpenSSL
 		private const int FlagNoExpConstTime = 0x02;
 		private const int FlagNoConstTime = 0x100;
 
+		private BigNumber.GeneratorThunk thunk = null;
+
 		#region Initialization
 		internal RSA(IntPtr ptr, bool owner) : base(ptr, owner) {}
 		public RSA() 
 			: base(Native.ExpectNonNull(Native.RSA_new()), true)
 		{ }
+
 		#endregion
 
 		#region Properties
@@ -188,9 +191,39 @@ namespace OpenSSL
 				this.Raw = raw;
 			}
 		}
+
+		public string PublicKeyAsPEM
+		{
+			get
+			{
+				using (BIO bio = BIO.MemoryBuffer())
+				{
+					this.WritePublicKey(bio);
+					return bio.ReadString();
+				}
+			}
+		}
+
+		public string PrivateKeyAsPEM
+		{
+			get
+			{
+				using (BIO bio = BIO.MemoryBuffer())
+				{
+					this.WritePrivateKey(bio, null, null, null);
+					return bio.ReadString();
+				}
+			}
+		}
 		#endregion
 
 		#region Methods
+		public void GenerateKeys(int bits, BigNumber e, BigNumber.GeneratorHandler callback, object arg)
+		{
+			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
+			Native.ExpectSuccess(Native.RSA_generate_key_ex(this.ptr, bits, e.Handle, this.thunk.CallbackStruct));
+		}
+
 		public byte[] PublicEncrypt(byte[] msg, int padding)
 		{
 			byte[] ret = new byte[this.Size];
@@ -215,6 +248,29 @@ namespace OpenSSL
 				return tmp;
 			}
 			return ret;
+		}
+
+		public void WritePublicKey(BIO bio)
+		{
+			Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, this.ptr));
+		}
+
+		public void WritePrivateKey(BIO bio, Cipher enc, Native.PasswordHandler passwd, object arg)
+		{
+			Native.PasswordThunk thunk = new Native.PasswordThunk(passwd, arg);
+			Native.ExpectSuccess(Native.PEM_write_bio_RSAPrivateKey(
+				bio.Handle,
+				this.ptr,
+				enc == null ? IntPtr.Zero : enc.Handle,
+				null,
+				0,
+				thunk.Callback,
+				IntPtr.Zero));
+		}
+
+		public override void Print(BIO bio)
+		{
+			Native.ExpectSuccess(Native.RSA_print(bio.Handle, this.ptr, 0));
 		}
 
 		#endregion

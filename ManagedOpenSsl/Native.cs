@@ -576,6 +576,9 @@ namespace OpenSSL
 		
 		[DllImport(DLLNAME)]
 		public extern static int RSA_verify(int type, byte[] m, uint m_length, byte[] sigbuf, uint siglen, IntPtr rsa);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RSA_print(IntPtr bp, IntPtr r, int offset);
 		#endregion
 
 		#region DH
@@ -782,15 +785,13 @@ namespace OpenSSL
 		public extern static int PEM_X509_INFO_write_bio(IntPtr bp, IntPtr xi, IntPtr enc, byte[] kstr, int klen, IntPtr cd, IntPtr u);
 		#endregion
 
-		#region DSAPrivateKey
+		#region DSA
 		[DllImport(DLLNAME)]
-		public extern static int PEM_write_bio_DSAPrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, IntPtr cb, IntPtr u);
+		public extern static int PEM_write_bio_DSAPrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr PEM_read_bio_DSAPrivateKey(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
-		#endregion
 
-		#region DSA_PUBKEY
 		[DllImport(DLLNAME)]
 		public extern static int PEM_write_bio_DSA_PUBKEY(IntPtr bp, IntPtr x);
 
@@ -806,6 +807,20 @@ namespace OpenSSL
 		public extern static IntPtr PEM_read_bio_DSAparams(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
 		#endregion
 
+		#region RSA
+		[DllImport(DLLNAME)]
+		public extern static int PEM_write_bio_RSA_PUBKEY(IntPtr bp, IntPtr x);
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr PEM_read_bio_RSA_PUBKEY(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+
+		[DllImport(DLLNAME)]
+		public extern static int PEM_write_bio_RSAPrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, pem_password_cb cb, IntPtr u);
+
+		[DllImport(DLLNAME)]
+		public extern static IntPtr PEM_read_bio_RSAPrivateKey(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		#endregion
+
 		#region DHparams
 		[DllImport(DLLNAME)]
 		public extern static int PEM_write_bio_DHparams(IntPtr bp, IntPtr x);
@@ -813,19 +828,57 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static IntPtr PEM_read_bio_DHparams(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
 		#endregion
+
+		public delegate string PasswordHandler(bool verify, object userdata);
+
+		internal class PasswordThunk
+		{
+			private PasswordHandler OnPassword;
+			private object arg;
+
+			public pem_password_cb Callback
+			{
+				get 
+				{
+					if (this.OnPassword == null)
+						return null;
+					return this.OnPasswordThunk; 
+				}
+			}
+
+			public PasswordThunk(PasswordHandler client, object arg)
+			{
+				this.OnPassword = client;
+				this.arg = arg;
+			}
+
+			internal int OnPasswordThunk(IntPtr buf, int size, int rwflag, IntPtr userdata)
+			{
+				try
+				{
+					string ret = OnPassword(rwflag != 0, this.arg);
+					byte[] pass = Encoding.ASCII.GetBytes(ret);
+					int len = pass.Length;
+					if (len > size)
+						len = size;
+
+					Marshal.Copy(pass, 0, buf, len);
+					return len;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+					return -1;
+				}
+			}
+		}
 		
 		#region PrivateKey
-#if !PocketPC
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-#endif
-		public delegate int pem_password_cb(
-			IntPtr buf,
-			int size, 
-			int rwflag, 
-			IntPtr userdata);
+		public delegate int pem_password_cb(IntPtr buf, int size, int rwflag, IntPtr userdata);
 
 		[DllImport(DLLNAME)]
-		public extern static int PEM_write_bio_PrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, IntPtr cb, IntPtr u);
+		public extern static int PEM_write_bio_PrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr PEM_read_bio_PrivateKey(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);

@@ -244,7 +244,7 @@ namespace OpenSSL
 			{
 				using (BIO bio = BIO.MemoryBuffer())
 				{
-					this.WritePrivateKey(bio);
+					this.WritePrivateKey(bio, null, null, null);
 					return bio.ReadString();
 				}
 			}
@@ -307,15 +307,16 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.PEM_write_bio_DSA_PUBKEY(bio.Handle, this.ptr));
 		}
 
-		public void WritePrivateKey(BIO bio)
+		public void WritePrivateKey(BIO bio, Cipher enc, Native.PasswordHandler passwd, object arg)
 		{
+			Native.PasswordThunk thunk = new Native.PasswordThunk(passwd, arg);
 			Native.ExpectSuccess(Native.PEM_write_bio_DSAPrivateKey(
 				bio.Handle,
 				this.ptr,
-				IntPtr.Zero,
+				enc == null ? IntPtr.Zero : enc.Handle,
 				null,
 				0,
-				IntPtr.Zero,
+				thunk.Callback,
 				IntPtr.Zero));
 		}
 
