@@ -1,4 +1,4 @@
-// Copyright (c) 2007 Frank Laub
+// Copyright (c) 2006-2007 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,6 @@ namespace OpenSSL
 		public DSA(DSAParameters parameters)
 			: base(parameters.TakeOwnership(), true)
 		{
-//			this.GenerateKeys();
 		}
 
 		public DSA(int bits, byte[] seed, int counter, BigNumber.GeneratorHandler callback, object arg)
