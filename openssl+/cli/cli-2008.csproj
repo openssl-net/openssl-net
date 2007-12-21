@@ -41,8 +41,8 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CmdGenRSA.cs" />
     <Compile Include="CmdRSA.cs" />
-    <Compile Include="DH.cs" />
-    <Compile Include="GenDH.cs" />
+    <Compile Include="CmdDH.cs" />
+    <Compile Include="CmdGenDH.cs" />
     <Compile Include="OptionParser.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
