@@ -44,7 +44,7 @@ namespace OpenSSL
 		}
 
 		public X509Certificate(BIO bio)
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true)
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
 		{
 		}
 
@@ -345,6 +345,7 @@ namespace OpenSSL
 			IntPtr ptr = this.ptr;
 			this.ptr = IntPtr.Zero;
 			Native.X509_free(ptr);
+			GC.SuppressFinalize(this);
 		}
 		#endregion
 

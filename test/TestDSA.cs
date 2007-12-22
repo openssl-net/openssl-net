@@ -125,8 +125,7 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			byte[] tmp = Encoding.ASCII.GetBytes(rnd_seed);
-			Native.RAND_seed(tmp, tmp.Length);
+			OpenSSL.Random.Seed(rnd_seed);
 		
 			Console.WriteLine("test generation of DSA parameters");
 

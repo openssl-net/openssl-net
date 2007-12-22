@@ -78,22 +78,7 @@ namespace OpenSSL.CLI
 			}
 
 			string infile = this.options.GetString("infile");
-			BIO bin;
-			if (string.IsNullOrEmpty(infile))
-			{
-				bin = BIO.MemoryBuffer();
-				Stream cin = Console.OpenStandardInput();
-				byte[] buf = new byte[1024];
-				while (true)
-				{
-					int len = cin.Read(buf, 0, buf.Length);
-					if (len == 0)
-						break;
-					bin.Write(buf, len);
-				}
-			}
-			else
-				bin = BIO.File(infile, "r");
+			BIO bin = Program.GetInFile(options.GetString("infile"));
 
 			OpenSSL.DH dh;
 			string inform = this.options["inform"] as string;
@@ -115,17 +100,17 @@ namespace OpenSSL.CLI
 			if (this.options.IsSet("check"))
 			{
 				Console.WriteLine("-check is currently not implemented.");
-			//    OpenSSL.DH.CheckCode codes = dh.Check();
-			//    if ((codes & OpenSSL.DH.CheckCode.NotSuitableGenerator) > 0)
-			//        Console.WriteLine("the g value is not a generator");
-			//    if ((codes & OpenSSL.DH.CheckCode.P_NotPrime) > 0)
-			//        Console.WriteLine("p value is not prime");
-			//    if ((codes & OpenSSL.DH.CheckCode.P_NotSafePrime) > 0)
-			//        Console.WriteLine("p value is not a safe prime");
-			//    if ((codes & OpenSSL.DH.CheckCode.UnableToCheckGenerator) > 0)
-			//        Console.WriteLine("unable to check the generator value");
-			//    if (codes == 0)
-			//        Console.WriteLine("DH parameters appear to be ok");
+				DH.CheckCode check = dh.Check();
+				if ((check & DH.CheckCode.NotSuitableGenerator) != 0)
+					Console.WriteLine("the g value is not a generator");
+				if ((check & DH.CheckCode.CheckP_NotPrime) != 0)
+					Console.WriteLine("p value is not prime");
+				if ((check & DH.CheckCode.CheckP_NotSafePrime) != 0)
+					Console.WriteLine("p value is not a safe prime");
+				if ((check & DH.CheckCode.UnableToCheckGenerator) != 0)
+					Console.WriteLine("unable to check the generator value");
+				if (check == 0)
+					Console.WriteLine("DH parameters appear to be ok");
 			}
 
 			if (this.options.IsSet("code"))

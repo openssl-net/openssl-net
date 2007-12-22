@@ -34,7 +34,7 @@ namespace OpenSSL
 	public class DSAParameters : Base, IDisposable
 	{
 		public DSAParameters(BIO bio) 
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_DSAparams(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true)
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_DSAparams(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
 		{
 		}
 
@@ -161,7 +161,7 @@ namespace OpenSSL
 
 		public static DSA FromPublicKey(BIO bio)
 		{
-			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSA_PUBKEY(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
+			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSA_PUBKEY(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true);
 		}
 
 		public static DSA FromPrivateKey(string pem)
@@ -171,7 +171,7 @@ namespace OpenSSL
 		
 		public static DSA FromPrivateKey(BIO bio)
 		{
-			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSAPrivateKey(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
+			return new DSA(Native.ExpectNonNull(Native.PEM_read_bio_DSAPrivateKey(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true);
 		}
 
 		#endregion
@@ -306,9 +306,9 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.PEM_write_bio_DSA_PUBKEY(bio.Handle, this.ptr));
 		}
 
-		public void WritePrivateKey(BIO bio, Cipher enc, Native.PasswordHandler passwd, object arg)
+		public void WritePrivateKey(BIO bio, Cipher enc, PasswordHandler passwd, object arg)
 		{
-			Native.PasswordThunk thunk = new Native.PasswordThunk(passwd, arg);
+			PasswordThunk thunk = new PasswordThunk(passwd, arg);
 			Native.ExpectSuccess(Native.PEM_write_bio_DSAPrivateKey(
 				bio.Handle,
 				this.ptr,

@@ -202,9 +202,9 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static DH FromParametersPEM(BIO bio)
 		{
-			DH dh = new DH(Native.ExpectNonNull(Native.PEM_read_bio_DHparams(
-				bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
-			return dh;
+			IntPtr ptr = Native.ExpectNonNull(Native.PEM_read_bio_DHparams(
+				bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
+			return new DH(ptr, true);
 		}
 
 		/// <summary>

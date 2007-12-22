@@ -31,24 +31,41 @@ using System.Diagnostics;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Wraps the BN_* set of functions.
+	/// </summary>
 	public class BigNumber : Base, IDisposable, IComparable<BigNumber>
 	{
 		#region Predefined Values
+		/// <summary>
+		/// Creates a BigNumber object by calling BN_value_one()
+		/// </summary>
 		public static BigNumber One = new BigNumber(Native.BN_value_one(), false);
 		#endregion
 
 		#region Initialization
 		internal BigNumber(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		/// <summary>
+		/// Calls BN_new()
+		/// </summary>
 		public BigNumber()
 			: base(Native.ExpectNonNull(Native.BN_new()), true)
 		{
 		}
 
+		/// <summary>
+		/// Calls BN_dup() on the BigNumber passed in.
+		/// </summary>
+		/// <param name="rhs"></param>
 		public BigNumber(BigNumber rhs)
 			: base(Native.BN_dup(rhs.ptr), true)
 		{
 		}
 
+		/// <summary>
+		/// Creates a BigNumber by calling BN_set_word()
+		/// </summary>
+		/// <param name="value"></param>
 		public BigNumber(uint value)
 			: this()
 		{
@@ -57,6 +74,11 @@ namespace OpenSSL
 		#endregion
 
 		#region Conversion
+		/// <summary>
+		/// Calls BN_dec2bn()
+		/// </summary>
+		/// <param name="str"></param>
+		/// <returns></returns>
 		public static BigNumber FromDecimalString(string str)
 		{
 			byte[] buf = Encoding.ASCII.GetBytes(str);
@@ -67,6 +89,11 @@ namespace OpenSSL
             return new BigNumber(ptr, true);
 		}
 
+		/// <summary>
+		/// Calls BN_hex2bn()
+		/// </summary>
+		/// <param name="str"></param>
+		/// <returns></returns>
 		public static BigNumber FromHexString(string str)
 		{
 			byte[] buf = Encoding.ASCII.GetBytes(str);
@@ -77,32 +104,60 @@ namespace OpenSSL
 			return new BigNumber(ptr, true);
 		}
 
+		/// <summary>
+		/// Calls BN_bin2bn()
+		/// </summary>
+		/// <param name="buf"></param>
+		/// <returns></returns>
 		public static BigNumber FromArray(byte[] buf)
 		{
 			IntPtr ptr = Native.BN_bin2bn(buf, buf.Length, IntPtr.Zero);
 			return new BigNumber(Native.ExpectNonNull(ptr), true);
 		}
 
+		/// <summary>
+		/// Calls BN_bn2dec()
+		/// </summary>
+		/// <returns></returns>
 		public string ToDecimalString()
 		{
 			return Native.PtrToStringAnsi(Native.BN_bn2dec(this.ptr), true);
 		}
 
+		/// <summary>
+		/// Calls BN_bn2hex()
+		/// </summary>
+		/// <returns></returns>
 		public string ToHexString()
 		{
 			return Native.PtrToStringAnsi(Native.BN_bn2hex(this.ptr), true);
 		}
 
+		/// <summary>
+		/// Calls BN_get_word()
+		/// </summary>
+		/// <param name="rhs"></param>
+		/// <returns></returns>
 		public static implicit operator uint(BigNumber rhs)
 		{
 			return Native.BN_get_word(rhs.ptr);
 		}
 
+		/// <summary>
+		/// Creates a new BigNumber object from a uint.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public static implicit operator BigNumber(uint value)
 		{
 			return new BigNumber(value);
 		}
 
+		/// <summary>
+		/// Calls BN_bn2bin()
+		/// </summary>
+		/// <param name="rhs"></param>
+		/// <returns></returns>
 		public static implicit operator byte[](BigNumber rhs)
 		{
 			byte[] bytes = new byte[rhs.Bytes];
@@ -113,11 +168,17 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
+		/// <summary>
+		/// Returns BN_num_bits()
+		/// </summary>
 		public int Bits
 		{
 			get { return Native.BN_num_bits(this.ptr); }
 		}
 
+		/// <summary>
+		/// Converts the result of Bits into the number of bytes.
+		/// </summary>
 		public int Bytes
 		{
 			get { return (this.Bits + 7) / 8; }
@@ -125,6 +186,9 @@ namespace OpenSSL
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Calls BN_clear()
+		/// </summary>
 		public void Clear()
 		{
 			Native.BN_clear(this.ptr);
@@ -132,6 +196,12 @@ namespace OpenSSL
 		#endregion
 
 		#region Operators
+		/// <summary>
+		/// Calls BN_add()
+		/// </summary>
+		/// <param name="lhs"></param>
+		/// <param name="rhs"></param>
+		/// <returns></returns>
 		public static BigNumber operator + (BigNumber lhs, BigNumber rhs)
 		{
 			BigNumber ret = new BigNumber();
@@ -139,6 +209,12 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls BN_sub()
+		/// </summary>
+		/// <param name="lhs"></param>
+		/// <param name="rhs"></param>
+		/// <returns></returns>
 		public static BigNumber operator -(BigNumber lhs, BigNumber rhs)
 		{
 			BigNumber ret = new BigNumber();
@@ -146,6 +222,12 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Determines if lhs is by-value equal to rhs
+		/// </summary>
+		/// <param name="lhs"></param>
+		/// <param name="rhs"></param>
+		/// <returns></returns>
         public static bool operator ==(BigNumber lhs, BigNumber rhs)
         {
 			if (object.ReferenceEquals(lhs, rhs))
@@ -155,6 +237,12 @@ namespace OpenSSL
 			return lhs.Equals(rhs);
         }
 
+		/// <summary>
+		/// Determines if lhs is by-value different than rhs
+		/// </summary>
+		/// <param name="lhs"></param>
+		/// <param name="rhs"></param>
+		/// <returns></returns>
         public static bool operator !=(BigNumber lhs, BigNumber rhs)
         {
 			return !(lhs == rhs);
@@ -162,6 +250,11 @@ namespace OpenSSL
 		#endregion
 
 		#region Overrides
+		/// <summary>
+		/// Calls BN_cmp()
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
 		public override bool Equals(object obj)
 		{
 			BigNumber rhs = obj as BigNumber;
@@ -170,11 +263,20 @@ namespace OpenSSL
 			return Native.BN_cmp(this.ptr, rhs.ptr) == 0;
 		}
 
+		/// <summary>
+		/// Creates a hash code by converting this object to a decimal string and 
+		/// returns the hash code of that string.
+		/// </summary>
+		/// <returns></returns>
 		public override int GetHashCode()
 		{
 			return ToDecimalString().GetHashCode();
 		}
 
+		/// <summary>
+		/// Calls BN_print()
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			Native.ExpectSuccess(Native.BN_print(bio.Handle, this.ptr));
@@ -183,15 +285,24 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls BN_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.BN_free(this.ptr);
+			GC.SuppressFinalize(this);
 		}
 
 		#endregion
 
 		#region IComparable<BigNumber> Members
 
+		/// <summary>
+		/// Calls BN_cmp()
+		/// </summary>
+		/// <param name="other"></param>
+		/// <returns></returns>
 		public int CompareTo(BigNumber other)
 		{
 			return Native.BN_cmp(this.ptr, other.ptr);
@@ -201,6 +312,14 @@ namespace OpenSSL
 
 		#region Callbacks
 
+		/// <summary>
+		/// Generator callback. Used mostly for status indications for long-
+		/// running generator functions.
+		/// </summary>
+		/// <param name="p"></param>
+		/// <param name="n"></param>
+		/// <param name="arg"></param>
+		/// <returns></returns>
 		public delegate int GeneratorHandler(int p, int n, object arg);
 
 		internal class GeneratorThunk
@@ -230,7 +349,7 @@ namespace OpenSSL
 				{
 					return OnGenerator(p, n, this.arg);
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					return 0;
 				}

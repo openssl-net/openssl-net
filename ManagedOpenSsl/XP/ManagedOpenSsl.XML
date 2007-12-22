@@ -314,6 +314,337 @@
             
             </summary>
         </member>
+        <member name="T:OpenSSL.X509Request">
+            <summary>
+            Wraps a X509_REQ object.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor">
+            <summary>
+            Calls X509_REQ_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor(System.Int32,OpenSSL.X509Name,OpenSSL.CryptoKey)">
+            <summary>
+            Calls X509_REQ_new() and then initializes versio, subject, and key.
+            </summary>
+            <param name="version"></param>
+            <param name="subject"></param>
+            <param name="key"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor(OpenSSL.BIO)">
+            <summary>
+            
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor(System.String)">
+            <summary>
+            Creates a X509_REQ from a PEM formatted string.
+            </summary>
+            <param name="pem"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.Sign(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
+            <summary>
+            Sign this X509Request using the supplied key and digest.
+            </summary>
+            <param name="pkey"></param>
+            <param name="digest"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.Verify(OpenSSL.CryptoKey)">
+            <summary>
+            Verify this X509Request against the supplied key.
+            </summary>
+            <param name="pkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Request.Print(OpenSSL.BIO)">
+            <summary>
+            Calls X509_REQ_print()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.Write(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_X509_REQ()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.CreateCertificate(System.Int32,OpenSSL.CryptoKey)">
+            <summary>
+            Converts this request into a certificate using X509_REQ_to_X509().
+            </summary>
+            <param name="days"></param>
+            <param name="pkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Request.OnDispose">
+            <summary>
+            Calls X509_REQ_free()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.Version">
+            <summary>
+            Accessor to the version field. The settor calls X509_REQ_set_version().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.PublicKey">
+            <summary>
+            Accessor to the pubkey field. Uses X509_REQ_get_pubkey() and X509_REQ_set_pubkey()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.Subject">
+            <summary>
+            Accessor to the subject field. Setter calls X509_REQ_set_subject_name().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.DSAPublicKeyString">
+            <summary>
+            Getter to the public key assuming that it is DSA.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.PEM">
+            <summary>
+            Returns the PEM formatted string for this object.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.BigNumber">
+            <summary>
+            Wraps the BN_* set of functions.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.BigNumber.One">
+            <summary>
+            Creates a BigNumber object by calling BN_value_one()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.#ctor">
+            <summary>
+            Calls BN_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.#ctor(OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_dup() on the BigNumber passed in.
+            </summary>
+            <param name="rhs"></param>
+        </member>
+        <member name="M:OpenSSL.BigNumber.#ctor(System.UInt32)">
+            <summary>
+            Creates a BigNumber by calling BN_set_word()
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:OpenSSL.BigNumber.FromDecimalString(System.String)">
+            <summary>
+            Calls BN_dec2bn()
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.FromHexString(System.String)">
+            <summary>
+            Calls BN_hex2bn()
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.FromArray(System.Byte[])">
+            <summary>
+            Calls BN_bin2bn()
+            </summary>
+            <param name="buf"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.ToDecimalString">
+            <summary>
+            Calls BN_bn2dec()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.ToHexString">
+            <summary>
+            Calls BN_bn2hex()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Implicit(OpenSSL.BigNumber)~System.UInt32">
+            <summary>
+            Calls BN_get_word()
+            </summary>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Implicit(System.UInt32)~OpenSSL.BigNumber">
+            <summary>
+            Creates a new BigNumber object from a uint.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Implicit(OpenSSL.BigNumber)~System.Byte[]">
+            <summary>
+            Calls BN_bn2bin()
+            </summary>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.Clear">
+            <summary>
+            Calls BN_clear()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Addition(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_add()
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Subtraction(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_sub()
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Equality(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Determines if lhs is by-value equal to rhs
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Inequality(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Determines if lhs is by-value different than rhs
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.Equals(System.Object)">
+            <summary>
+            Calls BN_cmp()
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.GetHashCode">
+            <summary>
+            Creates a hash code by converting this object to a decimal string and 
+            returns the hash code of that string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.Print(OpenSSL.BIO)">
+            <summary>
+            Calls BN_print()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.BigNumber.OnDispose">
+            <summary>
+            Calls BN_free()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.CompareTo(OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_cmp()
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OpenSSL.BigNumber.Bits">
+            <summary>
+            Returns BN_num_bits()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.BigNumber.Bytes">
+            <summary>
+            Converts the result of Bits into the number of bytes.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.BigNumber.GeneratorHandler">
+            <summary>
+            Generator callback. Used mostly for status indications for long-
+            running generator functions.
+            </summary>
+            <param name="p"></param>
+            <param name="n"></param>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OpenSSL.DebugOptions">
+            <summary>
+            V_CRYPTO_MDEBUG_*
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.Time">
+            <summary>
+            V_CRYPTO_MDEBUG_TIME 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.Thread">
+            <summary>
+            V_CRYPTO_MDEBUG_THREAD
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.All">
+            <summary>
+            V_CRYPTO_MDEBUG_ALL 
+            </summary>
+        </member>
+        <member name="T:OpenSSL.MemoryCheck">
+            <summary>
+            CRYPTO_MEM_CHECK_*
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Off">
+            <summary>
+            CRYPTO_MEM_CHECK_OFF 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.On">
+            <summary>
+            CRYPTO_MEM_CHECK_ON 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Enable">
+            <summary>
+            CRYPTO_MEM_CHECK_ENABLE
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Disable">
+            <summary>
+            CRYPTO_MEM_CHECK_DISABLE
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Crypto.MemoryLeakHandler">
+            <summary>
+            CRYPTO_MEM_LEAK_CB
+            </summary>
+            <param name="order"></param>
+            <param name="file"></param>
+            <param name="line"></param>
+            <param name="num_bytes"></param>
+            <param name="addr"></param>
+        </member>
+        <member name="T:OpenSSL.Native">
+            <summary>
+            This is the low-level C-style interface to the crypto API.
+            Use this interface with caution.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Native.DLLNAME">
+            <summary>
+            This is the name of the DLL that P/Invoke loads and tries to bind all of
+            these native functions to.
+            </summary>
+        </member>
         <member name="F:OpenSSL.Native.bn_gencb_st.arg">
             To handle binary (in)compatibility 
         </member>

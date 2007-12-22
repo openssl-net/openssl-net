@@ -82,6 +82,16 @@ namespace OpenSSL
 			: base(Native.ExpectNonNull(Native.RSA_new()), true)
 		{ }
 
+		public static RSA FromPublicKey(BIO bio)
+		{
+			return new RSA(Native.ExpectNonNull(Native.PEM_read_bio_RSA_PUBKEY(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true);
+		}
+
+		public static RSA FromPrivateKey(BIO bio)
+		{
+			return new RSA(Native.ExpectNonNull(Native.PEM_read_bio_RSAPrivateKey(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true);
+		}
+
 		#endregion
 
 		#region Properties
@@ -237,6 +247,32 @@ namespace OpenSSL
 			return ret;
 		}
 
+		public byte[] PrivateEncrypt(byte[] msg, int padding)
+		{
+			byte[] ret = new byte[this.Size];
+			int len = Native.ExpectSuccess(Native.RSA_private_encrypt(msg.Length, msg, ret, this.ptr, padding));
+			if (len != ret.Length)
+			{
+				byte[] tmp = new byte[len];
+				Buffer.BlockCopy(ret, 0, tmp, 0, len);
+				return tmp;
+			}
+			return ret;
+		}
+
+		public byte[] PublicDecrypt(byte[] msg, int padding)
+		{
+			byte[] ret = new byte[this.Size];
+			int len = Native.ExpectSuccess(Native.RSA_public_decrypt(msg.Length, msg, ret, this.ptr, padding));
+			if (len != ret.Length)
+			{
+				byte[] tmp = new byte[len];
+				Buffer.BlockCopy(ret, 0, tmp, 0, len);
+				return tmp;
+			}
+			return ret;
+		}
+
 		public byte[] PrivateDecrypt(byte[] msg, int padding)
 		{
 			byte[] ret = new byte[this.Size];
@@ -255,9 +291,9 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, this.ptr));
 		}
 
-		public void WritePrivateKey(BIO bio, Cipher enc, Native.PasswordHandler passwd, object arg)
+		public void WritePrivateKey(BIO bio, Cipher enc, PasswordHandler passwd, object arg)
 		{
-			Native.PasswordThunk thunk = new Native.PasswordThunk(passwd, arg);
+			PasswordThunk thunk = new PasswordThunk(passwd, arg);
 			Native.ExpectSuccess(Native.PEM_write_bio_RSAPrivateKey(
 				bio.Handle,
 				this.ptr,

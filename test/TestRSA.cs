@@ -350,8 +350,7 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			byte[] tmp = Encoding.ASCII.GetBytes(rnd_seed);
-			Native.RAND_seed(tmp, tmp.Length);
+			OpenSSL.Random.Seed(rnd_seed);
 
 			for (int v = 0; v < 6; v++)
 			{

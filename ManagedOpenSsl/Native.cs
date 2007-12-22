@@ -31,8 +31,164 @@ using System.Globalization;
 
 namespace OpenSSL
 {
-	public class Native
+	internal class PasswordThunk
 	{
+		private PasswordHandler OnPassword;
+		private object arg;
+
+		public Native.pem_password_cb Callback
+		{
+			get
+			{
+				if (this.OnPassword == null)
+					return null;
+				return this.OnPasswordThunk;
+			}
+		}
+
+		public PasswordThunk(PasswordHandler client, object arg)
+		{
+			this.OnPassword = client;
+			this.arg = arg;
+		}
+
+		internal int OnPasswordThunk(IntPtr buf, int size, int rwflag, IntPtr userdata)
+		{
+			try
+			{
+				string ret = OnPassword(rwflag != 0, this.arg);
+				byte[] pass = Encoding.ASCII.GetBytes(ret);
+				int len = pass.Length;
+				if (len > size)
+					len = size;
+
+				Marshal.Copy(pass, 0, buf, len);
+				return len;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return -1;
+			}
+		}
+	}
+
+	public class Random
+	{
+		public static void Seed(byte[] seed)
+		{
+			Native.RAND_seed(seed, seed.Length);
+		}
+
+		public static void Seed(string seed)
+		{
+			byte[] tmp = Encoding.ASCII.GetBytes(seed);
+			Native.RAND_seed(tmp, tmp.Length);
+		}
+	}
+
+	/// <summary>
+	/// V_CRYPTO_MDEBUG_*
+	/// </summary>
+	[Flags]
+	public enum DebugOptions
+	{
+		/// <summary>
+		/// V_CRYPTO_MDEBUG_TIME 
+		/// </summary>
+		Time = 0x01,
+
+		/// <summary>
+		/// V_CRYPTO_MDEBUG_THREAD
+		/// </summary>
+		Thread = 0x02,
+
+		/// <summary>
+		/// V_CRYPTO_MDEBUG_ALL 
+		/// </summary>
+		All = Time | Thread,
+	}
+
+	/// <summary>
+	/// CRYPTO_MEM_CHECK_*
+	/// </summary>
+	public enum MemoryCheck
+	{
+		/// <summary>
+		/// CRYPTO_MEM_CHECK_OFF 
+		/// </summary>
+		Off = 0x00,
+
+		/// <summary>
+		/// CRYPTO_MEM_CHECK_ON 
+		/// </summary>
+		On = 0x01,
+
+		/// <summary>
+		/// CRYPTO_MEM_CHECK_ENABLE
+		/// </summary>
+		Enable = 0x02,
+
+		/// <summary>
+		/// CRYPTO_MEM_CHECK_DISABLE
+		/// </summary>
+		Disable = 0x03,
+	}
+
+	public class Crypto
+	{
+		public static void MallocDebugInit()
+		{
+			Native.CRYPTO_malloc_debug_init();
+		}
+
+		public static void SetDebugOptions(DebugOptions options)
+		{
+			Native.CRYPTO_dbg_set_options((int)options);
+		}
+
+		public static void SetMemoryCheck(MemoryCheck options)
+		{
+			Native.CRYPTO_mem_ctrl((int)options);
+		}
+
+		public static void Cleanup()
+		{
+			Native.CRYPTO_cleanup_all_ex_data();
+		}
+
+		public static void RemoveState(uint value)
+		{
+			Native.ERR_remove_state(value);
+		}
+
+		/// <summary>
+		/// CRYPTO_MEM_LEAK_CB
+		/// </summary>
+		/// <param name="order"></param>
+		/// <param name="file"></param>
+		/// <param name="line"></param>
+		/// <param name="num_bytes"></param>
+		/// <param name="addr"></param>
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void MemoryLeakHandler(uint order, string file, int line, int num_bytes, IntPtr addr);
+
+		public static void CheckMemoryLeaks(MemoryLeakHandler callback)
+		{
+			Native.CRYPTO_mem_leaks_cb(callback);
+		}
+	}
+
+	/// <summary>
+	/// This is the low-level C-style interface to the crypto API.
+	/// Use this interface with caution.
+	/// </summary>
+	internal class Native
+	{
+		/// <summary>
+		/// This is the name of the DLL that P/Invoke loads and tries to bind all of
+		/// these native functions to.
+		/// </summary>
 		public const string DLLNAME = "libeay32.dll";
 
 		[DllImport("kernel32.dll")]
@@ -103,17 +259,8 @@ namespace OpenSSL
 			ExpectSuccess(CRYPTO_set_mem_debug_functions(m, r, f, so, go));
 		}
 
-		public const int V_CRYPTO_MDEBUG_TIME = 0x1;
-		public const int V_CRYPTO_MDEBUG_THREAD = 0x2;
-		public const int V_CRYPTO_MDEBUG_ALL = (V_CRYPTO_MDEBUG_TIME | V_CRYPTO_MDEBUG_THREAD);
-
 		[DllImport(DLLNAME)]
 		public extern static void CRYPTO_dbg_set_options(int bits);
-
-		public const int CRYPTO_MEM_CHECK_OFF = 0x0;
-		public const int CRYPTO_MEM_CHECK_ON = 0x1;
-		public const int CRYPTO_MEM_CHECK_ENABLE = 0x2;
-		public const int CRYPTO_MEM_CHECK_DISABLE = 0x3;
 
 		[DllImport(DLLNAME)]
 		public extern static int CRYPTO_mem_ctrl(int mode);
@@ -127,16 +274,14 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static void CRYPTO_mem_leaks(IntPtr bio);
 
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void CRYPTO_MEM_LEAK_CB(uint order, string file, int line, int num_bytes, IntPtr addr);
-
 		[DllImport(DLLNAME)]
-		public extern static void CRYPTO_mem_leaks_cb(CRYPTO_MEM_LEAK_CB cb);
+		public extern static void CRYPTO_mem_leaks_cb(Crypto.MemoryLeakHandler cb);
 
 		#endregion
 
 		#region OBJ
 		public const int NID_undef = 0;
+
 		public const int OBJ_undef = 0;
 
 		[DllImport(DLLNAME)]
@@ -440,6 +585,7 @@ namespace OpenSSL
 
 		#region X509_NAME
 		public const int MBSTRING_FLAG = 0x1000;
+
 		public const int MBSTRING_ASC = MBSTRING_FLAG | 1;
 
 		public const int ASN1_STRFLGS_RFC2253 = 
@@ -734,7 +880,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_X509(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_X509(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_X509(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region X509_INFO
@@ -742,7 +888,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_X509_INFO(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_X509_INFO(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_X509_INFO(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region X509_AUX
@@ -750,7 +896,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_X509_AUX(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_X509_AUX(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_X509_AUX(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region X509_REQ
@@ -758,7 +904,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_X509_REQ(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_X509_REQ(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_X509_REQ(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region X509_REQ_NEW
@@ -766,7 +912,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_X509_REQ_NEW(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_X509_REQ_NEW(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_X509_REQ_NEW(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region X509_CRL
@@ -774,12 +920,12 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_X509_CRL(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_X509_CRL(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_X509_CRL(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region X509Chain
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_X509_INFO_read_bio(IntPtr bp, IntPtr sk, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_X509_INFO_read_bio(IntPtr bp, IntPtr sk, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
 		public extern static int PEM_X509_INFO_write_bio(IntPtr bp, IntPtr xi, IntPtr enc, byte[] kstr, int klen, IntPtr cd, IntPtr u);
@@ -790,13 +936,13 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_DSAPrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_DSAPrivateKey(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_DSAPrivateKey(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
 		public extern static int PEM_write_bio_DSA_PUBKEY(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_DSA_PUBKEY(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_DSA_PUBKEY(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region DSAparams
@@ -804,7 +950,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_DSAparams(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_DSAparams(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_DSAparams(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region RSA
@@ -812,13 +958,13 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_RSA_PUBKEY(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_RSA_PUBKEY(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_RSA_PUBKEY(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
 		public extern static int PEM_write_bio_RSAPrivateKey(IntPtr bp, IntPtr x, IntPtr enc, byte[] kstr, int klen, pem_password_cb cb, IntPtr u);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_RSAPrivateKey(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_RSAPrivateKey(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#region DHparams
@@ -826,52 +972,8 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_DHparams(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_DHparams(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_DHparams(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
-
-		public delegate string PasswordHandler(bool verify, object userdata);
-
-		internal class PasswordThunk
-		{
-			private PasswordHandler OnPassword;
-			private object arg;
-
-			public pem_password_cb Callback
-			{
-				get 
-				{
-					if (this.OnPassword == null)
-						return null;
-					return this.OnPasswordThunk; 
-				}
-			}
-
-			public PasswordThunk(PasswordHandler client, object arg)
-			{
-				this.OnPassword = client;
-				this.arg = arg;
-			}
-
-			internal int OnPasswordThunk(IntPtr buf, int size, int rwflag, IntPtr userdata)
-			{
-				try
-				{
-					string ret = OnPassword(rwflag != 0, this.arg);
-					byte[] pass = Encoding.ASCII.GetBytes(ret);
-					int len = pass.Length;
-					if (len > size)
-						len = size;
-
-					Marshal.Copy(pass, 0, buf, len);
-					return len;
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.Message);
-					return -1;
-				}
-			}
-		}
 		
 		#region PrivateKey
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -889,7 +991,7 @@ namespace OpenSSL
 		public extern static int PEM_write_bio_PUBKEY(IntPtr bp, IntPtr x);
 
 		[DllImport(DLLNAME)]
-		public extern static IntPtr PEM_read_bio_PUBKEY(IntPtr bp, IntPtr x, IntPtr cb, IntPtr u);
+		public extern static IntPtr PEM_read_bio_PUBKEY(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
 		#endregion
 
 		#endregion

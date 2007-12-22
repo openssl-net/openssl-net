@@ -31,6 +31,31 @@ namespace OpenSSL.CLI
 {
 	class CmdRSA : ICommand
 	{
+		OptionParser options = new OptionParser();
+
+		public CmdRSA()
+		{
+			options.AddOption("-inform", new Option("inform", "PEM"));
+			options.AddOption("-outform", new Option("outform", "PEM"));
+			options.AddOption("-in", new Option("in", ""));
+			options.AddOption("-sgckey", new Option("sgckey", false));
+			options.AddOption("-passin", new Option("passin", ""));
+			options.AddOption("-out", new Option("out", ""));
+			options.AddOption("-passout", new Option("passout", "passout"));
+			options.AddOption("-des", new Option("des", false));
+			options.AddOption("-des3", new Option("des3", false));
+			options.AddOption("-aes128", new Option("aes128", false));
+			options.AddOption("-aes192", new Option("aes192", false));
+			options.AddOption("-aes256", new Option("aes256", false));
+			options.AddOption("-text", new Option("text", false));
+			options.AddOption("-noout", new Option("noout", false));
+			options.AddOption("-modulus", new Option("modulus", false));
+			options.AddOption("-check", new Option("check", false));
+			options.AddOption("-pubin", new Option("pubin", false));
+			options.AddOption("-pubout", new Option("pubout", false));
+			options.AddOption("-engine", new Option("engine", ""));
+		}
+
 		void Usage()
 		{
 			Console.WriteLine(
@@ -60,7 +85,33 @@ where options are
 
 		public void Execute(string[] args)
 		{
-			Usage();
+			try
+			{
+				options.ParseArguments(args);
+			}
+			catch (Exception)
+			{
+				Usage();
+				return;
+			}
+
+			if (options.IsSet("pubin") && options.IsSet("check"))
+			{
+				Console.WriteLine("Only private keys can be checked");
+				return;
+			}
+
+			BIO bin = Program.GetInFile(options.GetString("in"));
+
+			CryptoKey pkey;
+			if (options.IsSet("pubin"))
+			{
+				pkey = CryptoKey.FromPublicKey(bin, null, null);
+			}
+			else
+			{
+//				pkey = CryptoKey.FromPrivateKey(bin, cb);
+			}
 		}
 
 		#endregion

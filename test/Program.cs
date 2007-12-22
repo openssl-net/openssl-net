@@ -157,18 +157,18 @@ namespace test
 
 		public static void Start()
 		{
-			Native.CRYPTO_malloc_debug_init();
-			Native.CRYPTO_dbg_set_options(Native.V_CRYPTO_MDEBUG_ALL);
-			Native.CRYPTO_mem_ctrl(Native.CRYPTO_MEM_CHECK_ON);
+			Crypto.MallocDebugInit();
+			Crypto.SetDebugOptions(DebugOptions.All);
+			Crypto.SetMemoryCheck(MemoryCheck.On);
 		}
 
 		public static void Finish()
 		{
-			Native.CRYPTO_cleanup_all_ex_data();
-			Native.ERR_remove_state(0);
+			Crypto.Cleanup();
+			Crypto.RemoveState(0);
 
 			GC.Collect();
-			Native.CRYPTO_mem_leaks_cb(new Native.CRYPTO_MEM_LEAK_CB(OnMemoryLeak));
+			Crypto.CheckMemoryLeaks(OnMemoryLeak);
 			if (leaked > 0)
 				Console.WriteLine("Leaked total bytes: {0}", leaked);
 		}

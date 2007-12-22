@@ -30,6 +30,22 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	public delegate string PasswordHandler(bool verify, object userdata);
+
+	public class PasswordCallback
+	{
+		private string password;
+		public PasswordCallback(string password)
+		{
+			this.password = password;
+		}
+
+		public string OnPassword(bool verify, object userdata)
+		{
+			return this.password;
+		}
+	}
+
 	/// <summary>
 	/// Wraps the native OpenSSL EVP_PKEY object
 	/// </summary>
@@ -39,14 +55,28 @@ namespace OpenSSL
 		internal CryptoKey(IntPtr ptr, bool owner) : base(ptr, owner) { }
 		public CryptoKey() : base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) {}
 		
-		public static CryptoKey FromPublicKey(string pem)
+		public static CryptoKey FromPublicKey(string pem, string password)
 		{
-			return FromPublicKey(new BIO(pem));
+			return FromPublicKey(new BIO(pem), password);
 		}
 
-		public static CryptoKey FromPublicKey(BIO bio)
+		public static CryptoKey FromPublicKey(BIO bio, string password)
 		{
-			return new CryptoKey(Native.ExpectNonNull(Native.PEM_read_bio_PUBKEY(bio.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)), true);
+			PasswordCallback callback = new PasswordCallback(password);
+			return FromPublicKey(bio, callback.OnPassword, null);
+		}
+
+		public static CryptoKey FromPublicKey(BIO bio, PasswordHandler handler, object arg)
+		{
+			PasswordThunk thunk = new PasswordThunk(handler, arg);
+			IntPtr ptr = Native.ExpectNonNull(Native.PEM_read_bio_PUBKEY(
+				bio.Handle,
+				IntPtr.Zero,
+				thunk.Callback,
+				IntPtr.Zero
+			));
+
+			return new CryptoKey(ptr, true);
 		}
 
 		public static CryptoKey FromPrivateKey(string pem, string password)
@@ -54,35 +84,21 @@ namespace OpenSSL
 			return FromPrivateKey(new BIO(pem), password);
 		}
 
-		class PasswordCallback
+		public static CryptoKey FromPrivateKey(BIO bio, string passwd)
 		{
-			private string password;
-			public PasswordCallback(string password)
-			{
-				this.password = password;
-			}
-
-			public int OnPassword(
-				IntPtr buf,
-				int size,
-				int rwflag,
-				IntPtr userdata)
-			{
-				byte[] bytes = Encoding.ASCII.GetBytes(this.password);
-				Marshal.Copy(bytes, 0, buf, bytes.Length);
-				return bytes.Length;
-			}
+			PasswordCallback callback = new PasswordCallback(passwd);
+			return FromPrivateKey(bio, callback.OnPassword, null);
 		}
 
-		public static CryptoKey FromPrivateKey(BIO bio, string password)
+		public static CryptoKey FromPrivateKey(BIO bio, PasswordHandler handler, object arg)
 		{
-			PasswordCallback cb = new PasswordCallback(password);
-			Native.pem_password_cb pem_cb = new Native.pem_password_cb(cb.OnPassword);
+			PasswordThunk thunk = new PasswordThunk(handler, arg);
 			IntPtr ptr = Native.ExpectNonNull(Native.PEM_read_bio_PrivateKey(
 				bio.Handle, 
-				IntPtr.Zero, 
-				pem_cb, 
-				IntPtr.Zero));
+				IntPtr.Zero,
+				thunk.Callback, 
+				IntPtr.Zero
+			));
 
 			return new CryptoKey(ptr, true);
 		}
