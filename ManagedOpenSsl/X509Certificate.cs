@@ -431,7 +431,6 @@ namespace OpenSSL
 		#endregion
 	}
 
-
 	/// <summary>
 	/// Wraps the X509_EXTENSION object
 	/// </summary>
