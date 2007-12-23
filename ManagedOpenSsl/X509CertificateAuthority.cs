@@ -30,20 +30,43 @@ using System.Threading;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Used for generating sequence numbers by the CertificateAuthority
+	/// </summary>
 	public interface ISequenceNumber
 	{
+		/// <summary>
+		/// Returns the next available sequence number
+		/// </summary>
+		/// <returns></returns>
 		int Next();
 	}
 
+	/// <summary>
+	/// Implements the ISequenceNumber interface. 
+	/// The sequence number is read from a file, incremented, 
+	/// then written back to the file
+	/// </summary>
 	public class FileSerialNumber : ISequenceNumber
 	{
 		private FileInfo serialFile;
+		/// <summary>
+		/// Constructs a FileSerialNumber. The path specifies where 
+		/// the serial number should be read and written to.
+		/// </summary>
+		/// <param name="path"></param>
 		public FileSerialNumber(string path)
 		{
 			this.serialFile = new FileInfo(path);
 		}
 
 		#region ISequenceNumber Members
+		/// <summary>
+		/// Implements the Next() method of the ISequenceNumber interface.
+		/// The sequence number is read from a file, incremented, 
+		/// then written back to the file
+		/// </summary>
+		/// <returns></returns>
 		public int Next()
 		{
 			string name = this.serialFile.FullName.Replace('\\', '/');
@@ -72,15 +95,33 @@ namespace OpenSSL
 		#endregion
 	}
 
+	/// <summary>
+	/// Simple implementation of the ISequenceNumber interface.
+	/// </summary>
 	public class SimpleSerialNumber : ISequenceNumber
 	{
 		private int seq;
 
+		/// <summary>
+		/// Construct a SimpleSerialNumber with the initial sequence number set to 0.
+		/// </summary>
 		public SimpleSerialNumber() { this.seq = 0; }
+
+		/// <summary>
+		/// Construct a SimpleSerialNumber with the initial sequence number
+		/// set to the value specified by the seed parameter.
+		/// </summary>
+		/// <param name="seed"></param>
 		public SimpleSerialNumber(int seed) { this.seq = seed; }
 
 		#region ISequenceNumber Members
 
+		/// <summary>
+		/// Returns the next available sequence number.
+		/// This implementation simply increments the current 
+		/// sequence number and returns it.
+		/// </summary>
+		/// <returns></returns>
 		public int Next()
 		{
 			return ++seq;
@@ -89,6 +130,11 @@ namespace OpenSSL
 		#endregion
 	}
 
+	/// <summary>
+	/// High-level interface which does the job of a CA (Certificate Authority)
+	/// Duties include processing incoming X509 requests and responding
+	/// with signed X509 certificates, signed by this CA's private key.
+	/// </summary>
 	public class X509CertificateAuthority  
 	{
 		private X509Certificate caCert;
@@ -96,6 +142,16 @@ namespace OpenSSL
 		private ISequenceNumber serial;
 		private Configuration cfg;
 
+		/// <summary>
+		/// Factory method which creates a X509CertifiateAuthority where
+		/// the internal certificate is self-signed
+		/// </summary>
+		/// <param name="cfg"></param>
+		/// <param name="seq"></param>
+		/// <param name="subject"></param>
+		/// <param name="start"></param>
+		/// <param name="validity"></param>
+		/// <returns></returns>
 		public static X509CertificateAuthority SelfSigned(
 			Configuration cfg,
 			ISequenceNumber seq,
@@ -103,8 +159,7 @@ namespace OpenSSL
             DateTime start,
 			TimeSpan validity)
 		{
-			DSA dsa = new DSA(new DSAParameters(512));
-			CryptoKey key = new CryptoKey(dsa);
+			CryptoKey key = new CryptoKey(new DSA());
 			X509Certificate cert = new X509Certificate(
 				seq.Next(),
 				subject,
@@ -121,16 +176,29 @@ namespace OpenSSL
 			return new X509CertificateAuthority(cert, key, seq, cfg);
 		}
 
+		/// <summary>
+		/// Accessor to the CA's X509 Certificate
+		/// </summary>
 		public X509Certificate Certificate
 		{
 			get { return this.caCert; }
 		}
 
+		/// <summary>
+		/// Accessor to the CA's key used for signing.
+		/// </summary>
 		public CryptoKey Key
 		{
 			get { return this.caKey; }
 		}
 
+		/// <summary>
+		/// Constructs a X509CertifcateAuthority with the specified parameters.
+		/// </summary>
+		/// <param name="caCert"></param>
+		/// <param name="caKey"></param>
+		/// <param name="serial"></param>
+		/// <param name="cfg"></param>
 		public X509CertificateAuthority(X509Certificate caCert, CryptoKey caKey, ISequenceNumber serial, Configuration cfg)
 		{
 			if (!caCert.CheckPrivateKey(caKey))
@@ -141,6 +209,14 @@ namespace OpenSSL
 			this.cfg = cfg;
 		}
 
+		/// <summary>
+		/// Process and X509Request. This includes creating a new X509Certificate
+		/// and signing this certificate with this CA's private key.
+		/// </summary>
+		/// <param name="request"></param>
+		/// <param name="startTime"></param>
+		/// <param name="endTime"></param>
+		/// <returns></returns>
 		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime)
 		{
 			//using (CryptoKey pkey = request.PublicKey)

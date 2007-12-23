@@ -32,6 +32,9 @@ using System.IO;
 namespace OpenSSL
 {
 	#region Cipher
+	/// <summary>
+	/// Wraps the EVP_CIPHER object.
+	/// </summary>
 	public class Cipher : Base
 	{
 		private EVP_CIPHER raw;
@@ -40,11 +43,20 @@ namespace OpenSSL
 			this.raw = (EVP_CIPHER)Marshal.PtrToStructure(this.ptr, typeof(EVP_CIPHER));
 		}
 
+		/// <summary>
+		/// Prints the LongName of this cipher.
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			bio.Write(this.LongName);
 		}
 
+		/// <summary>
+		/// Returns EVP_get_cipherbyname()
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		public static Cipher ByName(string name)
 		{
 			byte[] buf = Encoding.ASCII.GetBytes(name);
@@ -72,134 +84,398 @@ namespace OpenSSL
 		#endregion
 
 		#region Ciphers
+		/// <summary>
+		/// EVP_enc_null()
+		/// </summary>
 		public static Cipher Null = new Cipher(Native.EVP_enc_null(), false);
+
+		/// <summary>
+		/// EVP_des_ecb()
+		/// </summary>
 		public static Cipher DES_ECB = new Cipher(Native.EVP_des_ecb(), false);
+
+		/// <summary>
+		/// EVP_des_ede()
+		/// </summary>
 		public static Cipher DES_EDE = new Cipher(Native.EVP_des_ede(), false);
+	
+		/// <summary>
+		/// EVP_des_ede3()
+		/// </summary>
 		public static Cipher DES_EDE3 = new Cipher(Native.EVP_des_ede3(), false);
+		
+		/// <summary>
+		/// EVP_des_ede_ecb()
+		/// </summary>
 		public static Cipher DES_EDE_ECB = new Cipher(Native.EVP_des_ede_ecb(), false);
+		
+		/// <summary>
+		/// EVP_des_ede3_ecb()
+		/// </summary>
 		public static Cipher DES_EDE3_ECB = new Cipher(Native.EVP_des_ede3_ecb(), false);
+		
+		/// <summary>
+		/// EVP_des_cfb64()
+		/// </summary>
 		public static Cipher DES_CFB64 = new Cipher(Native.EVP_des_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_des_cfb1()
+		/// </summary>
 		public static Cipher DES_CFB1 = new Cipher(Native.EVP_des_cfb1(), false);
+		
+		/// <summary>
+		/// EVP_des_cfb8()
+		/// </summary>
 		public static Cipher DES_CFB8 = new Cipher(Native.EVP_des_cfb8(), false);
+		
+		/// <summary>
+		/// EVP_des_ede_cfb64()
+		/// </summary>
 		public static Cipher DES_EDE_CFB64 = new Cipher(Native.EVP_des_ede_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_des_ede3_cfb64()
+		/// </summary>
 		public static Cipher DES_EDE3_CFB64 = new Cipher(Native.EVP_des_ede3_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_des_ede3_cfb1()
+		/// </summary>
 		public static Cipher DES_EDE3_CFB1 = new Cipher(Native.EVP_des_ede3_cfb1(), false);
+		
+		/// <summary>
+		/// EVP_des_ede3_cfb8()
+		/// </summary>
 		public static Cipher DES_EDE3_CFB8 = new Cipher(Native.EVP_des_ede3_cfb8(), false);
+		
+		/// <summary>
+		/// EVP_des_ofb()
+		/// </summary>
 		public static Cipher DES_OFB = new Cipher(Native.EVP_des_ofb(), false);
+		
+		/// <summary>
+		/// EVP_ded_ede_ofb()
+		/// </summary>
 		public static Cipher DES_EDE_OFB = new Cipher(Native.EVP_des_ede_ofb(), false);
+		
+		/// <summary>
+		/// EVP_des_ede3_ofb()
+		/// </summary>
 		public static Cipher DES_EDE3_OFB = new Cipher(Native.EVP_des_ede3_ofb(), false);
+		
+		/// <summary>
+		/// EVP_des_cbc()
+		/// </summary>
 		public static Cipher DES_CBC = new Cipher(Native.EVP_des_cbc(), false);
+		
+		/// <summary>
+		/// EVP_des_ede_cbc()
+		/// </summary>
 		public static Cipher DES_EDE_CBC = new Cipher(Native.EVP_des_ede_cbc(), false);
+		
+		/// <summary>
+		/// EVP_des_ede3_cbc()
+		/// </summary>
 		public static Cipher DES_EDE3_CBC = new Cipher(Native.EVP_des_ede3_cbc(), false);
+		
+		/// <summary>
+		/// EVP_desx_cbc()
+		/// </summary>
 		public static Cipher DESX_CBC = new Cipher(Native.EVP_desx_cbc(), false);
+		
+		/// <summary>
+		/// EVP_rc4()
+		/// </summary>
 		public static Cipher RC4 = new Cipher(Native.EVP_rc4(), false);
+		
+		/// <summary>
+		/// EVP_rc4_40()
+		/// </summary>
 		public static Cipher RC4_40 = new Cipher(Native.EVP_rc4_40(), false);
+		
+		/// <summary>
+		/// EVP_idea_ecb()
+		/// </summary>
 		public static Cipher Idea_ECB = new Cipher(Native.EVP_idea_ecb(), false);
+		
+		/// <summary>
+		/// EVP_idea_cfb64()
+		/// </summary>
 		public static Cipher Idea_CFB64 = new Cipher(Native.EVP_idea_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_idea_ofb()
+		/// </summary>
 		public static Cipher Idea_OFB = new Cipher(Native.EVP_idea_ofb(), false);
+		
+		/// <summary>
+		/// EVP_idea_cbc()
+		/// </summary>
 		public static Cipher Idea_CBC = new Cipher(Native.EVP_idea_cbc(), false);
+		
+		/// <summary>
+		/// EVP_rc2_ecb()
+		/// </summary>
 		public static Cipher RC2_ECB = new Cipher(Native.EVP_rc2_ecb(), false);
+		
+		/// <summary>
+		/// EVP_rc2_cbc()
+		/// </summary>
 		public static Cipher RC2_CBC = new Cipher(Native.EVP_rc2_cbc(), false);
+		
+		/// <summary>
+		/// EVP_rc2_40_cbc()
+		/// </summary>
 		public static Cipher RC2_40_CBC = new Cipher(Native.EVP_rc2_40_cbc(), false);
+		
+		/// <summary>
+		/// EVP_rc2_64_cbc()
+		/// </summary>
 		public static Cipher RC2_64_CBC = new Cipher(Native.EVP_rc2_64_cbc(), false);
+		
+		/// <summary>
+		/// EVP_rc2_cfb64()
+		/// </summary>
 		public static Cipher RC2_CFB64 = new Cipher(Native.EVP_rc2_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_rc2_ofb()
+		/// </summary>
 		public static Cipher RC2_OFB = new Cipher(Native.EVP_rc2_ofb(), false);
+		
+		/// <summary>
+		/// EVP_bf_ecb()
+		/// </summary>
 		public static Cipher Blowfish_ECB = new Cipher(Native.EVP_bf_ecb(), false);
+		
+		/// <summary>
+		/// EVP_bf_cbc()
+		/// </summary>
 		public static Cipher Blowfish_CBC = new Cipher(Native.EVP_bf_cbc(), false);
+		
+		/// <summary>
+		/// EVP_bf_cfb64()
+		/// </summary>
 		public static Cipher Blowfish_CFB64 = new Cipher(Native.EVP_bf_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_bf_ofb()
+		/// </summary>
 		public static Cipher Blowfish_OFB = new Cipher(Native.EVP_bf_ofb(), false);
+		
+		/// <summary>
+		/// EVP_cast5_ecb()
+		/// </summary>
 		public static Cipher Cast5_ECB = new Cipher(Native.EVP_cast5_ecb(), false);
+		
+		/// <summary>
+		/// EVP_cast5_cbc()
+		/// </summary>
 		public static Cipher Cast5_CBC = new Cipher(Native.EVP_cast5_cbc(), false);
+		
+		/// <summary>
+		/// EVP_cast5_cfb64()
+		/// </summary>
 		public static Cipher Cast5_OFB64 = new Cipher(Native.EVP_cast5_cfb64(), false);
+		
+		/// <summary>
+		/// EVP_cast5_ofb()
+		/// </summary>
 		public static Cipher Cast5_OFB = new Cipher(Native.EVP_cast5_ofb(), false);
-		//public static Cipher RC5_32_12_16_CBC = new Cipher(Native.EVP_rc5_32_12_16_cbc(), false);
-		//public static Cipher RC5_32_12_16_ECB = new Cipher(Native.EVP_rc5_32_12_16_ecb(), false);
-		//public static Cipher RC5_32_12_16_CFB64 = new Cipher(Native.EVP_rc5_32_12_16_cfb64(), false);
-		//public static Cipher RC5_32_12_16_OFB = new Cipher(Native.EVP_rc5_32_12_16_ofb(), false);
+
+#if OPENSSL_RC5_SUPPORT
+		public static Cipher RC5_32_12_16_CBC = new Cipher(Native.EVP_rc5_32_12_16_cbc(), false);
+		public static Cipher RC5_32_12_16_ECB = new Cipher(Native.EVP_rc5_32_12_16_ecb(), false);
+		public static Cipher RC5_32_12_16_CFB64 = new Cipher(Native.EVP_rc5_32_12_16_cfb64(), false);
+		public static Cipher RC5_32_12_16_OFB = new Cipher(Native.EVP_rc5_32_12_16_ofb(), false);
+#endif
+
+		/// <summary>
+		/// EVP_aes_128_ecb()
+		/// </summary>
 		public static Cipher AES_128_ECB = new Cipher(Native.EVP_aes_128_ecb(), false);
+
+		/// <summary>
+		/// EVP_aes_128_cbc()
+		/// </summary>
 		public static Cipher AES_128_CBC = new Cipher(Native.EVP_aes_128_cbc(), false);
+
+		/// <summary>
+		/// EVP_aes_128_cfb1()
+		/// </summary>
 		public static Cipher AES_128_CFB1 = new Cipher(Native.EVP_aes_128_cfb1(), false);
+
+		/// <summary>
+		/// EVP_aes_128_cfb8()
+		/// </summary>
 		public static Cipher AES_128_CFB8 = new Cipher(Native.EVP_aes_128_cfb8(), false);
+
+		/// <summary>
+		/// EVP_aes_128_cfb128()
+		/// </summary>
 		public static Cipher AES_128_CFB128 = new Cipher(Native.EVP_aes_128_cfb128(), false);
+
+		/// <summary>
+		/// EVP_aes_128_ofb()
+		/// </summary>
 		public static Cipher AES_128_OFB = new Cipher(Native.EVP_aes_128_ofb(), false);
+
+		/// <summary>
+		/// EVP_aes_192_ecb()
+		/// </summary>
 		public static Cipher AES_192_ECB = new Cipher(Native.EVP_aes_192_ecb(), false);
+
+		/// <summary>
+		/// EVP_aes_192_cbc()
+		/// </summary>
 		public static Cipher AES_192_CBC = new Cipher(Native.EVP_aes_192_cbc(), false);
+
+		/// <summary>
+		/// EVP_aes_192_cfb1()
+		/// </summary>
 		public static Cipher AES_192_CFB1 = new Cipher(Native.EVP_aes_192_cfb1(), false);
+
+		/// <summary>
+		/// EVP_aes_192_cfb8()
+		/// </summary>
 		public static Cipher AES_192_CFB8 = new Cipher(Native.EVP_aes_192_cfb8(), false);
+
+		/// <summary>
+		/// EVP_aes_192_cfb128()
+		/// </summary>
 		public static Cipher AES_192_CFB128 = new Cipher(Native.EVP_aes_192_cfb128(), false);
+
+		/// <summary>
+		/// EVP_aes_192_ofb()
+		/// </summary>
 		public static Cipher AES_192_OFB = new Cipher(Native.EVP_aes_192_ofb(), false);
+
+		/// <summary>
+		/// EVP_aes_256_ecb()
+		/// </summary>
 		public static Cipher AES_256_ECB = new Cipher(Native.EVP_aes_256_ecb(), false);
+
+		/// <summary>
+		/// EVP_aes_256_cbc()
+		/// </summary>
 		public static Cipher AES_256_CBC = new Cipher(Native.EVP_aes_256_cbc(), false);
+
+		/// <summary>
+		/// EVP_aes_256_cfb1()
+		/// </summary>
 		public static Cipher AES_256_CFB1 = new Cipher(Native.EVP_aes_256_cfb1(), false);
+
+		/// <summary>
+		/// EVP_aes_256_cfb8()
+		/// </summary>
 		public static Cipher AES_256_CFB8 = new Cipher(Native.EVP_aes_256_cfb8(), false);
+
+		/// <summary>
+		/// EVP_aes_256_cfb128()
+		/// </summary>
 		public static Cipher AES_256_CFB128 = new Cipher(Native.EVP_aes_256_cfb128(), false);
+
+		/// <summary>
+		/// EVP_aes_256_ofb()
+		/// </summary>
 		public static Cipher AES_256_OFB = new Cipher(Native.EVP_aes_256_ofb(), false);
+		
 		#endregion
 
 		#region Properties
 
+		/// <summary>
+		/// Returns the key_len field
+		/// </summary>
 		public int KeyLength
 		{
 			get { return this.raw.key_len; }
 		}
 
+		/// <summary>
+		/// Returns the iv_len field
+		/// </summary>
 		public int IVLength
 		{
 			get { return this.raw.iv_len; }
 		}
 
+		/// <summary>
+		/// Returns the block_size field
+		/// </summary>
 		public int BlockSize
 		{
 			get { return this.raw.block_size; }
 		}
 
+		/// <summary>
+		/// Returns the flags field
+		/// </summary>
 		public uint Flags
 		{
 			get { return this.raw.flags; }
 		}
 
+		/// <summary>
+		/// Returns the long name for the nid field using OBJ_nid2ln()
+		/// </summary>
 		public string LongName
 		{
-			get
-			{
-				return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.raw.nid), false);
-			}
+			get { return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.raw.nid), false); }
 		}
 
+		/// <summary>
+		/// Returns the name for the nid field using OBJ_nid2sn()
+		/// </summary>
 		public string Name
 		{
-			get
-			{
-				return Native.PtrToStringAnsi(Native.OBJ_nid2sn(this.raw.nid), false);
-			}
+			get { return Native.PtrToStringAnsi(Native.OBJ_nid2sn(this.raw.nid), false); }
 		}
 
+		/// <summary>
+		/// Returns EVP_CIPHER_type()
+		/// </summary>
 		public int Type
 		{
-			get
-			{
-				return Native.EVP_CIPHER_type(this.ptr);
-			}
+			get { return Native.EVP_CIPHER_type(this.ptr); }
 		}
 
+		/// <summary>
+		/// Returns the long name for the type using OBJ_nid2ln()
+		/// </summary>
 		public string TypeName
 		{
-			get
-			{
-				return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.Type), false);
-			}
+			get { return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.Type), false); }
 		}
 		#endregion
 	}
 	#endregion
 
+	/// <summary>
+	/// Simple struct to encapsulate common parameters for crypto functions
+	/// </summary>
 	public struct Envelope
 	{
+		/// <summary>
+		/// The key for a crypto operation
+		/// </summary>
 		public ArraySegment<byte>[] Keys;
+
+		/// <summary>
+		/// The IV (Initialization Vector)
+		/// </summary>
 		public byte[] IV;
+
+		/// <summary>
+		/// The payload (contains plaintext or ciphertext)
+		/// </summary>
 		public byte[] Data;
 	}
 
+	/// <summary>
+	/// Wraps the EVP_CIPHER_CTX object.
+	/// </summary>
 	public class CipherContext : Base, IDisposable
 	{
 		#region EVP_CIPHER_CTX
@@ -233,6 +509,10 @@ namespace OpenSSL
 
 		private Cipher cipher;
 
+		/// <summary>
+		/// Calls OPENSSL_malloc() and initializes the buffer using EVP_CIPHER_CTX_init()
+		/// </summary>
+		/// <param name="cipher"></param>
 		public CipherContext(Cipher cipher)
 			: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(EVP_CIPHER_CTX))), true)
 		{
@@ -240,6 +520,10 @@ namespace OpenSSL
 			this.cipher = cipher;
 		}
 
+		/// <summary>
+		/// Returns the cipher's LongName
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			bio.Write("CipherContext: " + this.cipher.LongName);
@@ -247,6 +531,13 @@ namespace OpenSSL
 
 		#region Methods
 
+		/// <summary>
+		/// Calls EVP_OpenInit() and EVP_OpenFinal()
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="iv"></param>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public byte[] Open(byte[] input, byte[] iv, CryptoKey pkey) 
 		{
 			Native.ExpectSuccess(Native.EVP_OpenInit(
@@ -261,6 +552,12 @@ namespace OpenSSL
 			return output;
 		}
 
+		/// <summary>
+		/// Calls EVP_SealInit() and EVP_SealFinal()
+		/// </summary>
+		/// <param name="pkeys"></param>
+		/// <param name="needsIV"></param>
+		/// <returns></returns>
 		public Envelope Seal(CryptoKey[] pkeys, bool needsIV) 
 		{
 			Envelope ret = new Envelope();
@@ -294,6 +591,14 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Encrypts or decrypts the specified payload.
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="key"></param>
+		/// <param name="iv"></param>
+		/// <param name="doEncrypt"></param>
+		/// <returns></returns>
 		public byte[] Crypt(byte[] input, byte[] key, byte[] iv, bool doEncrypt)
 		{
 			return this.Crypt(input, key, iv, doEncrypt, -1);
@@ -349,6 +654,15 @@ namespace OpenSSL
 			return iv;
 		}
 
+		/// <summary>
+		/// Calls EVP_CipherInit_ex(), EVP_CipherUpdate(), and EVP_CipherFinal_ex()
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="key"></param>
+		/// <param name="iv"></param>
+		/// <param name="doEncrypt"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] Crypt(byte[] input, byte[] key, byte[] iv, bool doEncrypt, int padding)
 		{
 			int enc = doEncrypt ? 1 : 0;
@@ -397,21 +711,51 @@ namespace OpenSSL
 			return memory.ToArray();
 		}
 
+		/// <summary>
+		/// Encrypts the specified plaintext
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="key"></param>
+		/// <param name="iv"></param>
+		/// <returns></returns>
 		public byte[] Encrypt(byte[] input, byte[] key, byte[] iv)
 		{
 			return this.Crypt(input, key, iv, true);
 		}
 
+		/// <summary>
+		/// Decrypts the specified ciphertext
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="key"></param>
+		/// <param name="iv"></param>
+		/// <returns></returns>
 		public byte[] Decrypt(byte[] input, byte[] key, byte[] iv)
 		{
 			return this.Crypt(input, key, iv, false);
 		}
 
+		/// <summary>
+		/// Encrypts the specified plaintext
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="key"></param>
+		/// <param name="iv"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] Encrypt(byte[] input, byte[] key, byte[] iv, int padding)
 		{
 			return this.Crypt(input, key, iv, true, padding);
 		}
 
+		/// <summary>
+		/// Decrypts the specified ciphertext
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="key"></param>
+		/// <param name="iv"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] Decrypt(byte[] input, byte[] key, byte[] iv, int padding)
 		{
 			return this.Crypt(input, key, iv, false, padding);
@@ -419,6 +763,9 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
+		/// <summary>
+		/// Returns the EVP_CIPHER for this context.
+		/// </summary>
 		public Cipher Cipher
 		{
 			get { return this.cipher; }
@@ -433,6 +780,9 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls EVP_CIPHER_CTX_clean() and then OPENSSL_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.EVP_CIPHER_CTX_cleanup(this.ptr);

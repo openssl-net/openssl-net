@@ -120,12 +120,23 @@ namespace OpenSSL
 	}
 	#endregion
 
+	/// <summary>
+	/// Contains a chain X509_INFO objects.
+	/// </summary>
 	public class X509Chain : Stack<X509Certificate>
 	{
-
 		#region Initialization
+		/// <summary>
+		/// Default null constructor
+		/// </summary>
 		public X509Chain() { }
 
+		/// <summary>
+		/// Creates a chain from a BIO. Expects the stream to contain
+		/// a collection of X509_INFO objects in PEM format by calling
+		/// PEM_X509_INFO_read_bio()
+		/// </summary>
+		/// <param name="bio"></param>
 		public X509Chain(BIO bio)
 		{
 			IntPtr sk = Native.ExpectNonNull(
@@ -143,6 +154,10 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Creates a new chain from the specified PEM-formatted string
+		/// </summary>
+		/// <param name="pem"></param>
 		public X509Chain(string pem)
 			: this(new BIO(pem))
 		{
@@ -150,6 +165,12 @@ namespace OpenSSL
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Returns X509_find_by_issuer_and_serial()
+		/// </summary>
+		/// <param name="issuer"></param>
+		/// <param name="serial"></param>
+		/// <returns></returns>
 		public X509Certificate FindByIssuerAndSerial(X509Name issuer, int serial)
 		{
 			IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, Native.IntegerToAsnInteger(serial));
@@ -158,6 +179,11 @@ namespace OpenSSL
 			return new X509Certificate(ptr, false);
 		}
 
+		/// <summary>
+		/// Returns X509_find_by_subject()
+		/// </summary>
+		/// <param name="subject"></param>
+		/// <returns></returns>
 		public X509Certificate FindBySubject(X509Name subject)
 		{
 			IntPtr ptr = Native.X509_find_by_subject(this.ptr, subject.Handle);
@@ -168,11 +194,21 @@ namespace OpenSSL
 		#endregion
 	}
 
+	/// <summary>
+	/// A List for X509Certificate types.
+	/// </summary>
 	public class X509List : List<X509Certificate>
 	{
 		#region Initialization
+		/// <summary>
+		/// Creates an empty X509List
+		/// </summary>
 		public X509List() { }
 
+		/// <summary>
+		/// Calls PEM_x509_INFO_read_bio()
+		/// </summary>
+		/// <param name="bio"></param>
 		public X509List(BIO bio)
 		{
 			IntPtr sk = Native.ExpectNonNull(
@@ -190,11 +226,19 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Populates this list from a PEM-formatted string
+		/// </summary>
+		/// <param name="pem"></param>
 		public X509List(string pem)
 			: this(new BIO(pem))
 		{
 		}
 
+		/// <summary>
+		/// Populates this list from a DER buffer.
+		/// </summary>
+		/// <param name="der"></param>
 		public X509List(byte[] der)
 		{
 			BIO bio = new BIO(der);

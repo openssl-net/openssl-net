@@ -166,17 +166,6 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Getter to the public key assuming that it is DSA.
-		/// </summary>
-        public string DSAPublicKeyString
-        {
-            get
-            {
-                return PublicKey.GetDSA().PemPublicKey;
-            }
-        }
-
-		/// <summary>
 		/// Returns the PEM formatted string for this object.
 		/// </summary>
 		public string PEM

@@ -30,6 +30,9 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Wraps the X509_STORE_CONTEXT object
+	/// </summary>
 	public class X509Store : Base, IDisposable
 	{
 		#region X509_STORE_CONTEXT
@@ -75,7 +78,10 @@ namespace OpenSSL
 		#endregion
 
 		#region Context
-		public class Context : IDisposable
+		/// <summary>
+		/// Wraps the X509_STORE_CTX object
+		/// </summary>
+		internal class Context : IDisposable
 		{
 			private IntPtr ptr;
 
@@ -129,7 +135,15 @@ namespace OpenSSL
 		private X509Chain untrusted = new X509Chain();
 		//private X509Chain trusted = new X509Chain();
 
+		/// <summary>
+		/// Calls X509_STORE_new()
+		/// </summary>
 		public X509Store() : base(Native.ExpectNonNull(Native.X509_STORE_new()), true) {}
+
+		/// <summary>
+		/// Calls X509_STORE_new() and then adds the specified chain as trusted.
+		/// </summary>
+		/// <param name="chain"></param>
 		public X509Store(X509Chain chain)
 			: base(Native.ExpectNonNull(Native.X509_STORE_new()), true)
 		{
@@ -139,6 +153,12 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Returns the trusted state of the specified certificate
+		/// </summary>
+		/// <param name="cert"></param>
+		/// <param name="error"></param>
+		/// <returns></returns>
 		public bool Verify(X509Certificate cert, out string error)
 		{
 			Context ctx = new Context();
@@ -152,17 +172,29 @@ namespace OpenSSL
 			return false;
 		}
 
+		/// <summary>
+		/// Adds a chain to the trusted list.
+		/// </summary>
+		/// <param name="chain"></param>
 		public void AddTrusted(X509Chain chain)
 		{
 			foreach (X509Certificate cert in chain)
 				AddTrusted(cert);
 		}
 
+		/// <summary>
+		/// Adds a certificate to the trusted list.
+		/// </summary>
+		/// <param name="cert"></param>
 		public void AddTrusted(X509Certificate cert)
 		{
 			Native.ExpectSuccess(Native.X509_STORE_add_cert(this.ptr, cert.Handle));
 		}
 
+		/// <summary>
+		/// Add an untrusted certificate
+		/// </summary>
+		/// <param name="cert"></param>
 		public void AddUntrusted(X509Certificate cert)
 		{
 			this.untrusted.Add(cert);
@@ -174,6 +206,9 @@ namespace OpenSSL
 		//    set { this.trusted = value; }
 		//}
 
+		/// <summary>
+		/// Accessor to the untrusted list
+		/// </summary>
 		public X509Chain Untrusted
 		{
 			get { return this.untrusted; }
@@ -181,6 +216,9 @@ namespace OpenSSL
 		}
 
 		#region IDisposable Members
+		/// <summary>
+		/// Calls X509_STORE_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.X509_STORE_free(this.ptr);

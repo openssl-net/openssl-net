@@ -31,14 +31,26 @@ using System.Runtime.InteropServices;
 namespace OpenSSL
 {
 	#region MessageDigest
+	/// <summary>
+	/// Wraps the EVP_MD object
+	/// </summary>
 	public class MessageDigest : Base
 	{
 		private EVP_MD raw;
+		/// <summary>
+		/// Creates a EVP_MD struct
+		/// </summary>
+		/// <param name="ptr"></param>
+		/// <param name="owner"></param>
 		internal MessageDigest(IntPtr ptr, bool owner) : base(ptr, owner) 
 		{
 			this.raw = (EVP_MD)Marshal.PtrToStructure(this.ptr, typeof(EVP_MD));
 		}
 
+		/// <summary>
+		/// Prints MessageDigest
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			bio.Write("MessageDigest");
@@ -67,52 +79,112 @@ namespace OpenSSL
 		#endregion
 
 		#region MessageDigests
+		/// <summary>
+		/// EVP_md_null()
+		/// </summary>
 		public static MessageDigest Null = new MessageDigest(Native.EVP_md_null(), false);
+
+		/// <summary>
+		/// EVP_md2()
+		/// </summary>
 		public static MessageDigest MD2 = new MessageDigest(Native.EVP_md2(), false);
+	
+		/// <summary>
+		/// EVP_md4()
+		/// </summary>
 		public static MessageDigest MD4 = new MessageDigest(Native.EVP_md4(), false);
+		
+		/// <summary>
+		/// EVP_md5()
+		/// </summary>
 		public static MessageDigest MD5 = new MessageDigest(Native.EVP_md5(), false);
+		
+		/// <summary>
+		/// EVP_sha()
+		/// </summary>
 		public static MessageDigest SHA = new MessageDigest(Native.EVP_sha(), false);
+		
+		/// <summary>
+		/// EVP_sha1()
+		/// </summary>
 		public static MessageDigest SHA1 = new MessageDigest(Native.EVP_sha1(), false);
+		
+		/// <summary>
+		/// EVP_sha224()
+		/// </summary>
 		public static MessageDigest SHA224 = new MessageDigest(Native.EVP_sha224(), false);
+		
+		/// <summary>
+		/// EVP_sha256()
+		/// </summary>
 		public static MessageDigest SHA256 = new MessageDigest(Native.EVP_sha256(), false);
+		
+		/// <summary>
+		/// EVP_sha384()
+		/// </summary>
 		public static MessageDigest SHA384 = new MessageDigest(Native.EVP_sha384(), false);
+		
+		/// <summary>
+		/// EVP_sha512()
+		/// </summary>
 		public static MessageDigest SHA512 = new MessageDigest(Native.EVP_sha512(), false);
+		
+		/// <summary>
+		/// EVP_dss()
+		/// </summary>
 		public static MessageDigest DSS = new MessageDigest(Native.EVP_dss(), false);
+		
+		/// <summary>
+		/// EVP_dss1()
+		/// </summary>
 		public static MessageDigest DSS1 = new MessageDigest(Native.EVP_dss1(), false);
+		
+		/// <summary>
+		/// EVP_ripemd160()
+		/// </summary>
 		public static MessageDigest RipeMD160 = new MessageDigest(Native.EVP_ripemd160(), false);
 		#endregion
 
 		#region Properties
+		/// <summary>
+		/// Returns the block_size field
+		/// </summary>
 		public int BlockSize
 		{
 			get { return this.raw.block_size; }
 		}
 
+		/// <summary>
+		/// Returns the md_size field
+		/// </summary>
 		public int Size
 		{
 			get { return this.raw.md_size; }
 		}
 
+		/// <summary>
+		/// Returns the type field using OBJ_nid2ln()
+		/// </summary>
 		public string LongName
 		{
-			get
-			{
-				return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.raw.type), false);
-			}
+			get { return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.raw.type), false); }
 		}
 
+		/// <summary>
+		/// Returns the type field using OBJ_nid2sn()
+		/// </summary>
 		public string Name
 		{
-			get
-			{
-				return Native.PtrToStringAnsi(Native.OBJ_nid2sn(this.raw.type), false);
-			}
+			get { return Native.PtrToStringAnsi(Native.OBJ_nid2sn(this.raw.type), false); }
 		}
 
 		#endregion
 	}
 	#endregion
 
+	/// <summary>
+	/// Wraps the EVP_MD_CTX object
+	/// </summary>
 	public class MessageDigestContext : Base
 	{
 		#region EVP_MD_CTX
@@ -128,12 +200,20 @@ namespace OpenSSL
 
 		private MessageDigest md;
 
+		/// <summary>
+		/// Calls BIO_get_md_ctx() then BIO_get_md()
+		/// </summary>
+		/// <param name="bio"></param>
 		public MessageDigestContext(BIO bio)
 			: base(Native.ExpectNonNull(Native.BIO_get_md_ctx(bio.Handle)), false)
 		{
 			this.md = new MessageDigest(Native.ExpectNonNull(Native.BIO_get_md(bio.Handle)), false);
 		}
 
+		/// <summary>
+		/// Calls EVP_MD_CTX_create() then EVP_MD_CTX_init()
+		/// </summary>
+		/// <param name="md"></param>
 		public MessageDigestContext(MessageDigest md)
 			: base(Native.EVP_MD_CTX_create(), true)
 		{
@@ -141,6 +221,10 @@ namespace OpenSSL
 			this.md = md;
 		}
 
+		/// <summary>
+		/// Prints the long name
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			bio.Write("MessageDigestContext: " + this.md.LongName);
@@ -148,6 +232,11 @@ namespace OpenSSL
 
 		#region Methods
 
+		/// <summary>
+		/// Calls EVP_DigestInit_ex(), EVP_DigestUpdate(), and EVP_DigestFinal_ex()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <returns></returns>
 		public byte[] Digest(byte[] msg) 
 		{
 			byte[] digest = new byte[this.md.Size];
@@ -158,16 +247,27 @@ namespace OpenSSL
 			return digest;
 		}
 
+		/// <summary>
+		/// Calls EVP_DigestInit_ex()
+		/// </summary>
 		public void Init()
 		{
 			Native.ExpectSuccess(Native.EVP_DigestInit_ex(this.ptr, this.md.Handle, IntPtr.Zero));
 		}
 
+		/// <summary>
+		/// Calls EVP_DigestUpdate()
+		/// </summary>
+		/// <param name="msg"></param>
 		public void Update(byte[] msg)
 		{
 			Native.ExpectSuccess(Native.EVP_DigestUpdate(this.ptr, msg, (uint)msg.Length));
 		}
 
+		/// <summary>
+		/// Calls EVP_DigestFinal_ex()
+		/// </summary>
+		/// <returns></returns>
 		public byte[] DigestFinal()
 		{
 			byte[] digest = new byte[this.md.Size];
@@ -176,6 +276,11 @@ namespace OpenSSL
 			return digest;
 		}
 
+		/// <summary>
+		/// Calls EVP_SignFinal()
+		/// </summary>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public byte[] SignFinal(CryptoKey pkey)
 		{
 			byte[] digest = new byte[this.md.Size];
@@ -185,12 +290,24 @@ namespace OpenSSL
 			return sig;
 		}
 
+		/// <summary>
+		/// Calls EVP_VerifyFinal()
+		/// </summary>
+		/// <param name="sig"></param>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public bool VerifyFinal(byte[] sig, CryptoKey pkey)
 		{
 			int ret = Native.ExpectSuccess(Native.EVP_VerifyFinal(this.ptr, sig, (uint)sig.Length, pkey.Handle));
 			return ret == 1;
 		}
 
+		/// <summary>
+		/// Calls EVP_DigestInit_ex(), EVP_DigestUpdate(), and EVP_SignFinal()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public byte[] Sign(byte[] msg, CryptoKey pkey) 
 		{
 			byte[] sig = new byte[pkey.Size];
@@ -203,6 +320,13 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls EVP_SignFinal()
+		/// </summary>
+		/// <param name="md"></param>
+		/// <param name="bio"></param>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public static byte[] Sign(MessageDigest md, BIO bio, CryptoKey pkey)
 		{
 			BIO bmd = BIO.MessageDigest(md);
@@ -225,6 +349,13 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls EVP_DigestInit_ex(), EVP_DigestUpdate(), and EVP_VerifyFinal()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <param name="sig"></param>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public bool Verify(byte[] msg, byte[] sig, CryptoKey pkey) 
 		{
 			Native.ExpectSuccess(Native.EVP_DigestInit_ex(this.ptr, this.md.Handle, IntPtr.Zero));
@@ -233,6 +364,14 @@ namespace OpenSSL
 			return ret == 1;
 		}
 
+		/// <summary>
+		/// Calls EVP_VerifyFinal()
+		/// </summary>
+		/// <param name="md"></param>
+		/// <param name="bio"></param>
+		/// <param name="sig"></param>
+		/// <param name="pkey"></param>
+		/// <returns></returns>
 		public static bool Verify(MessageDigest md, BIO bio, byte[] sig, CryptoKey pkey)
 		{
 			BIO bmd = BIO.MessageDigest(md);
@@ -255,6 +394,9 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls EVP_MD_CTX_cleanup() and EVP_MD_CTX_destroy()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.EVP_MD_CTX_cleanup(this.ptr);

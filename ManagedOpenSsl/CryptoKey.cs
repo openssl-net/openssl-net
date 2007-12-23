@@ -30,16 +30,35 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Callback prototype. Must return the password or prompt for one.
+	/// </summary>
+	/// <param name="verify"></param>
+	/// <param name="userdata"></param>
+	/// <returns></returns>
 	public delegate string PasswordHandler(bool verify, object userdata);
 
+	/// <summary>
+	/// Simple password callback that returns the contained password.
+	/// </summary>
 	public class PasswordCallback
 	{
 		private string password;
+		/// <summary>
+		/// Constructs a PasswordCallback
+		/// </summary>
+		/// <param name="password"></param>
 		public PasswordCallback(string password)
 		{
 			this.password = password;
 		}
 
+		/// <summary>
+		/// Suitable callback to be used as a PasswordHandler
+		/// </summary>
+		/// <param name="verify"></param>
+		/// <param name="userdata"></param>
+		/// <returns></returns>
 		public string OnPassword(bool verify, object userdata)
 		{
 			return this.password;
@@ -53,19 +72,41 @@ namespace OpenSSL
 	{
 		#region Initialization
 		internal CryptoKey(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		/// <summary>
+		/// Calls EVP_PKEY_new()
+		/// </summary>
 		public CryptoKey() : base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) {}
 		
+		/// <summary>
+		/// Calls PEM_read_bio_PUBKEY()
+		/// </summary>
+		/// <param name="pem"></param>
+		/// <param name="password"></param>
+		/// <returns></returns>
 		public static CryptoKey FromPublicKey(string pem, string password)
 		{
 			return FromPublicKey(new BIO(pem), password);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_PUBKEY()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="password"></param>
+		/// <returns></returns>
 		public static CryptoKey FromPublicKey(BIO bio, string password)
 		{
 			PasswordCallback callback = new PasswordCallback(password);
 			return FromPublicKey(bio, callback.OnPassword, null);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_PUBKEY()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="handler"></param>
+		/// <param name="arg"></param>
+		/// <returns></returns>
 		public static CryptoKey FromPublicKey(BIO bio, PasswordHandler handler, object arg)
 		{
 			PasswordThunk thunk = new PasswordThunk(handler, arg);
@@ -79,17 +120,36 @@ namespace OpenSSL
 			return new CryptoKey(ptr, true);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_PrivateKey()
+		/// </summary>
+		/// <param name="pem"></param>
+		/// <param name="password"></param>
+		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(string pem, string password)
 		{
 			return FromPrivateKey(new BIO(pem), password);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_PrivateKey()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="passwd"></param>
+		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(BIO bio, string passwd)
 		{
 			PasswordCallback callback = new PasswordCallback(passwd);
 			return FromPrivateKey(bio, callback.OnPassword, null);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_PrivateKey()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="handler"></param>
+		/// <param name="arg"></param>
+		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(BIO bio, PasswordHandler handler, object arg)
 		{
 			PasswordThunk thunk = new PasswordThunk(handler, arg);
@@ -103,18 +163,30 @@ namespace OpenSSL
 			return new CryptoKey(ptr, true);
 		}
 
+		/// <summary>
+		/// Calls EVP_PKEY_set1_DSA()
+		/// </summary>
+		/// <param name="dsa"></param>
 		public CryptoKey(DSA dsa)
 			: this()
 		{
 			Native.ExpectSuccess(Native.EVP_PKEY_set1_DSA(this.ptr, dsa.Handle));
 		}
 
+		/// <summary>
+		/// Calls EVP_PKEY_set1_RSA()
+		/// </summary>
+		/// <param name="rsa"></param>
 		public CryptoKey(RSA rsa)
 			: this()
 		{
 			Native.ExpectSuccess(Native.EVP_PKEY_set1_RSA(this.ptr, rsa.Handle));
 		}
 
+		/// <summary>
+		/// Calls EVP_PKEY_set1_DH()
+		/// </summary>
+		/// <param name="dh"></param>
 		public CryptoKey(DH dh)
 			: this()
 		{
@@ -123,11 +195,17 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
+		/// <summary>
+		/// Returns EVP_PKEY_bits()
+		/// </summary>
 		public int Bits
 		{
 			get { return Native.EVP_PKEY_bits(this.ptr); }
 		}
 
+		/// <summary>
+		/// Returns EVP_PKEY_size()
+		/// </summary>
 		public int Size
 		{
 			get { return Native.EVP_PKEY_size(this.ptr); }
@@ -135,24 +213,49 @@ namespace OpenSSL
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Calls EVP_PKEY_assign()
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="key"></param>
 		public void Assign(int type, byte[] key)
 		{
 			Native.ExpectSuccess(Native.EVP_PKEY_assign(this.ptr, type, key));
 		}
 
+		/// <summary>
+		/// Returns EVP_PKEY_get1_DSA()
+		/// </summary>
+		/// <returns></returns>
 		public DSA GetDSA()
 		{
 			return new DSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_DSA(this.ptr)), false);
 		}
 		
+		/// <summary>
+		/// Returns EVP_PKEY_get1_DH()
+		/// </summary>
+		/// <returns></returns>
 		public DH GetDH()
 		{
 			return new DH(Native.ExpectNonNull(Native.EVP_PKEY_get1_DH(this.ptr)), false);
+		}
+
+		/// <summary>
+		/// Returns EVP_PKEY_get1_RSA()
+		/// </summary>
+		/// <returns></returns>
+		public RSA GetRSA()
+		{
+			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(this.ptr)), false);
 		}
 		#endregion
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls EVP_PKEY_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.EVP_PKEY_free(this.ptr);

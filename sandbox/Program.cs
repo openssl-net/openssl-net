@@ -48,7 +48,7 @@ namespace sandbox
 				DateTime.Now, 
 				TimeSpan.FromDays(365));
 
-			Identity comId = new Identity(new DSAParameters(512));
+			Identity comId = new Identity(new CryptoKey(new DSA()));
 			X509Request comReq = comId.CreateRequest("com");
 			X509Certificate comCert = root.ProcessRequest(comReq, DateTime.Now, DateTime.Now + TimeSpan.FromDays(365));
 
@@ -56,18 +56,18 @@ namespace sandbox
 				Console.WriteLine("Invalid com cert");
 			X509CertificateAuthority com = new X509CertificateAuthority(
 				comCert, 
-				comId.Key, 
+				comId.PrivateKey, 
 				new SimpleSerialNumber(), 
 				cfg);
 
-			Identity id1 = new Identity(new DSAParameters(512));
+			Identity id1 = new Identity(new CryptoKey(new DSA()));
 			X509Request req1 = id1.CreateRequest("1");
 			X509Certificate cert1 = com.ProcessRequest(
 				req1, 
 				DateTime.Now, 
 				DateTime.Now + TimeSpan.FromDays(365));
 
-			Identity id2 = new Identity(new DSAParameters(512));
+			Identity id2 = new Identity(new CryptoKey(new DSA()));
 			X509Request req2 = id2.CreateRequest("2");
 			X509Certificate cert2 = rogue.ProcessRequest(
 				req2, 

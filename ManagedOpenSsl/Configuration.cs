@@ -30,18 +30,29 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Wraps the NCONF_* functions
+	/// </summary>
 	public class Configuration : Base, IDisposable
 	{
 		private Configuration()
 			: base(Native.NCONF_new(IntPtr.Zero), true)
 		{ }
 
+		/// <summary>
+		/// Calls NCONF_load()
+		/// </summary>
+		/// <param name="filename"></param>
 		public Configuration(string filename)
 			: this()
 		{
 			this.Load(filename);
 		}
 
+		/// <summary>
+		/// Calls NCONF_load()
+		/// </summary>
+		/// <param name="filename"></param>
 		public void Load(string filename)
 		{
 			byte[] bytes = Encoding.ASCII.GetBytes(filename);
@@ -52,7 +63,7 @@ namespace OpenSSL
 		#region X509v3Context
 		#region X509V3_CTX
 		[StructLayout(LayoutKind.Sequential)]
-		public struct X509V3_CTX
+		internal struct X509V3_CTX
 		{
 			public int flags;
 			public IntPtr issuer_cert;
@@ -81,6 +92,14 @@ namespace OpenSSL
 		}
 		#endregion
 
+		/// <summary>
+		/// Creates a X509v3Context(), calls X509V3_set_ctx() on it, then calls
+		/// X509V3_EXT_add_nconf()
+		/// </summary>
+		/// <param name="section"></param>
+		/// <param name="issuer"></param>
+		/// <param name="subject"></param>
+		/// <param name="request"></param>
 		public void ApplyExtensions(
 			string section,
 			X509Certificate issuer,
@@ -105,6 +124,9 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls NCONF_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.NCONF_free(this.ptr);

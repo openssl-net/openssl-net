@@ -30,6 +30,9 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Wraps the RSA_* functions
+	/// </summary>
 	public class RSA : Base, IDisposable
 	{
 		#region rsa_st
@@ -67,7 +70,14 @@ namespace OpenSSL
 		}
 		#endregion
 
+		/// <summary>
+		/// Not sure
+		/// </summary>
 		public const int PKCS1_Padding = 1;
+
+		/// <summary>
+		/// Not sure
+		/// </summary>
 		public const int PKCS1_OAEP_Padding = 4;
 
 		private const int FlagCacheMont_P = 0x01;
@@ -78,20 +88,41 @@ namespace OpenSSL
 
 		#region Initialization
 		internal RSA(IntPtr ptr, bool owner) : base(ptr, owner) {}
+
+		/// <summary>
+		/// Calls RSA_new()
+		/// </summary>
 		public RSA() 
 			: base(Native.ExpectNonNull(Native.RSA_new()), true)
 		{ }
 
+		/// <summary>
+		/// Calls PEM_read_bio_RSA_PUBKEY()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <returns></returns>
 		public static RSA FromPublicKey(BIO bio)
 		{
 			return FromPublicKey(bio, null, null);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_RSAPrivateKey()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <returns></returns>
 		public static RSA FromPrivateKey(BIO bio)
 		{
 			return FromPrivateKey(bio, null, null);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_RSA_PUBKEY()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="callback"></param>
+		/// <param name="arg"></param>
+		/// <returns></returns>
 		public static RSA FromPublicKey(BIO bio, PasswordHandler callback, object arg)
 		{
 			PasswordThunk thunk = new PasswordThunk(callback, arg);
@@ -99,6 +130,13 @@ namespace OpenSSL
 			return new RSA(Native.ExpectNonNull(ptr), true);
 		}
 
+		/// <summary>
+		/// Calls PEM_read_bio_RSAPrivateKey()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="callback"></param>
+		/// <param name="arg"></param>
+		/// <returns></returns>
 		public static RSA FromPrivateKey(BIO bio, PasswordHandler callback, object arg)
 		{
 			PasswordThunk thunk = new PasswordThunk(callback, arg);
@@ -115,11 +153,17 @@ namespace OpenSSL
 			set { Marshal.StructureToPtr(value, this.ptr, false); }
 		}
 
+		/// <summary>
+		/// Returns RSA_size()
+		/// </summary>
 		public int Size
 		{
 			get { return Native.ExpectSuccess(Native.RSA_size(this.ptr)); }
 		}
 
+		/// <summary>
+		/// Not finished
+		/// </summary>
 		public bool ConstantTime
 		{
 			get { return false; }
@@ -128,6 +172,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the e field
+		/// </summary>
 		public BigNumber E
 		{
 			get { return new BigNumber(this.Raw.e, false); }
@@ -139,6 +186,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the n field
+		/// </summary>
 		public BigNumber N
 		{
 			get { return new BigNumber(this.Raw.n, false); }
@@ -150,6 +200,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the d field
+		/// </summary>
 		public BigNumber D
 		{
 			get { return new BigNumber(this.Raw.d, false); }
@@ -161,6 +214,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the p field
+		/// </summary>
 		public BigNumber P
 		{
 			get { return new BigNumber(this.Raw.p, false); }
@@ -172,6 +228,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the q field
+		/// </summary>
 		public BigNumber Q
 		{
 			get { return new BigNumber(this.Raw.q, false); }
@@ -183,6 +242,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the dmp1 field
+		/// </summary>
 		public BigNumber Dmp1
 		{
 			get { return new BigNumber(this.Raw.dmp1, false); }
@@ -194,6 +256,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the dmq1 field
+		/// </summary>
 		public BigNumber Dmq1
 		{
 			get { return new BigNumber(this.Raw.dmq1, false); }
@@ -205,6 +270,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Accessor for the iqmp field
+		/// </summary>
 		public BigNumber Iqmp
 		{
 			get { return new BigNumber(this.Raw.iqmp, false); }
@@ -216,6 +284,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Returns the public key field as a PEM string
+		/// </summary>
 		public string PublicKeyAsPEM
 		{
 			get
@@ -228,6 +299,9 @@ namespace OpenSSL
 			}
 		}
 
+		/// <summary>
+		/// Returns the private key field as a PEM string
+		/// </summary>
 		public string PrivateKeyAsPEM
 		{
 			get
@@ -242,12 +316,25 @@ namespace OpenSSL
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Calls RSA_generate_key_ex()
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <param name="e"></param>
+		/// <param name="callback"></param>
+		/// <param name="arg"></param>
 		public void GenerateKeys(int bits, BigNumber e, BigNumber.GeneratorHandler callback, object arg)
 		{
 			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
 			Native.ExpectSuccess(Native.RSA_generate_key_ex(this.ptr, bits, e.Handle, this.thunk.CallbackStruct));
 		}
 
+		/// <summary>
+		/// Calls RSA_public_encrypt()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] PublicEncrypt(byte[] msg, int padding)
 		{
 			byte[] ret = new byte[this.Size];
@@ -261,6 +348,12 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls RSA_private_encrypt()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] PrivateEncrypt(byte[] msg, int padding)
 		{
 			byte[] ret = new byte[this.Size];
@@ -274,6 +367,12 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls RSA_public_decrypt()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] PublicDecrypt(byte[] msg, int padding)
 		{
 			byte[] ret = new byte[this.Size];
@@ -287,6 +386,12 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls RSA_private_decrypt()
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <param name="padding"></param>
+		/// <returns></returns>
 		public byte[] PrivateDecrypt(byte[] msg, int padding)
 		{
 			byte[] ret = new byte[this.Size];
@@ -300,11 +405,22 @@ namespace OpenSSL
 			return ret;
 		}
 
+		/// <summary>
+		/// Calls PEM_write_bio_RSA_PUBKEY()
+		/// </summary>
+		/// <param name="bio"></param>
 		public void WritePublicKey(BIO bio)
 		{
 			Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, this.ptr));
 		}
 
+		/// <summary>
+		/// Calls PEM_write_bio_RSAPrivateKey()
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="enc"></param>
+		/// <param name="passwd"></param>
+		/// <param name="arg"></param>
 		public void WritePrivateKey(BIO bio, Cipher enc, PasswordHandler passwd, object arg)
 		{
 			PasswordThunk thunk = new PasswordThunk(passwd, arg);
@@ -318,12 +434,20 @@ namespace OpenSSL
 				IntPtr.Zero));
 		}
 
+		/// <summary>
+		/// Returns RSA_check_key()
+		/// </summary>
+		/// <returns></returns>
 		public bool Check()
 		{
 			int ret = Native.ExpectSuccess(Native.RSA_check_key(this.ptr));
 			return ret == 1;
 		}
 
+		/// <summary>
+		/// Calls RSA_print()
+		/// </summary>
+		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
 			Native.ExpectSuccess(Native.RSA_print(bio.Handle, this.ptr, 0));
@@ -333,6 +457,9 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls RSA_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.RSA_free(this.ptr);

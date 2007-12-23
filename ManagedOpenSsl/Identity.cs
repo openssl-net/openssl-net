@@ -29,52 +29,73 @@ using System.Text;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Simple encapsulation of a local identity.
+	/// This includes the private key and the X509Certificate.
+	/// </summary>
 	public class Identity
 	{
-		private DSA dsa;
+		private CryptoKey key;
 		private X509Certificate cert;
 
-		public Identity(DSAParameters dsaParams)
+		/// <summary>
+		/// Construct an Identity with a private key
+		/// </summary>
+		/// <param name="key"></param>
+		public Identity(CryptoKey key)
 		{
-			this.dsa = new DSA(dsaParams);
+			this.key = key;
 		}
 
 		#region Properties
 
-		public string PublicKey
+		/// <summary>
+		/// Returns the embedded public key of the X509Certificate
+		/// </summary>
+		public CryptoKey PublicKey
 		{
-			get { return this.dsa.PemPublicKey; }
+			get { return this.cert.PublicKey; }
 		}
 
-		public string PrivateKey
+		/// <summary>
+		/// Returns the private key
+		/// </summary>
+		public CryptoKey PrivateKey
 		{
-			get { return this.dsa.PemPrivateKey; }
+			get { return this.key; }
 		}
 
+		/// <summary>
+		/// Returns the X509Certificate
+		/// </summary>
 		public X509Certificate Certificate
 		{
 			get { return this.cert; }
 		}
-
-		public CryptoKey Key
-		{
-			get { return new CryptoKey(this.dsa); }
-		}
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Create a X509Request for this identity, using the specified name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		public X509Request CreateRequest(string name)
 		{
-			CryptoKey key = new CryptoKey(this.dsa);
-
 			X509Name subject = new X509Name(name);
-			X509Request request = new X509Request(2, subject, key);
+			X509Request request = new X509Request(2, subject, this.key);
 
 			request.Sign(key, MessageDigest.DSS1);
 
 			return request;
 		}
 
+		/// <summary>
+		/// Verify that the specified chain can be trusted.
+		/// </summary>
+		/// <param name="chain"></param>
+		/// <param name="error"></param>
+		/// <returns></returns>
 		public bool VerifyResponse(X509Chain chain, out string error)
 		{
             this.cert = chain[0];

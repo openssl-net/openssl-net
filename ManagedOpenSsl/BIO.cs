@@ -30,27 +30,48 @@ using System.IO;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Encapsulates the BIO_* functions.
+	/// </summary>
 	public class BIO : Base, IDisposable
 	{
 		#region Initialization
 		internal BIO(IntPtr ptr, bool owner) : base(ptr, owner) { }
 
+		/// <summary>
+		/// Calls BIO_new_mem_buf() from the specified buffer.
+		/// </summary>
+		/// <param name="buf"></param>
 		public BIO(byte[] buf) 
 			: base(Native.ExpectNonNull(Native.BIO_new_mem_buf(buf, buf.Length)), true)
 		{
 		}
 
+		/// <summary>
+		/// Calls BIO_new_mem_buf() from the specified string.
+		/// </summary>
+		/// <param name="str"></param>
 		public BIO(string str)
 			: this(Encoding.ASCII.GetBytes(str))
 		{
 		}
 
+		/// <summary>
+		/// Factory method that calls BIO_new() with BIO_s_mem()
+		/// </summary>
+		/// <returns></returns>
 		public static BIO MemoryBuffer()
 		{
 			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
 			return new BIO(ptr, true);
 		}
 
+		/// <summary>
+		/// Factory method that calls BIO_new_file()
+		/// </summary>
+		/// <param name="filename"></param>
+		/// <param name="mode"></param>
+		/// <returns></returns>
 		public static BIO File(string filename, string mode)
 		{
 			byte[] bufFilename = Encoding.ASCII.GetBytes(filename);
@@ -63,6 +84,11 @@ namespace OpenSSL
 		private const int FD_STDOUT = 1;
 		private const int FD_STDERR = 2;
 
+		/// <summary>
+		/// Factory method that calls BIO_new() with BIO_f_md()
+		/// </summary>
+		/// <param name="md"></param>
+		/// <returns></returns>
 		public static BIO MessageDigest(MessageDigest md)
 		{
 			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_f_md()));
@@ -80,11 +106,17 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
+		/// <summary>
+		/// Returns BIO_number_read()
+		/// </summary>
 		public uint NumberRead
 		{
 			get { return Native.BIO_number_read(this.Handle); }
 		}
 
+		/// <summary>
+		/// Returns BIO_number_written()
+		/// </summary>
 		public uint NumberWritten
 		{
 			get { return Native.BIO_number_written(this.Handle); }
@@ -92,23 +124,40 @@ namespace OpenSSL
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Calls BIO_push()
+		/// </summary>
+		/// <param name="bio"></param>
 		public void Push(BIO bio)
 		{
 			Native.ExpectNonNull(Native.BIO_push(this.ptr, bio.Handle));
 		}
 
+		/// <summary>
+		/// Calls BIO_write()
+		/// </summary>
+		/// <param name="buf"></param>
 		public void Write(byte[] buf)
 		{
 			if (Native.BIO_write(this.ptr, buf, buf.Length) != buf.Length)
 				throw new OpenSslException();
 		}
 
+		/// <summary>
+		/// Calls BIO_write()
+		/// </summary>
+		/// <param name="buf"></param>
+		/// <param name="len"></param>
 		public void Write(byte[] buf, int len)
 		{
 			if (Native.BIO_write(this.ptr, buf, len) != len)
 				throw new OpenSslException();
 		}
 
+		/// <summary>
+		/// Calls BIO_write()
+		/// </summary>
+		/// <param name="value"></param>
 		public void Write(byte value)
 		{
 			byte[] buf = new byte[1];
@@ -116,6 +165,10 @@ namespace OpenSSL
 			Write(buf);
 		}
 
+		/// <summary>
+		/// Calls BIO_write()
+		/// </summary>
+		/// <param name="value"></param>
 		public void Write(ushort value)
 		{
 			MemoryStream ms = new MemoryStream();
@@ -125,6 +178,10 @@ namespace OpenSSL
 			Write(buf);
 		}
 
+		/// <summary>
+		/// Calls BIO_write()
+		/// </summary>
+		/// <param name="value"></param>
 		public void Write(uint value)
 		{
 			MemoryStream ms = new MemoryStream();
@@ -134,6 +191,10 @@ namespace OpenSSL
 			Write(buf);
 		}
 
+		/// <summary>
+		/// Calls BIO_puts()
+		/// </summary>
+		/// <param name="str"></param>
 		public void Write(string str)
 		{
 			byte[] buf = Encoding.ASCII.GetBytes(str);
@@ -141,6 +202,11 @@ namespace OpenSSL
 				throw new OpenSslException();
 		}
 
+		/// <summary>
+		/// Calls BIO_read()
+		/// </summary>
+		/// <param name="count"></param>
+		/// <returns></returns>
 		public ArraySegment<byte> ReadBytes(int count)
 		{
 			byte[] buf = new byte[count];
@@ -151,6 +217,10 @@ namespace OpenSSL
 			return new ArraySegment<byte>(buf, 0, ret);
 		}
 
+		/// <summary>
+		/// Calls BIO_gets()
+		/// </summary>
+		/// <returns></returns>
 		public string ReadString()
 		{
 			StringBuilder sb = new StringBuilder();
@@ -170,6 +240,10 @@ namespace OpenSSL
 			return sb.ToString();
 		}
 
+		/// <summary>
+		/// Returns the MessageDigestContext if this BIO's type if BIO_f_md()
+		/// </summary>
+		/// <returns></returns>
 		public MessageDigestContext GetMessageDigestContext()
 		{
 			return new MessageDigestContext(this);
@@ -179,6 +253,9 @@ namespace OpenSSL
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Calls BIO_free()
+		/// </summary>
 		public override void OnDispose()
 		{
 			Native.BIO_free(this.ptr);
