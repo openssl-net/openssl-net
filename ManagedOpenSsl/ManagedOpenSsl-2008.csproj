@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Base.cs" />
     <Compile Include="BigNum.cs" />
     <Compile Include="BIO.cs" />
     <Compile Include="Cipher.cs" />
