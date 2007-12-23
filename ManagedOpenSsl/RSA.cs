@@ -84,12 +84,26 @@ namespace OpenSSL
 
 		public static RSA FromPublicKey(BIO bio)
 		{
-			return new RSA(Native.ExpectNonNull(Native.PEM_read_bio_RSA_PUBKEY(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true);
+			return FromPublicKey(bio, null, null);
 		}
 
 		public static RSA FromPrivateKey(BIO bio)
 		{
-			return new RSA(Native.ExpectNonNull(Native.PEM_read_bio_RSAPrivateKey(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true);
+			return FromPrivateKey(bio, null, null);
+		}
+
+		public static RSA FromPublicKey(BIO bio, PasswordHandler callback, object arg)
+		{
+			PasswordThunk thunk = new PasswordThunk(callback, arg);
+			IntPtr ptr = Native.PEM_read_bio_RSA_PUBKEY(bio.Handle, IntPtr.Zero, thunk.Callback, IntPtr.Zero);
+			return new RSA(Native.ExpectNonNull(ptr), true);
+		}
+
+		public static RSA FromPrivateKey(BIO bio, PasswordHandler callback, object arg)
+		{
+			PasswordThunk thunk = new PasswordThunk(callback, arg);
+			IntPtr ptr = Native.PEM_read_bio_RSAPrivateKey(bio.Handle, IntPtr.Zero, thunk.Callback, IntPtr.Zero);
+			return new RSA(Native.ExpectNonNull(ptr), true);
 		}
 
 		#endregion
@@ -302,6 +316,12 @@ namespace OpenSSL
 				0,
 				thunk.Callback,
 				IntPtr.Zero));
+		}
+
+		public bool Check()
+		{
+			int ret = Native.ExpectSuccess(Native.RSA_check_key(this.ptr));
+			return ret == 1;
 		}
 
 		public override void Print(BIO bio)

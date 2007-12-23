@@ -49,8 +49,8 @@ namespace OpenSSL.CLI
 		#region ICommand Members
 		public void Execute(string[] args)
 		{
-			Console.WriteLine("{0}: {1}", this.name, string.Join(" ", args));
-			Console.WriteLine("Not implemented yet!");
+			Console.Error.WriteLine("{0}: {1}", this.name, string.Join(" ", args));
+			Console.Error.WriteLine("Not implemented yet!");
 		}
 		#endregion
 	}
@@ -148,30 +148,30 @@ namespace OpenSSL.CLI
 			int col = 0;
 			foreach (string cmd in cmds)
 			{
-				Console.Write(cmd);
+				Console.Error.Write(cmd);
 				if (col++ == 4)
 				{
-					Console.WriteLine();
+					Console.Error.WriteLine();
 					col = 0;
 					continue;
 				}
 
 				int remain = 15 - cmd.Length;
 				string padding = new string(' ', remain);
-				Console.Write(padding);
+				Console.Error.Write(padding);
 			}
-			Console.WriteLine();
+			Console.Error.WriteLine();
 		}
 
 		void Usage()
 		{
-			Console.WriteLine("Standard commands");
+			Console.Error.WriteLine("Standard commands");
 			PrintCommands(std_cmds.Keys);
-			Console.WriteLine();
-			Console.WriteLine("Message Digest commands");
+			Console.Error.WriteLine();
+			Console.Error.WriteLine("Message Digest commands");
 			PrintCommands(md_cmds.Keys);
-			Console.WriteLine();
-			Console.WriteLine("Cipher commands");
+			Console.Error.WriteLine();
+			Console.Error.WriteLine("Cipher commands");
 			PrintCommands(cipher_cmds.Keys);
 		}
 
@@ -194,7 +194,7 @@ namespace OpenSSL.CLI
 
 		public static int OnGenerator(int p, int n, object arg)
 		{
-			TextWriter cout = Console.Out;
+			TextWriter cout = Console.Error;
 
 			switch (p)
 			{
@@ -219,7 +219,7 @@ namespace OpenSSL.CLI
 
 				if (key.Key == ConsoleKey.C && key.Modifiers == ConsoleModifiers.Control)
 				{
-					Console.WriteLine();
+					Console.Error.WriteLine();
 					throw new Exception("Cancelled");
 				}
 
@@ -235,33 +235,27 @@ namespace OpenSSL.CLI
 			if (!string.IsNullOrEmpty(passout))
 				return File.ReadAllText(passout);
 
-			string passwd = null;
 			while (true)
 			{
-				Console.Write("Enter pass phrase:");
-				string str1 = ReadPassword();
-				Console.WriteLine();
+				Console.Error.Write("Enter pass phrase:");
+				string strPassword = ReadPassword();
+				Console.Error.WriteLine();
 
-				if (str1.Length == 0)
+				if (strPassword.Length == 0)
 					continue;
 
 				if (!verify)
-					break;
+					return strPassword;
 
-				Console.Write("Verifying - Enter pass phrase:");
-				string str2 = ReadPassword();
-				Console.WriteLine();
+				Console.Error.Write("Verifying - Enter pass phrase:");
+				string strVerify = ReadPassword();
+				Console.Error.WriteLine();
 	
-				if (str1 == str2)
-				{
-					passwd = str1;
-					break;
-				}
+				if (strPassword == strVerify)
+					return strPassword;
 
-				Console.WriteLine("Passwords don't match, try again.");
+				Console.Error.WriteLine("Passwords don't match, try again.");
 			}
-
-			return passwd;
 		}
 
 		public static BIO GetInFile(string infile)

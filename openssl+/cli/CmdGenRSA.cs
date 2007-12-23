@@ -53,7 +53,7 @@ namespace OpenSSL.CLI
 
 		void Usage()
 		{
-			Console.WriteLine(
+			Console.Error.WriteLine(
 @"usage: genrsa [args] [numbits]
  -des            encrypt the generated key with DES in cbc mode
  -des3           encrypt the generated key with DES in ede cbc mode (168 bit key)
@@ -94,12 +94,12 @@ namespace OpenSSL.CLI
 			else if (options.IsSet("f4"))
 				e = 0x10001;
 
-			Console.WriteLine("Generating RSA private key, {0} bit long modulus", bits);
+			Console.Error.WriteLine("Generating RSA private key, {0} bit long modulus", bits);
 
 			RSA rsa = new RSA();
 			rsa.GenerateKeys(bits, e, Program.OnGenerator, null);
 
-			Console.WriteLine("e is {0} (0x{1})", e.ToDecimalString(), e.ToHexString());
+			Console.Error.WriteLine("e is {0} (0x{1})", e.ToDecimalString(), e.ToHexString());
 
 			Cipher enc = null;
 			if (options.IsSet("des"))

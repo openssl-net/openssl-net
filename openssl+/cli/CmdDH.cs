@@ -51,17 +51,18 @@ namespace OpenSSL.CLI
 
 		void Usage()
 		{
-			Console.WriteLine("dh [options] <infile >outfile");
-			Console.WriteLine("where options are");
-			Console.WriteLine(" -inform arg   input format - one of DER | PEM");
-			Console.WriteLine(" -outform arg  output format - one of DER | PEM");
-			Console.WriteLine(" -in arg       input file");
-			Console.WriteLine(" -out arg      output file");
-			Console.WriteLine(" -check        check the DH parameters");
-			Console.WriteLine(" -text         print a text form of the DH parameters");
-			Console.WriteLine(" -C            output C# code");
-			Console.WriteLine(" -noout        no output");
-			Console.WriteLine(" -engine e     use engine e, possibly a hardware device.");
+			Console.Error.WriteLine(
+@"dh [options] <infile >outfile
+where options are
+ -inform arg   input format - one of DER | PEM
+ -outform arg  output format - one of DER | PEM
+ -in arg       input file
+ -out arg      output file
+ -check        check the DH parameters
+ -text         print a text form of the DH parameters
+ -C            output C# code
+ -noout        no output
+ -engine e     use engine e, possibly a hardware device.");
 		}
 
 		#region ICommand Members
@@ -99,7 +100,6 @@ namespace OpenSSL.CLI
 
 			if (this.options.IsSet("check"))
 			{
-				Console.WriteLine("-check is currently not implemented.");
 				DH.CheckCode check = dh.Check();
 				if ((check & DH.CheckCode.NotSuitableGenerator) != 0)
 					Console.WriteLine("the g value is not a generator");

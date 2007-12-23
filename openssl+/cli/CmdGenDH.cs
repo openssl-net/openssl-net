@@ -55,7 +55,7 @@ namespace OpenSSL.CLI
            - load the file (or the files in the directory) into
              the random number generator";
 
-			Console.WriteLine(str);
+			Console.Error.WriteLine(str);
 		}
 
 		#region ICommand Members
@@ -83,8 +83,8 @@ namespace OpenSSL.CLI
 			if (this.options.Arguments.Count == 1)
 				bits = Convert.ToInt32(this.options.Arguments[0]);
 
-			Console.WriteLine("Generating DH parameters, {0} bit long safe prime, generator {1}", bits, g);
-			Console.WriteLine("This is going to take a long time");
+			Console.Error.WriteLine("Generating DH parameters, {0} bit long safe prime, generator {1}", bits, g);
+			Console.Error.WriteLine("This is going to take a long time");
 
 			OpenSSL.DH dh = new OpenSSL.DH(bits, g, Program.OnGenerator, null);
 

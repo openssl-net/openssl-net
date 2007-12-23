@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace OpenSSL.CLI
 {
@@ -58,7 +59,7 @@ namespace OpenSSL.CLI
 
 		void Usage()
 		{
-			Console.WriteLine(
+			Console.Error.WriteLine(
 @"rsa [options] <infile >outfile
 where options are
  -inform arg     input format - one of DER NET PEM
@@ -97,20 +98,60 @@ where options are
 
 			if (options.IsSet("pubin") && options.IsSet("check"))
 			{
-				Console.WriteLine("Only private keys can be checked");
+				Console.Error.WriteLine("Only private keys can be checked");
 				return;
 			}
 
 			BIO bin = Program.GetInFile(options.GetString("in"));
 
-			CryptoKey pkey;
+			RSA rsa;
 			if (options.IsSet("pubin"))
-			{
-				pkey = CryptoKey.FromPublicKey(bin, null, null);
-			}
+				rsa = RSA.FromPublicKey(bin, Program.OnPassword, this.options["passin"]);
 			else
+				rsa = RSA.FromPrivateKey(bin, Program.OnPassword, this.options["passin"]);
+
+			Cipher enc = null;
+			if (options.IsSet("des"))
+				enc = Cipher.DES_CBC;
+			else if (options.IsSet("des3"))
+				enc = Cipher.DES_EDE3_CBC;
+			else if (options.IsSet("aes128"))
+				enc = Cipher.AES_128_CBC;
+			else if (options.IsSet("aes192"))
+				enc = Cipher.AES_192_CBC;
+			else if (options.IsSet("aes256"))
+				enc = Cipher.AES_256_CBC;
+
+			if (options.IsSet("text"))
+				Console.Write(rsa);
+
+			if (options.IsSet("modulus"))
+				Console.WriteLine("Modulus={0}", rsa.N);
+
+			if (options.IsSet("check"))
 			{
-//				pkey = CryptoKey.FromPrivateKey(bin, cb);
+				if (rsa.Check())
+					Console.WriteLine("RSA key ok");
+				else
+					Console.WriteLine("RSA key error");
+			}
+
+			if (!options.IsSet("noout"))
+			{
+				Console.Error.WriteLine("writing RSA key");
+				using (BIO bio = BIO.MemoryBuffer())
+				{
+					if (this.options.IsSet("pubout"))
+						rsa.WritePublicKey(bio);
+					else
+						rsa.WritePrivateKey(bio, enc, Program.OnPassword, this.options["passout"]);
+
+					string outfile = this.options["out"] as string;
+					if (string.IsNullOrEmpty(outfile))
+						Console.WriteLine(bio.ReadString());
+					else
+						File.WriteAllText(outfile, bio.ReadString());
+				}
 			}
 		}
 
