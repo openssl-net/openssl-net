@@ -35,68 +35,30 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BigNum.cs">
-      <Link>BigNum.cs</Link>
-    </Compile>
-    <Compile Include="..\BIO.cs">
-      <Link>BIO.cs</Link>
-    </Compile>
-    <Compile Include="..\Cipher.cs">
-      <Link>Cipher.cs</Link>
-    </Compile>
-    <Compile Include="..\Configuration.cs">
-      <Link>Configuration.cs</Link>
-    </Compile>
-    <Compile Include="..\CryptoKey.cs">
-      <Link>CryptoKey.cs</Link>
-    </Compile>
-    <Compile Include="..\DH.cs">
-      <Link>DH.cs</Link>
-    </Compile>
-    <Compile Include="..\DSA.cs">
-      <Link>DSA.cs</Link>
-    </Compile>
-    <Compile Include="..\Identity.cs">
-      <Link>Identity.cs</Link>
-    </Compile>
-    <Compile Include="..\MessageDigest.cs">
-      <Link>MessageDigest.cs</Link>
-    </Compile>
-    <Compile Include="..\Native.cs">
-      <Link>Native.cs</Link>
-    </Compile>
-    <Compile Include="..\OpenSslException.cs">
-      <Link>OpenSslException.cs</Link>
-    </Compile>
-    <Compile Include="..\Properties\AssemblyInfo.cs">
-      <Link>AssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\RSA.cs">
-      <Link>RSA.cs</Link>
-    </Compile>
-    <Compile Include="..\Stack.cs">
-      <Link>Stack.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Certificate.cs">
-      <Link>X509Certificate.cs</Link>
-    </Compile>
-    <Compile Include="..\X509CertificateAuthority.cs">
-      <Link>X509CertificateAuthority.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Chain.cs">
-      <Link>X509Chain.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Name.cs">
-      <Link>X509Name.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Request.cs">
-      <Link>X509Request.cs</Link>
-    </Compile>
-    <Compile Include="..\X509Store.cs">
-      <Link>X509Store.cs</Link>
-    </Compile>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="BigNum.cs" />
+    <Compile Include="BIO.cs" />
+    <Compile Include="Cipher.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="CryptoKey.cs" />
+    <Compile Include="DH.cs" />
+    <Compile Include="DSA.cs" />
+    <Compile Include="Identity.cs" />
+    <Compile Include="MessageDigest.cs" />
+    <Compile Include="Native.cs" />
+    <Compile Include="OpenSslException.cs" />
+    <Compile Include="RSA.cs" />
+    <Compile Include="Stack.cs" />
+    <Compile Include="X509Certificate.cs" />
+    <Compile Include="X509CertificateAuthority.cs" />
+    <Compile Include="X509Chain.cs" />
+    <Compile Include="X509Name.cs" />
+    <Compile Include="X509Request.cs" />
+    <Compile Include="X509Store.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
