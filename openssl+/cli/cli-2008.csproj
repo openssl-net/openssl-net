@@ -43,6 +43,7 @@
     <Compile Include="CmdRSA.cs" />
     <Compile Include="CmdDH.cs" />
     <Compile Include="CmdGenDH.cs" />
+    <Compile Include="CmdVersion.cs" />
     <Compile Include="OptionParser.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>

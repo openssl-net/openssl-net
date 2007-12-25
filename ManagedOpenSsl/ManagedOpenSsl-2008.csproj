@@ -46,6 +46,7 @@
     <Compile Include="BIO.cs" />
     <Compile Include="Cipher.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="Crypto.cs" />
     <Compile Include="CryptoKey.cs" />
     <Compile Include="DH.cs" />
     <Compile Include="DSA.cs" />
@@ -53,8 +54,10 @@
     <Compile Include="MessageDigest.cs" />
     <Compile Include="Native.cs" />
     <Compile Include="OpenSslException.cs" />
+    <Compile Include="Random.cs" />
     <Compile Include="RSA.cs" />
     <Compile Include="Stack.cs" />
+    <Compile Include="Version.cs" />
     <Compile Include="X509Certificate.cs" />
     <Compile Include="X509CertificateAuthority.cs" />
     <Compile Include="X509Chain.cs" />

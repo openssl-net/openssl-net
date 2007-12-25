@@ -28,51 +28,10 @@ using System;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using System.Globalization;
+using System.Reflection;
 
 namespace OpenSSL
 {
-	internal class PasswordThunk
-	{
-		private PasswordHandler OnPassword;
-		private object arg;
-
-		public Native.pem_password_cb Callback
-		{
-			get
-			{
-				if (this.OnPassword == null)
-					return null;
-				return this.OnPasswordThunk;
-			}
-		}
-
-		public PasswordThunk(PasswordHandler client, object arg)
-		{
-			this.OnPassword = client;
-			this.arg = arg;
-		}
-
-		internal int OnPasswordThunk(IntPtr buf, int size, int rwflag, IntPtr userdata)
-		{
-			try
-			{
-				string ret = OnPassword(rwflag != 0, this.arg);
-				byte[] pass = Encoding.ASCII.GetBytes(ret);
-				int len = pass.Length;
-				if (len > size)
-					len = size;
-
-				Marshal.Copy(pass, 0, buf, len);
-				return len;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-				return -1;
-			}
-		}
-	}
-
 	/// <summary>
 	/// This is the low-level C-style interface to the crypto API.
 	/// Use this interface with caution.
@@ -85,6 +44,7 @@ namespace OpenSSL
 		/// </summary>
 		public const string DLLNAME = "libeay32.dll";
 
+		#region Kernel32
 		[DllImport("kernel32.dll")]
 		public extern static IntPtr LoadLibrary(string lpFileName);
 
@@ -93,13 +53,26 @@ namespace OpenSSL
 
 		[DllImport("kernel32.dll")]
 		public extern static IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
+		#endregion
 
+		#region Delegates
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int pem_password_cb(IntPtr buf, int size, int rwflag, IntPtr userdata);
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate int GeneratorHandler(int p, int n, IntPtr arg);
+		#endregion
+		
 		#region Initialization
 		static Native()
 		{
+			Version lib = Version.Library;
+			Version wrapper = Version.Wrapper;
+			uint mmf = lib.Raw & 0xfffff000;
+			if (mmf != wrapper.Raw)
+				throw new Exception(string.Format("Invalid version of {0}, expecting {1}, got: {2}", 
+					DLLNAME, wrapper, lib));
+
 			ERR_load_crypto_strings();
 			OPENSSL_add_all_algorithms_noconf();
 			byte[] seed = new byte[128];
@@ -109,40 +82,80 @@ namespace OpenSSL
 		}
 		#endregion
 
-		#region OPENSSL
+		#region Version
+		public const uint Wrapper = 0x00908000;
+
+		[DllImport(DLLNAME)]
+		public extern static string SSLeay_version(int type);
+		
+		[DllImport(DLLNAME)]
+		public extern static uint SSLeay();
+
+		[DllImport(DLLNAME)]
+		public extern static string BN_options();
+
+		[DllImport(DLLNAME)]
+		public extern static string MD2_options();
+
+		[DllImport(DLLNAME)]
+		public extern static string RC4_options();
+
+		[DllImport(DLLNAME)]
+		public extern static string DES_options();
+
+		[DllImport(DLLNAME)]
+		public extern static string idea_options();
+
+		[DllImport(DLLNAME)]
+		public extern static string BF_options();
+
+		#endregion
+
+		#region CRYPTO
 		[DllImport(DLLNAME)]
 		public extern static void OPENSSL_add_all_algorithms_noconf();
 
 		[DllImport(DLLNAME)]
 		public extern static void OPENSSL_add_all_algorithms_conf();
 
+		/// <summary>
+		/// #define OPENSSL_free(addr) CRYPTO_free(addr)
+		/// </summary>
+		/// <param name="p"></param>
 		public static void OPENSSL_free(IntPtr p)
 		{
 			CRYPTO_free(p);
 		}
 
+		/// <summary>
+		/// #define OPENSSL_malloc(num)	CRYPTO_malloc((int)num,__FILE__,__LINE__)
+		/// </summary>
+		/// <param name="cbSize"></param>
+		/// <returns></returns>
 		public static IntPtr OPENSSL_malloc(int cbSize)
 		{
-			return CRYPTO_malloc(cbSize, IntPtr.Zero, 0);
+			return CRYPTO_malloc(cbSize, Assembly.GetExecutingAssembly().FullName, 0);
 		}
 
 		[DllImport(DLLNAME)]
 		public extern static void CRYPTO_free(IntPtr p);
 		
 		[DllImport(DLLNAME)]
-		public extern static IntPtr CRYPTO_malloc(int num, IntPtr file, int line);
+		public extern static IntPtr CRYPTO_malloc(int num, string file, int line);
 
-		//#define CRYPTO_malloc_debug_init()	do {\
-		//    CRYPTO_set_mem_debug_functions(\
-		//        CRYPTO_dbg_malloc,\
-		//        CRYPTO_dbg_realloc,\
-		//        CRYPTO_dbg_free,\
-		//        CRYPTO_dbg_set_options,\
-		//        CRYPTO_dbg_get_options);\
-		//    } while(0)
 		[DllImport(DLLNAME)]
 		public extern static int CRYPTO_set_mem_debug_functions(IntPtr m, IntPtr r, IntPtr f, IntPtr so, IntPtr go);
 
+		/// <summary>
+		/// #define CRYPTO_malloc_debug_init()	do {\
+		///		CRYPTO_set_mem_debug_functions(\
+		///		CRYPTO_dbg_malloc,\
+		///		CRYPTO_dbg_realloc,\
+		///		CRYPTO_dbg_free,\
+		///		CRYPTO_dbg_set_options,\
+		///		CRYPTO_dbg_get_options);\
+		///		} while(0)
+		/// </summary>
 		public static void CRYPTO_malloc_debug_init()
 		{
 			IntPtr hModule = LoadLibrary(DLLNAME);
@@ -550,8 +563,45 @@ namespace OpenSSL
 		#endregion
 
 		#region RAND
+
+		[DllImport(DLLNAME)]
+		public extern static void RAND_cleanup();
+		
 		[DllImport(DLLNAME)]
 		public extern static void RAND_seed(byte[] buf, int len);
+
+		[DllImport(DLLNAME)]
+		public extern static int RAND_pseudo_bytes(byte[] buf, int len);
+
+		[DllImport(DLLNAME)]
+		public extern static int RAND_bytes(byte[] buf, int num);
+
+		[DllImport(DLLNAME)]
+		public extern static void RAND_add(byte[] buf, int num, double entropy);
+	
+		[DllImport(DLLNAME)]
+		public extern static int RAND_load_file(string file, int max_bytes);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RAND_write_file(string file);
+		
+		[DllImport(DLLNAME)]
+		public extern static string RAND_file_name(string file, uint num);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RAND_status();
+		
+		[DllImport(DLLNAME)]
+		public extern static int RAND_query_egd_bytes(string path, byte[] buf, int bytes);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RAND_egd(string path);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RAND_egd_bytes(string path, int bytes);
+		
+		[DllImport(DLLNAME)]
+		public extern static int RAND_poll();
 		#endregion
 
 		#region DSA
@@ -720,8 +770,6 @@ namespace OpenSSL
 		//        tmp_gencb->ver = 2; \
 		//        tmp_gencb->arg = (cb_arg); \
 		//        tmp_gencb->cb.cb_2 = (callback); }
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate int GeneratorHandler(int p, int n, IntPtr arg);
 
 		[StructLayout(LayoutKind.Sequential)]
 		public class bn_gencb_st

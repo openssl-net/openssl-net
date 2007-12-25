@@ -259,21 +259,21 @@ namespace test
 		private void SetKey(RSA key, byte[] n, byte[] e, byte[] d, byte[] p, byte[] q, byte[] dmp1, byte[] dmq1, byte[] iqmp)
 		{
 			using (BigNumber bn = BigNumber.FromArray(n))
-				key.N = bn;
+				key.PublicModulus = bn;
 			using (BigNumber bn = BigNumber.FromArray(e))
-				key.E = bn;
+				key.PublicExponent = bn;
 			using (BigNumber bn = BigNumber.FromArray(d))
-				key.D = bn;
+				key.PrivateExponent = bn;
 			using (BigNumber bn = BigNumber.FromArray(p))
-				key.P = bn;
+				key.SecretPrimeFactorP = bn;
 			using (BigNumber bn = BigNumber.FromArray(q))
-				key.Q = bn;
+				key.SecretPrimeFactorQ = bn;
 			using (BigNumber bn = BigNumber.FromArray(dmp1))
-				key.Dmp1 = bn;
+				key.DmodP1 = bn;
 			using (BigNumber bn = BigNumber.FromArray(dmq1))
-				key.Dmq1 = bn;
+				key.DmodQ1 = bn;
 			using (BigNumber bn = BigNumber.FromArray(iqmp))
-				key.Iqmp = bn;
+				key.IQmodP = bn;
 		}
 
 		private void TestKey(int v, RSA key)
@@ -289,11 +289,11 @@ namespace test
 			if (v / 3 >= 1)
 				key.ConstantTime = false;
 
-			byte[] ctext = key.PublicEncrypt(ptext_ex, RSA.PKCS1_Padding);
+			byte[] ctext = key.PublicEncrypt(ptext_ex, RSA.Padding.PKCS1);
 			if (ctext.Length != ctext_ex.Length)
 				throw new Exception("PKCS#1 v1.5 encryption failed!");
 
-			byte[] ptext = key.PrivateDecrypt(ctext, RSA.PKCS1_Padding);
+			byte[] ptext = key.PrivateDecrypt(ctext, RSA.Padding.PKCS1);
 			string str1 = BitConverter.ToString(ptext);
 			string str2 = BitConverter.ToString(ptext_ex);
 			if (str1 != str2)
@@ -301,11 +301,11 @@ namespace test
 
 			Console.WriteLine("PKCS #1 v1.5 encryption/decryption ok");
 
-			ctext = key.PublicEncrypt(ptext_ex, RSA.PKCS1_OAEP_Padding);
+			ctext = key.PublicEncrypt(ptext_ex, RSA.Padding.OAEP);
 			if (ctext.Length != ctext_ex.Length)
 				throw new Exception("OAEP encryption failed!");
 
-			ptext = key.PrivateDecrypt(ctext, RSA.PKCS1_OAEP_Padding);
+			ptext = key.PrivateDecrypt(ctext, RSA.Padding.OAEP);
 			str1 = BitConverter.ToString(ptext);
 			str2 = BitConverter.ToString(ptext_ex);
 			if (str1 != str2)
@@ -315,7 +315,7 @@ namespace test
 
 			// Different ciphertexts (rsa_oaep.c without -DPKCS_TESTVECT).
 			// Try decrypting ctext_ex
-			ptext = key.PrivateDecrypt(ctext_ex, RSA.PKCS1_OAEP_Padding);
+			ptext = key.PrivateDecrypt(ctext_ex, RSA.Padding.OAEP);
 			str1 = BitConverter.ToString(ptext);
 			str2 = BitConverter.ToString(ptext_ex);
 			if (str1 != str2)
@@ -334,7 +334,7 @@ namespace test
 					bool error = false;
 					try
 					{
-						ptext = key.PrivateDecrypt(ctext, RSA.PKCS1_OAEP_Padding);
+						ptext = key.PrivateDecrypt(ctext, RSA.Padding.OAEP);
 					}
 					catch (Exception)
 					{

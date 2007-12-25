@@ -41,6 +41,14 @@ namespace OpenSSL
 		/// Creates a BigNumber object by calling BN_value_one()
 		/// </summary>
 		public static BigNumber One = new BigNumber(Native.BN_value_one(), false);
+
+		/// <summary>
+		/// Calls BN_options()
+		/// </summary>
+		public static string Options
+		{
+			get { return Native.BN_options(); }
+		}
 		#endregion
 
 		#region Initialization

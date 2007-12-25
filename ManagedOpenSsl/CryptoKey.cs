@@ -65,6 +65,48 @@ namespace OpenSSL
 		}
 	}
 
+	internal class PasswordThunk
+	{
+		private PasswordHandler OnPassword;
+		private object arg;
+
+		public Native.pem_password_cb Callback
+		{
+			get
+			{
+				if (this.OnPassword == null)
+					return null;
+				return this.OnPasswordThunk;
+			}
+		}
+
+		public PasswordThunk(PasswordHandler client, object arg)
+		{
+			this.OnPassword = client;
+			this.arg = arg;
+		}
+
+		internal int OnPasswordThunk(IntPtr buf, int size, int rwflag, IntPtr userdata)
+		{
+			try
+			{
+				string ret = OnPassword(rwflag != 0, this.arg);
+				byte[] pass = Encoding.ASCII.GetBytes(ret);
+				int len = pass.Length;
+				if (len > size)
+					len = size;
+
+				Marshal.Copy(pass, 0, buf, len);
+				return len;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				return -1;
+			}
+		}
+	}
+
 	/// <summary>
 	/// Wraps the native OpenSSL EVP_PKEY object
 	/// </summary>

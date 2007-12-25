@@ -59,9 +59,7 @@ namespace OpenSSL.CLI
 		Dictionary<string, Option> optionsByName = new Dictionary<string, Option>();
 		List<string> args = new List<string>();
 
-		public OptionParser()
-		{
-		}
+		public OptionParser() { }
 
 		public void AddOption(string keyword, Option option)
 		{

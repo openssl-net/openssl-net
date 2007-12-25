@@ -77,6 +77,7 @@ namespace test
 			tests.Add("sha256", new TestSHA256());
 			tests.Add("sha512", new TestSHA512());
 			tests.Add("rsa", new TestRSA());
+			tests.Add("rand", new TestRandom());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
@@ -98,7 +99,6 @@ namespace test
 			AddNullCommand(tests, "mdc2");
 			AddNullCommand(tests, "meth");
 			AddNullCommand(tests, "r160");
-			AddNullCommand(tests, "rand");
 			AddNullCommand(tests, "rc2");
 			AddNullCommand(tests, "rc4");
 			AddNullCommand(tests, "rc5");

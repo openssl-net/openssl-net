@@ -553,6 +553,11 @@
             <param name="other"></param>
             <returns></returns>
         </member>
+        <member name="P:OpenSSL.BigNumber.Options">
+            <summary>
+            Calls BN_options()
+            </summary>
+        </member>
         <member name="P:OpenSSL.BigNumber.Bits">
             <summary>
             Returns BN_num_bits()
@@ -583,6 +588,31 @@
             <summary>
             This is the name of the DLL that P/Invoke loads and tries to bind all of
             these native functions to.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Native.OPENSSL_free(System.IntPtr)">
+            <summary>
+            #define OPENSSL_free(addr) CRYPTO_free(addr)
+            </summary>
+            <param name="p"></param>
+        </member>
+        <member name="M:OpenSSL.Native.OPENSSL_malloc(System.Int32)">
+            <summary>
+            #define OPENSSL_malloc(num)	CRYPTO_malloc((int)num,__FILE__,__LINE__)
+            </summary>
+            <param name="cbSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Native.CRYPTO_malloc_debug_init">
+            <summary>
+            #define CRYPTO_malloc_debug_init()	do {\
+            	CRYPTO_set_mem_debug_functions(\
+            	CRYPTO_dbg_malloc,\
+            	CRYPTO_dbg_realloc,\
+            	CRYPTO_dbg_free,\
+            	CRYPTO_dbg_set_options,\
+            	CRYPTO_dbg_get_options);\
+            	} while(0)
             </summary>
         </member>
         <member name="F:OpenSSL.Native.bn_gencb_st.arg">
@@ -1238,7 +1268,7 @@
             </summary>
             <param name="bio"></param>
         </member>
-        <member name="M:OpenSSL.Cipher.ByName(System.String)">
+        <member name="M:OpenSSL.Cipher.CreateByName(System.String)">
             <summary>
             Returns EVP_get_cipherbyname()
             </summary>
@@ -1730,6 +1760,101 @@
             Calls NCONF_free()
             </summary>
         </member>
+        <member name="T:OpenSSL.Random">
+            <summary>
+            Exposes the RAND_* functions.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Random.Seed(System.Byte[])">
+            <summary>
+            Calls RAND_seed()
+            </summary>
+            <param name="seed"></param>
+        </member>
+        <member name="M:OpenSSL.Random.Seed(System.String)">
+            <summary>
+            Calls RAND_seed()
+            </summary>
+            <param name="seed"></param>
+        </member>
+        <member name="M:OpenSSL.Random.PseudoBytes(System.Int32)">
+            <summary>
+            Calls RAND_pseudo_bytes()
+            </summary>
+            <param name="len"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Random.Cleanup">
+            <summary>
+            Calls RAND_cleanup()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Random.Bytes(System.Int32)">
+            <summary>
+            Calls RAND_bytes()
+            </summary>
+            <param name="len"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Random.Add(System.Byte[],System.Double)">
+            <summary>
+            Calls RAND_add()
+            </summary>
+            <param name="buf"></param>
+            <param name="entropy"></param>
+        </member>
+        <member name="M:OpenSSL.Random.LoadFile(System.String,System.Int32)">
+            <summary>
+            Calls RAND_load_file()
+            </summary>
+            <param name="filename"></param>
+            <param name="max_bytes"></param>
+        </member>
+        <member name="M:OpenSSL.Random.WriteFile(System.String)">
+            <summary>
+            Calls RAND_write_file()
+            </summary>
+            <param name="filename"></param>
+        </member>
+        <member name="M:OpenSSL.Random.GetFilename(System.String,System.UInt32)">
+            <summary>
+            Calls RAND_file_name()
+            </summary>
+            <param name="filename"></param>
+            <param name="num"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Random.QueryEgdBytes(System.String,System.Byte[],System.Int32)">
+            <summary>
+            Calls RAND_query_egd_bytes()
+            </summary>
+            <param name="path"></param>
+            <param name="buf"></param>
+            <param name="bytes"></param>
+        </member>
+        <member name="M:OpenSSL.Random.Egd(System.String)">
+            <summary>
+            Calls RAND_egd()
+            </summary>
+            <param name="path"></param>
+        </member>
+        <member name="M:OpenSSL.Random.EgdBytes(System.String,System.Int32)">
+            <summary>
+            Calls RAND_egd_bytes()
+            </summary>
+            <param name="path"></param>
+            <param name="bytes"></param>
+        </member>
+        <member name="M:OpenSSL.Random.Poll">
+            <summary>
+            Calls RAND_poll()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Random.Status">
+            <summary>
+            Returns RAND_status()
+            </summary>
+        </member>
         <member name="T:OpenSSL.DSA">
             <summary>
             Wraps the DSA_* functions
@@ -1887,19 +2012,127 @@
             Accessor for the FlagNoExpConstTime flag
             </summary>
         </member>
+        <member name="T:OpenSSL.Version">
+            <summary>
+            Contains the set of elements that make up a Version.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Version.#ctor(System.UInt32)">
+            <summary>
+            Create a Version from a raw uint value
+            </summary>
+            <param name="raw"></param>
+        </member>
+        <member name="M:OpenSSL.Version.ToString">
+            <summary>
+            Conversion to a string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Version.GetText(OpenSSL.Version.Format)">
+            <summary>
+            Calls SSLeay_version()
+            </summary>
+            <param name="format"></param>
+        </member>
+        <member name="P:OpenSSL.Version.Library">
+            <summary>
+            Returns the current version of the native library.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Wrapper">
+            <summary>
+            Returns the version that this wrapper is built for.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Major">
+            <summary>
+            Major portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Minor">
+            <summary>
+            Minor portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Fix">
+            <summary>
+            Fix portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Patch">
+            <summary>
+            Patch portion of the Version. These should start at 'a' and continue to 'z'.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Status">
+            <summary>
+            Status portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Raw">
+            <summary>
+            The raw uint value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.RawStatus">
+            <summary>
+            Returns the raw status portion of a Version.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Version.StatusType">
+            <summary>
+            The kinds of status that 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.StatusType.Development">
+            <summary>
+            The status nibble has the value 0
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.StatusType.Beta">
+            <summary>
+            The status nibble is 1 to 14 (0x0e)
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.StatusType.Release">
+            <summary>
+            The status nibble is 0x0f
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Version.Format">
+            <summary>
+            SSLEAY_* constants used for with GetVersion()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.Text">
+            <summary>
+            SSLEAY_VERSION
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.CompilerFlags">
+            <summary>
+            SSLEAY_CFLAGS
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.BuildDate">
+            <summary>
+            SSLEAY_BUILT_ON
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.Platform">
+            <summary>
+            SSLEAY_PLATFORM
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.BuildDirectory">
+            <summary>
+            SSLEAY_DIR
+            </summary>
+        </member>
         <member name="T:OpenSSL.RSA">
             <summary>
             Wraps the RSA_* functions
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.PKCS1_Padding">
-            <summary>
-            Not sure
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.PKCS1_OAEP_Padding">
-            <summary>
-            Not sure
             </summary>
         </member>
         <member name="M:OpenSSL.RSA.#ctor">
@@ -1948,7 +2181,7 @@
             <param name="callback"></param>
             <param name="arg"></param>
         </member>
-        <member name="M:OpenSSL.RSA.PublicEncrypt(System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.RSA.PublicEncrypt(System.Byte[],OpenSSL.RSA.Padding)">
             <summary>
             Calls RSA_public_encrypt()
             </summary>
@@ -1956,7 +2189,7 @@
             <param name="padding"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.RSA.PrivateEncrypt(System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.RSA.PrivateEncrypt(System.Byte[],OpenSSL.RSA.Padding)">
             <summary>
             Calls RSA_private_encrypt()
             </summary>
@@ -1964,7 +2197,7 @@
             <param name="padding"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.RSA.PublicDecrypt(System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.RSA.PublicDecrypt(System.Byte[],OpenSSL.RSA.Padding)">
             <summary>
             Calls RSA_public_decrypt()
             </summary>
@@ -1972,7 +2205,7 @@
             <param name="padding"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.RSA.PrivateDecrypt(System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.RSA.PrivateDecrypt(System.Byte[],OpenSSL.RSA.Padding)">
             <summary>
             Calls RSA_private_decrypt()
             </summary>
@@ -2022,44 +2255,47 @@
             Not finished
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.E">
+        <member name="P:OpenSSL.RSA.PublicExponent">
             <summary>
             Accessor for the e field
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.N">
+        <member name="P:OpenSSL.RSA.PublicModulus">
             <summary>
             Accessor for the n field
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.D">
+        <member name="P:OpenSSL.RSA.PrivateExponent">
             <summary>
             Accessor for the d field
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.P">
+        <member name="P:OpenSSL.RSA.SecretPrimeFactorP">
             <summary>
             Accessor for the p field
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.Q">
+        <member name="P:OpenSSL.RSA.SecretPrimeFactorQ">
             <summary>
             Accessor for the q field
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.Dmp1">
+        <member name="P:OpenSSL.RSA.DmodP1">
             <summary>
-            Accessor for the dmp1 field
+            Accessor for the dmp1 field.
+            d mod (p-1)
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.Dmq1">
+        <member name="P:OpenSSL.RSA.DmodQ1">
             <summary>
-            Accessor for the dmq1 field
+            Accessor for the dmq1 field.
+            d mod (q-1)
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.Iqmp">
+        <member name="P:OpenSSL.RSA.IQmodP">
             <summary>
-            Accessor for the iqmp field
+            Accessor for the iqmp field.
+            q^-1 mod p
             </summary>
         </member>
         <member name="P:OpenSSL.RSA.PublicKeyAsPEM">
@@ -2070,6 +2306,37 @@
         <member name="P:OpenSSL.RSA.PrivateKeyAsPEM">
             <summary>
             Returns the private key field as a PEM string
+            </summary>
+        </member>
+        <member name="T:OpenSSL.RSA.Padding">
+            <summary>
+            RSA padding scheme
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.PKCS1">
+            <summary>
+            RSA_PKCS1_PADDING
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.SSLv23">
+            <summary>
+            RSA_SSLV23_PADDING
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.None">
+            <summary>
+            RSA_NO_PADDING
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.OAEP">
+            <summary>
+            RSA_PKCS1_OAEP_PADDING
+            Optimal Asymmetric Encryption Padding
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.X931">
+            <summary>
+            RSA_X931_PADDING
             </summary>
         </member>
         <member name="T:OpenSSL.MessageDigest">
@@ -2679,23 +2946,6 @@
             Calls X509_EXTENSION_free()
             </summary>
         </member>
-        <member name="T:OpenSSL.Random">
-            <summary>
-            Exposes the RAND_* functions.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Random.Seed(System.Byte[])">
-            <summary>
-            Calls RAND_seed()
-            </summary>
-            <param name="seed"></param>
-        </member>
-        <member name="M:OpenSSL.Random.Seed(System.String)">
-            <summary>
-            Calls RAND_seed()
-            </summary>
-            <param name="seed"></param>
-        </member>
         <member name="T:OpenSSL.DebugOptions">
             <summary>
             V_CRYPTO_MDEBUG_*
@@ -2724,21 +2974,25 @@
         <member name="F:OpenSSL.MemoryCheck.Off">
             <summary>
             CRYPTO_MEM_CHECK_OFF 
+            for applications
             </summary>
         </member>
         <member name="F:OpenSSL.MemoryCheck.On">
             <summary>
             CRYPTO_MEM_CHECK_ON 
+            for applications
             </summary>
         </member>
         <member name="F:OpenSSL.MemoryCheck.Enable">
             <summary>
             CRYPTO_MEM_CHECK_ENABLE
+            for library-internal use
             </summary>
         </member>
         <member name="F:OpenSSL.MemoryCheck.Disable">
             <summary>
             CRYPTO_MEM_CHECK_DISABLE
+            for library-internal use
             </summary>
         </member>
         <member name="T:OpenSSL.Crypto">
@@ -2779,6 +3033,31 @@
             Calls CRYPTO_mem_leaks_cb()
             </summary>
             <param name="callback"></param>
+        </member>
+        <member name="P:OpenSSL.Crypto.MD2_Options">
+            <summary>
+            Returns MD2_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.RC4_Options">
+            <summary>
+            Returns RC4_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.DES_Options">
+            <summary>
+            Returns DES_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.Idea_Options">
+            <summary>
+            Returns idea_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.Blowfish_Options">
+            <summary>
+            Returns BF_options()
+            </summary>
         </member>
         <member name="T:OpenSSL.Crypto.MemoryLeakHandler">
             <summary>

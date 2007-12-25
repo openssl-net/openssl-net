@@ -57,7 +57,7 @@ namespace OpenSSL
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		public static Cipher ByName(string name)
+		public static Cipher CreateByName(string name)
 		{
 			byte[] buf = Encoding.ASCII.GetBytes(name);
 			return new Cipher(Native.EVP_get_cipherbyname(buf), false);

@@ -75,10 +75,11 @@ namespace OpenSSL.CLI
 
 		Program()
 		{
-			std_cmds.Add("dh", new CmdDH());
-			std_cmds.Add("gendh", new CmdGenDH());
-			std_cmds.Add("rsa", new CmdRSA());
-			std_cmds.Add("genrsa", new CmdGenRSA());
+			this.std_cmds.Add("dh", new CmdDH());
+			this.std_cmds.Add("gendh", new CmdGenDH());
+			this.std_cmds.Add("rsa", new CmdRSA());
+			this.std_cmds.Add("genrsa", new CmdGenRSA());
+			this.std_cmds.Add("version", new CmdVersion());
 
 			#region Standard Commands
 			AddNullCommand(std_cmds, "asn1parse");
@@ -114,7 +115,6 @@ namespace OpenSSL.CLI
 			AddNullCommand(std_cmds, "speed");
 			AddNullCommand(std_cmds, "spkac");
 			AddNullCommand(std_cmds, "verify");
-			AddNullCommand(std_cmds, "version");
 			AddNullCommand(std_cmds, "x509");
 			#endregion
 

@@ -126,7 +126,7 @@ where options are
 				Console.Write(rsa);
 
 			if (options.IsSet("modulus"))
-				Console.WriteLine("Modulus={0}", rsa.N);
+				Console.WriteLine("Modulus={0}", rsa.PublicModulus);
 
 			if (options.IsSet("check"))
 			{

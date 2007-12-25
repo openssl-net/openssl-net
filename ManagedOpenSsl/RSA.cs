@@ -71,14 +71,32 @@ namespace OpenSSL
 		#endregion
 
 		/// <summary>
-		/// Not sure
+		/// RSA padding scheme
 		/// </summary>
-		public const int PKCS1_Padding = 1;
-
-		/// <summary>
-		/// Not sure
-		/// </summary>
-		public const int PKCS1_OAEP_Padding = 4;
+		public enum Padding
+		{
+			/// <summary>
+			/// RSA_PKCS1_PADDING
+			/// </summary>
+			PKCS1 = 1,
+			/// <summary>
+			/// RSA_SSLV23_PADDING
+			/// </summary>
+			SSLv23 = 2,
+			/// <summary>
+			/// RSA_NO_PADDING
+			/// </summary>
+			None = 3,
+			/// <summary>
+			/// RSA_PKCS1_OAEP_PADDING
+			/// Optimal Asymmetric Encryption Padding
+			/// </summary>
+			OAEP = 4,
+			/// <summary>
+			/// RSA_X931_PADDING
+			/// </summary>
+			X931 = 5,
+		}
 
 		private const int FlagCacheMont_P = 0x01;
 		private const int FlagNoExpConstTime = 0x02;
@@ -175,7 +193,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Accessor for the e field
 		/// </summary>
-		public BigNumber E
+		public BigNumber PublicExponent
 		{
 			get { return new BigNumber(this.Raw.e, false); }
 			set
@@ -189,7 +207,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Accessor for the n field
 		/// </summary>
-		public BigNumber N
+		public BigNumber PublicModulus
 		{
 			get { return new BigNumber(this.Raw.n, false); }
 			set
@@ -203,7 +221,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Accessor for the d field
 		/// </summary>
-		public BigNumber D
+		public BigNumber PrivateExponent
 		{
 			get { return new BigNumber(this.Raw.d, false); }
 			set
@@ -217,7 +235,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Accessor for the p field
 		/// </summary>
-		public BigNumber P
+		public BigNumber SecretPrimeFactorP
 		{
 			get { return new BigNumber(this.Raw.p, false); }
 			set
@@ -231,7 +249,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Accessor for the q field
 		/// </summary>
-		public BigNumber Q
+		public BigNumber SecretPrimeFactorQ
 		{
 			get { return new BigNumber(this.Raw.q, false); }
 			set
@@ -243,9 +261,10 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Accessor for the dmp1 field
+		/// Accessor for the dmp1 field.
+		/// d mod (p-1)
 		/// </summary>
-		public BigNumber Dmp1
+		public BigNumber DmodP1
 		{
 			get { return new BigNumber(this.Raw.dmp1, false); }
 			set
@@ -257,9 +276,10 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Accessor for the dmq1 field
+		/// Accessor for the dmq1 field.
+		/// d mod (q-1)
 		/// </summary>
-		public BigNumber Dmq1
+		public BigNumber DmodQ1
 		{
 			get { return new BigNumber(this.Raw.dmq1, false); }
 			set
@@ -271,9 +291,10 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Accessor for the iqmp field
+		/// Accessor for the iqmp field.
+		/// q^-1 mod p
 		/// </summary>
-		public BigNumber Iqmp
+		public BigNumber IQmodP
 		{
 			get { return new BigNumber(this.Raw.iqmp, false); }
 			set
@@ -335,10 +356,10 @@ namespace OpenSSL
 		/// <param name="msg"></param>
 		/// <param name="padding"></param>
 		/// <returns></returns>
-		public byte[] PublicEncrypt(byte[] msg, int padding)
+		public byte[] PublicEncrypt(byte[] msg, Padding padding)
 		{
 			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_public_encrypt(msg.Length, msg, ret, this.ptr, padding));
+			int len = Native.ExpectSuccess(Native.RSA_public_encrypt(msg.Length, msg, ret, this.ptr, (int)padding));
 			if (len != ret.Length)
 			{
 				byte[] tmp = new byte[len];
@@ -354,10 +375,10 @@ namespace OpenSSL
 		/// <param name="msg"></param>
 		/// <param name="padding"></param>
 		/// <returns></returns>
-		public byte[] PrivateEncrypt(byte[] msg, int padding)
+		public byte[] PrivateEncrypt(byte[] msg, Padding padding)
 		{
 			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_private_encrypt(msg.Length, msg, ret, this.ptr, padding));
+			int len = Native.ExpectSuccess(Native.RSA_private_encrypt(msg.Length, msg, ret, this.ptr, (int)padding));
 			if (len != ret.Length)
 			{
 				byte[] tmp = new byte[len];
@@ -373,10 +394,10 @@ namespace OpenSSL
 		/// <param name="msg"></param>
 		/// <param name="padding"></param>
 		/// <returns></returns>
-		public byte[] PublicDecrypt(byte[] msg, int padding)
+		public byte[] PublicDecrypt(byte[] msg, Padding padding)
 		{
 			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_public_decrypt(msg.Length, msg, ret, this.ptr, padding));
+			int len = Native.ExpectSuccess(Native.RSA_public_decrypt(msg.Length, msg, ret, this.ptr, (int)padding));
 			if (len != ret.Length)
 			{
 				byte[] tmp = new byte[len];
@@ -392,10 +413,10 @@ namespace OpenSSL
 		/// <param name="msg"></param>
 		/// <param name="padding"></param>
 		/// <returns></returns>
-		public byte[] PrivateDecrypt(byte[] msg, int padding)
+		public byte[] PrivateDecrypt(byte[] msg, Padding padding)
 		{
 			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_private_decrypt(msg.Length, msg, ret, this.ptr, padding));
+			int len = Native.ExpectSuccess(Native.RSA_private_decrypt(msg.Length, msg, ret, this.ptr, (int)padding));
 			if (len != ret.Length)
 			{
 				byte[] tmp = new byte[len];
