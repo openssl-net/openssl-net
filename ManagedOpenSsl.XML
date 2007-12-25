@@ -1816,15 +1816,13 @@
             </summary>
             <param name="filename"></param>
         </member>
-        <member name="M:OpenSSL.Random.GetFilename(System.String,System.UInt32)">
+        <member name="M:OpenSSL.Random.GetFilename">
             <summary>
             Calls RAND_file_name()
             </summary>
-            <param name="filename"></param>
-            <param name="num"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.Random.QueryEgdBytes(System.String,System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.Random.GatherEntropy(System.String,System.Byte[],System.Int32)">
             <summary>
             Calls RAND_query_egd_bytes()
             </summary>
@@ -1832,13 +1830,13 @@
             <param name="buf"></param>
             <param name="bytes"></param>
         </member>
-        <member name="M:OpenSSL.Random.Egd(System.String)">
+        <member name="M:OpenSSL.Random.GatherEntropy(System.String)">
             <summary>
             Calls RAND_egd()
             </summary>
             <param name="path"></param>
         </member>
-        <member name="M:OpenSSL.Random.EgdBytes(System.String,System.Int32)">
+        <member name="M:OpenSSL.Random.GatherEntropy(System.String,System.Int32)">
             <summary>
             Calls RAND_egd_bytes()
             </summary>
@@ -1849,6 +1847,38 @@
             <summary>
             Calls RAND_poll()
             </summary>
+        </member>
+        <member name="M:OpenSSL.Random.Next(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Calls BN_rand()
+            </summary>
+            <param name="bits"></param>
+            <param name="top"></param>
+            <param name="bottom"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Random.NextRange(OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_rand_range()
+            </summary>
+            <param name="range"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Random.PseudoNext(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Calls BN_pseudo_rand()
+            </summary>
+            <param name="bits"></param>
+            <param name="top"></param>
+            <param name="bottom"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Random.PseudoNextRange(OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_pseudo_rand_range()
+            </summary>
+            <param name="range"></param>
+            <returns></returns>
         </member>
         <member name="P:OpenSSL.Random.Status">
             <summary>
@@ -2129,6 +2159,129 @@
             <summary>
             SSLEAY_DIR
             </summary>
+        </member>
+        <member name="T:OpenSSL.DebugOptions">
+            <summary>
+            V_CRYPTO_MDEBUG_*
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.Time">
+            <summary>
+            V_CRYPTO_MDEBUG_TIME 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.Thread">
+            <summary>
+            V_CRYPTO_MDEBUG_THREAD
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.All">
+            <summary>
+            V_CRYPTO_MDEBUG_ALL 
+            </summary>
+        </member>
+        <member name="T:OpenSSL.MemoryCheck">
+            <summary>
+            CRYPTO_MEM_CHECK_*
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Off">
+            <summary>
+            CRYPTO_MEM_CHECK_OFF 
+            for applications
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.On">
+            <summary>
+            CRYPTO_MEM_CHECK_ON 
+            for applications
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Enable">
+            <summary>
+            CRYPTO_MEM_CHECK_ENABLE
+            for library-internal use
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Disable">
+            <summary>
+            CRYPTO_MEM_CHECK_DISABLE
+            for library-internal use
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Crypto">
+            <summary>
+            Exposes the CRYPTO_* functions
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Crypto.MallocDebugInit">
+            <summary>
+            Calls CRYPTO_malloc_debug_init()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Crypto.SetDebugOptions(OpenSSL.DebugOptions)">
+            <summary>
+            Calls CRYPTO_dbg_set_options()
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:OpenSSL.Crypto.SetMemoryCheck(OpenSSL.MemoryCheck)">
+            <summary>
+            Calls CRYPTO_mem_ctrl()
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:OpenSSL.Crypto.Cleanup">
+            <summary>
+            Calls CRYPTO_cleanup_all_ex_data()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Crypto.RemoveState(System.UInt32)">
+            <summary>
+            Calls ERR_remove_state()
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:OpenSSL.Crypto.CheckMemoryLeaks(OpenSSL.Crypto.MemoryLeakHandler)">
+            <summary>
+            Calls CRYPTO_mem_leaks_cb()
+            </summary>
+            <param name="callback"></param>
+        </member>
+        <member name="P:OpenSSL.Crypto.MD2_Options">
+            <summary>
+            Returns MD2_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.RC4_Options">
+            <summary>
+            Returns RC4_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.DES_Options">
+            <summary>
+            Returns DES_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.Idea_Options">
+            <summary>
+            Returns idea_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.Blowfish_Options">
+            <summary>
+            Returns BF_options()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Crypto.MemoryLeakHandler">
+            <summary>
+            CRYPTO_MEM_LEAK_CB
+            </summary>
+            <param name="order"></param>
+            <param name="file"></param>
+            <param name="line"></param>
+            <param name="num_bytes"></param>
+            <param name="addr"></param>
         </member>
         <member name="T:OpenSSL.RSA">
             <summary>
@@ -2945,129 +3098,6 @@
             <summary>
             Calls X509_EXTENSION_free()
             </summary>
-        </member>
-        <member name="T:OpenSSL.DebugOptions">
-            <summary>
-            V_CRYPTO_MDEBUG_*
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DebugOptions.Time">
-            <summary>
-            V_CRYPTO_MDEBUG_TIME 
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DebugOptions.Thread">
-            <summary>
-            V_CRYPTO_MDEBUG_THREAD
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DebugOptions.All">
-            <summary>
-            V_CRYPTO_MDEBUG_ALL 
-            </summary>
-        </member>
-        <member name="T:OpenSSL.MemoryCheck">
-            <summary>
-            CRYPTO_MEM_CHECK_*
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.Off">
-            <summary>
-            CRYPTO_MEM_CHECK_OFF 
-            for applications
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.On">
-            <summary>
-            CRYPTO_MEM_CHECK_ON 
-            for applications
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.Enable">
-            <summary>
-            CRYPTO_MEM_CHECK_ENABLE
-            for library-internal use
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.Disable">
-            <summary>
-            CRYPTO_MEM_CHECK_DISABLE
-            for library-internal use
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Crypto">
-            <summary>
-            Exposes the CRYPTO_* functions
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Crypto.MallocDebugInit">
-            <summary>
-            Calls CRYPTO_malloc_debug_init()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Crypto.SetDebugOptions(OpenSSL.DebugOptions)">
-            <summary>
-            Calls CRYPTO_dbg_set_options()
-            </summary>
-            <param name="options"></param>
-        </member>
-        <member name="M:OpenSSL.Crypto.SetMemoryCheck(OpenSSL.MemoryCheck)">
-            <summary>
-            Calls CRYPTO_mem_ctrl()
-            </summary>
-            <param name="options"></param>
-        </member>
-        <member name="M:OpenSSL.Crypto.Cleanup">
-            <summary>
-            Calls CRYPTO_cleanup_all_ex_data()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Crypto.RemoveState(System.UInt32)">
-            <summary>
-            Calls ERR_remove_state()
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:OpenSSL.Crypto.CheckMemoryLeaks(OpenSSL.Crypto.MemoryLeakHandler)">
-            <summary>
-            Calls CRYPTO_mem_leaks_cb()
-            </summary>
-            <param name="callback"></param>
-        </member>
-        <member name="P:OpenSSL.Crypto.MD2_Options">
-            <summary>
-            Returns MD2_options()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Crypto.RC4_Options">
-            <summary>
-            Returns RC4_options()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Crypto.DES_Options">
-            <summary>
-            Returns DES_options()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Crypto.Idea_Options">
-            <summary>
-            Returns idea_options()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Crypto.Blowfish_Options">
-            <summary>
-            Returns BF_options()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Crypto.MemoryLeakHandler">
-            <summary>
-            CRYPTO_MEM_LEAK_CB
-            </summary>
-            <param name="order"></param>
-            <param name="file"></param>
-            <param name="line"></param>
-            <param name="num_bytes"></param>
-            <param name="addr"></param>
         </member>
     </members>
 </doc>

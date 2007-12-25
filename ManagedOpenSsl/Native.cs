@@ -586,7 +586,7 @@ namespace OpenSSL
 		public extern static int RAND_write_file(string file);
 		
 		[DllImport(DLLNAME)]
-		public extern static string RAND_file_name(string file, uint num);
+		public extern static string RAND_file_name(byte[] buf, uint num);
 		
 		[DllImport(DLLNAME)]
 		public extern static int RAND_status();
@@ -602,6 +602,18 @@ namespace OpenSSL
 		
 		[DllImport(DLLNAME)]
 		public extern static int RAND_poll();
+
+		[DllImport(DLLNAME)]
+		public extern static int BN_rand(IntPtr rnd, int bits, int top, int bottom);
+		
+		[DllImport(DLLNAME)]
+		public extern static int BN_pseudo_rand(IntPtr rnd, int bits, int top, int bottom);
+	
+		[DllImport(DLLNAME)]
+		public extern static int BN_rand_range(IntPtr rnd, IntPtr range);
+
+		[DllImport(DLLNAME)]
+		public extern static int BN_pseudo_rand_range(IntPtr rnd, IntPtr range);		
 		#endregion
 
 		#region DSA

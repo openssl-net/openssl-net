@@ -117,12 +117,11 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls RAND_file_name()
 		/// </summary>
-		/// <param name="filename"></param>
-		/// <param name="num"></param>
 		/// <returns></returns>
-		public static string GetFilename(string filename, uint num)
+		public static string GetFilename()
 		{
-			return Native.RAND_file_name(filename, num);
+			byte[] buf = new byte[1024];
+			return Native.RAND_file_name(buf, (uint)buf.Length);
 		}
 
 		/// <summary>
@@ -139,7 +138,7 @@ namespace OpenSSL
 		/// <param name="path"></param>
 		/// <param name="buf"></param>
 		/// <param name="bytes"></param>
-		public static void QueryEgdBytes(string path, byte[] buf, int bytes)
+		public static void GatherEntropy(string path, byte[] buf, int bytes)
 		{
 			Native.ExpectSuccess(Native.RAND_query_egd_bytes(path, buf, bytes));
 		}
@@ -148,7 +147,7 @@ namespace OpenSSL
 		/// Calls RAND_egd()
 		/// </summary>
 		/// <param name="path"></param>
-		public static void Egd(string path)
+		public static void GatherEntropy(string path)
 		{
 			Native.ExpectSuccess(Native.RAND_egd(path));
 		}
@@ -158,7 +157,7 @@ namespace OpenSSL
 		/// </summary>
 		/// <param name="path"></param>
 		/// <param name="bytes"></param>
-		public static void EgdBytes(string path, int bytes)
+		public static void GatherEntropy(string path, int bytes)
 		{
 			Native.ExpectSuccess(Native.RAND_egd_bytes(path, bytes));
 		}
@@ -169,6 +168,58 @@ namespace OpenSSL
 		public static void Poll()
 		{
 			Native.ExpectSuccess(Native.RAND_poll());
+		}
+
+		/// <summary>
+		/// Calls BN_rand()
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <param name="top"></param>
+		/// <param name="bottom"></param>
+		/// <returns></returns>
+		public static BigNumber Next(int bits, int top, int bottom)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_rand(bn.Handle, bits, top, bottom));
+			return bn;
+		}
+
+		/// <summary>
+		/// Calls BN_rand_range()
+		/// </summary>
+		/// <param name="range"></param>
+		/// <returns></returns>
+		public static BigNumber NextRange(BigNumber range)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_rand_range(bn.Handle, range.Handle));
+			return bn;
+		}
+
+		/// <summary>
+		/// Calls BN_pseudo_rand()
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <param name="top"></param>
+		/// <param name="bottom"></param>
+		/// <returns></returns>
+		public static BigNumber PseudoNext(int bits, int top, int bottom)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_pseudo_rand(bn.Handle, bits, top, bottom));
+			return bn;
+		}
+
+		/// <summary>
+		/// Calls BN_pseudo_rand_range()
+		/// </summary>
+		/// <param name="range"></param>
+		/// <returns></returns>
+		public static BigNumber PseudoNextRange(BigNumber range)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_pseudo_rand_range(bn.Handle, range.Handle));
+			return bn;
 		}
 	}
 }
