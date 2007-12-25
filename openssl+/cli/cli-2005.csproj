@@ -32,13 +32,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="DH.cs" />
-    <Compile Include="GenDH.cs" />
+    <Compile Include="CmdDH.cs" />
+    <Compile Include="CmdGenDH.cs" />
+    <Compile Include="CmdGenRSA.cs" />
+    <Compile Include="CmdRSA.cs" />
+    <Compile Include="CmdVersion.cs" />
     <Compile Include="OptionParser.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ManagedOpenSsl\XP\ManagedOpenSsl-2005.csproj">
+    <ProjectReference Include="..\..\ManagedOpenSsl\ManagedOpenSsl-2005.csproj">
       <Project>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</Project>
       <Name>ManagedOpenSsl-2005</Name>
     </ProjectReference>

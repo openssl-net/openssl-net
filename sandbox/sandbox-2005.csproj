@@ -35,7 +35,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ManagedOpenSsl\XP\ManagedOpenSsl-2005.csproj">
+    <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl-2005.csproj">
       <Project>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</Project>
       <Name>ManagedOpenSsl-2005</Name>
     </ProjectReference>
