@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2008 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -135,7 +135,7 @@ namespace OpenSSL
 	/// Duties include processing incoming X509 requests and responding
 	/// with signed X509 certificates, signed by this CA's private key.
 	/// </summary>
-	public class X509CertificateAuthority  
+	public class X509CertificateAuthority : IDisposable
 	{
 		private X509Certificate caCert;
 		private CryptoKey caKey;
@@ -156,16 +156,16 @@ namespace OpenSSL
 			Configuration cfg,
 			ISequenceNumber seq,
 			X509Name subject,
-            DateTime start,
+			DateTime start,
 			TimeSpan validity)
 		{
-			CryptoKey key = new CryptoKey(new DSA());
+			CryptoKey key = new CryptoKey(new DSA(true));
 			X509Certificate cert = new X509Certificate(
 				seq.Next(),
 				subject,
 				subject,
 				key,
-                start,
+				start,
 				start + validity);
 
 			if(cfg != null)
@@ -240,5 +240,22 @@ namespace OpenSSL
 
 			return cert;
 		}
+
+		#region IDisposable Members
+
+		/// <summary>
+		/// Dispose the key, certificate, and the configuration
+		/// </summary>
+		public void Dispose()
+		{
+			if (this.caKey != null)
+				this.caKey.Dispose();
+			if (this.caCert != null)
+				this.caCert.Dispose();
+			if (this.cfg != null)
+				this.cfg.Dispose();
+		}
+
+		#endregion
 	}
 }

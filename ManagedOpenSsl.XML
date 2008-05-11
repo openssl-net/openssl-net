@@ -717,6 +717,11 @@
             <param name="endTime"></param>
             <returns></returns>
         </member>
+        <member name="M:OpenSSL.X509CertificateAuthority.Dispose">
+            <summary>
+            Dispose the key, certificate, and the configuration
+            </summary>
+        </member>
         <member name="P:OpenSSL.X509CertificateAuthority.Certificate">
             <summary>
             Accessor to the CA's X509 Certificate
@@ -1890,7 +1895,7 @@
             Wraps the DSA_* functions
             </summary>
         </member>
-        <member name="M:OpenSSL.DSA.#ctor">
+        <member name="M:OpenSSL.DSA.#ctor(System.Boolean)">
             <summary>
             Calls DSA_new() then DSA_generate_parameters_ex()
             </summary>

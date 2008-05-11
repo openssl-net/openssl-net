@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2008 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ namespace sandbox
 				DateTime.Now, 
 				TimeSpan.FromDays(365));
 
-			Identity comId = new Identity(new CryptoKey(new DSA()));
+			Identity comId = new Identity(new CryptoKey(new DSA(true)));
 			X509Request comReq = comId.CreateRequest("com");
 			X509Certificate comCert = root.ProcessRequest(comReq, DateTime.Now, DateTime.Now + TimeSpan.FromDays(365));
 
@@ -60,14 +60,14 @@ namespace sandbox
 				new SimpleSerialNumber(), 
 				cfg);
 
-			Identity id1 = new Identity(new CryptoKey(new DSA()));
+			Identity id1 = new Identity(new CryptoKey(new DSA(true)));
 			X509Request req1 = id1.CreateRequest("1");
 			X509Certificate cert1 = com.ProcessRequest(
 				req1, 
 				DateTime.Now, 
 				DateTime.Now + TimeSpan.FromDays(365));
 
-			Identity id2 = new Identity(new CryptoKey(new DSA()));
+			Identity id2 = new Identity(new CryptoKey(new DSA(true)));
 			X509Request req2 = id2.CreateRequest("2");
 			X509Certificate cert2 = rogue.ProcessRequest(
 				req2, 

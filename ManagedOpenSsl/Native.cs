@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2008 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -1479,7 +1479,7 @@ namespace OpenSSL
 
 		public static int ExpectSuccess(int ret)
 		{
-			if (ret < 0)
+			if (ret <= 0)
 				throw new OpenSslException();
 			return ret;
 		}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006-2007 Frank Laub
+﻿// Copyright (c) 2006-2008 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
+using System.Threading;
 
 namespace test
 {
@@ -78,6 +79,7 @@ namespace test
 			tests.Add("sha512", new TestSHA512());
 			tests.Add("rsa", new TestRSA());
 			tests.Add("rand", new TestRandom());
+			tests.Add("x509", new TestX509());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");

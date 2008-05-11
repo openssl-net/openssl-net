@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2008 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -30,69 +30,6 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-	//#region DSAParameters
-	//public class DSAParameters : Base, IDisposable
-	//{
-	//    public DSAParameters(BIO bio) 
-	//        : base(Native.ExpectNonNull(Native.PEM_read_bio_DSAparams(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
-	//    {
-	//    }
-
-	//    public DSAParameters(string pem)
-	//        : this(new BIO(pem))
-	//    {
-	//    }
-
-	//    public DSAParameters(int bits)
-	//        : base(Native.ExpectNonNull(Native.DSA_generate_parameters(
-	//            bits,
-	//            null,
-	//            0,
-	//            IntPtr.Zero,
-	//            IntPtr.Zero,
-	//            IntPtr.Zero,
-	//            IntPtr.Zero)), true)
-	//    {
-	//    }
-
-	//    internal IntPtr TakeOwnership()
-	//    {
-	//        IntPtr ptr = this.ptr;
-	//        this.ptr = IntPtr.Zero;
-	//        return ptr;
-	//    }
-
-	//    public string PEM
-	//    {
-	//        get
-	//        {
-	//            using (BIO bio = BIO.MemoryBuffer())
-	//            {
-	//                this.Write(bio);
-	//                return bio.ReadString();
-	//            }
-	//        }
-	//    }
-
-	//    public void Write(BIO bio)
-	//    {
-	//        Native.ExpectSuccess(Native.PEM_write_bio_DSAparams(bio.Handle, this.ptr));
-	//    }
-
-	//    public override void Print(BIO bio)
-	//    {
-	//        Native.ExpectSuccess(Native.DSAparams_print(bio.Handle, this.ptr));
-	//    }
-
-	//    #region IDisposable Members
-	//    public override void OnDispose()
-	//    {
-	//        Native.DSA_free(this.ptr);
-	//    }
-	//    #endregion
-	//}
-	//#endregion
-
 	/// <summary>
 	/// Wraps the DSA_* functions
 	/// </summary>
@@ -141,7 +78,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls DSA_new() then DSA_generate_parameters_ex()
 		/// </summary>
-		public DSA()
+		public DSA(bool generateKeys)
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
@@ -152,6 +89,8 @@ namespace OpenSSL
 				out this.h,
 				null)
 			);
+			if (generateKeys)
+				this.GenerateKeys();
 		}
 
 		/// <summary>
