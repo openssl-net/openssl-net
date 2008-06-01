@@ -1251,6 +1251,9 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static int EVP_EncryptUpdate(IntPtr ctx, byte[] output, out int outl, byte[] input, int inl);
+
+		[DllImport(DLLNAME)]
+		public extern static int EVP_BytesToKey(IntPtr type, IntPtr md, byte[] salt, byte[] data, int datal, int count, byte[] key, byte[] iv);
 		
 		#endregion
 

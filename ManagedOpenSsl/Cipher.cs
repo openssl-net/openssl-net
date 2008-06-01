@@ -760,6 +760,32 @@ namespace OpenSSL
 		{
 			return this.Crypt(input, key, iv, false, padding);
 		}
+
+		/// <summary>
+		/// Calls EVP_BytesToKey
+		/// </summary>
+		/// <param name="md"></param>
+		/// <param name="salt"></param>
+		/// <param name="data"></param>
+		/// <param name="count"></param>
+		/// <param name="iv"></param>
+		/// <returns></returns>
+		public byte[] BytesToKey(MessageDigest md, byte[] salt, byte[] data, int count, out byte[] iv)
+		{
+			byte[] key = new byte[this.cipher.KeyLength];
+			iv = new byte[this.cipher.IVLength];
+			Native.ExpectSuccess(Native.EVP_BytesToKey(
+				this.cipher.Handle,
+				md.Handle,
+				salt,
+				data,
+				data.Length,
+				count,
+				key,
+				iv));
+			return key;
+		}
+
 		#endregion
 
 		#region Properties
