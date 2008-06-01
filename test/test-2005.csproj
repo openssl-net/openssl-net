@@ -35,6 +35,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestAES.cs" />
     <Compile Include="TestDH.cs" />
     <Compile Include="TestDSA.cs" />
     <Compile Include="TestRandom.cs" />

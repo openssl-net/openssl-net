@@ -80,6 +80,7 @@ namespace test
 			tests.Add("rsa", new TestRSA());
 			tests.Add("rand", new TestRandom());
 			tests.Add("x509", new TestX509());
+			tests.Add("aes", new TestAES());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
