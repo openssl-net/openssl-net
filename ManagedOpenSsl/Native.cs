@@ -29,6 +29,7 @@ using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 using System.Globalization;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace OpenSSL
 {
@@ -61,6 +62,9 @@ namespace OpenSSL
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int GeneratorHandler(int p, int n, IntPtr arg);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void ObjectNameHandler(IntPtr name, IntPtr arg);
 		#endregion
 		
 		#region Initialization
@@ -193,6 +197,28 @@ namespace OpenSSL
 		public const int NID_undef = 0;
 
 		public const int OBJ_undef = 0;
+
+		public const int OBJ_NAME_TYPE_UNDEF = 0x00;
+		public const int OBJ_NAME_TYPE_MD_METH = 0x01;
+		public const int OBJ_NAME_TYPE_CIPHER_METH = 0x02;
+		public const int OBJ_NAME_TYPE_PKEY_METH = 0x03;
+		public const int OBJ_NAME_TYPE_COMP_METH = 0x04;
+		public const int OBJ_NAME_TYPE_NUM = 0x05;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct OBJ_NAME
+		{
+			public int type;
+			public int alias;
+			public IntPtr name;
+			public IntPtr data;
+		};
+
+		[DllImport(DLLNAME)]
+		public extern static void OBJ_NAME_do_all(int type, ObjectNameHandler fn, IntPtr arg);
+
+		[DllImport(DLLNAME)]
+		public extern static void OBJ_NAME_do_all_sorted(int type, ObjectNameHandler fn, IntPtr arg);
 
 		[DllImport(DLLNAME)]
 		public extern static int OBJ_txt2nid(byte[] s);
@@ -617,8 +643,8 @@ namespace OpenSSL
 		#endregion
 
 		#region DSA
-		[DllImport(DLLNAME)]
-		public extern static IntPtr DSA_generate_parameters(int bits, byte[] seed, int seed_len, IntPtr counter_ret, IntPtr h_ret, IntPtr callback, IntPtr cb_arg);
+		//[DllImport(DLLNAME)]
+		//public extern static IntPtr DSA_generate_parameters(int bits, byte[] seed, int seed_len, IntPtr counter_ret, IntPtr h_ret, IntPtr callback, IntPtr cb_arg);
 
 		[DllImport(DLLNAME)]
 		public extern static int DSA_generate_parameters_ex(IntPtr dsa, int bits, byte[] seed, int seed_len, out int counter_ret, out int h_ret, bn_gencb_st callback);
@@ -1530,5 +1556,24 @@ namespace OpenSSL
 			return nid;
 		}
 		#endregion
+	}
+
+	class NameCollector 
+	{
+		private List<string> list = new List<string>();
+		public List<string> Result { get { return this.list; } }
+
+		public NameCollector(int type, bool isSorted) {
+			if (isSorted)
+				Native.OBJ_NAME_do_all_sorted(type, this.OnObjectName, IntPtr.Zero);
+			else
+				Native.OBJ_NAME_do_all(type, this.OnObjectName, IntPtr.Zero);
+		}
+
+		private void OnObjectName(IntPtr ptr, IntPtr arg) {
+			Native.OBJ_NAME name = (Native.OBJ_NAME)Marshal.PtrToStructure(ptr, typeof(Native.OBJ_NAME));
+			string str = Native.PtrToStringAnsi(name.name, false);
+			this.list.Add(str);
+		}
 	}
 }

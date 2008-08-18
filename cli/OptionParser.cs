@@ -67,6 +67,13 @@ namespace OpenSSL.CLI
 			this.optionsByName.Add(option.Name, option);
 		}
 
+		public void AddMultiOption(string[] keywords, Option option) {
+			this.optionsByName.Add(option.Name, option);
+			foreach (string keyword in keywords) {
+				this.optionsByKeyword.Add(keyword, option);
+			}
+		}
+
 		public void ParseArguments(string[] args)
 		{
 			for (int i = 1; i < args.Length; i++)
@@ -105,7 +112,14 @@ namespace OpenSSL.CLI
 
 		public bool IsSet(string name)
 		{
-			return (bool)this.optionsByName[name].Value;
+			Option option;
+			if (optionsByName.TryGetValue(name, out option)) {
+				if (option.Value.GetType() == typeof(bool))
+					return (bool)option.Value;
+				else if(option.Value.ToString().Length > 0)
+					return true;
+			}
+			return false;
 		}
 	}
 }

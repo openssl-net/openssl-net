@@ -60,7 +60,26 @@ namespace OpenSSL
 		public static Cipher CreateByName(string name)
 		{
 			byte[] buf = Encoding.ASCII.GetBytes(name);
-			return new Cipher(Native.EVP_get_cipherbyname(buf), false);
+			IntPtr ptr = Native.EVP_get_cipherbyname(buf);
+			if(ptr == IntPtr.Zero)
+				return null;
+			return new Cipher(ptr, false);
+		}
+
+		/// <summary>
+		/// Calls OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH)
+		/// </summary>
+		public static string[] AllNamesSorted 
+		{
+			get { return new NameCollector(Native.OBJ_NAME_TYPE_CIPHER_METH, true).Result.ToArray(); }
+		}
+
+		/// <summary>
+		/// Calls OBJ_NAME_do_all(OBJ_NAME_TYPE_CIPHER_METH)
+		/// </summary>
+		public static string[] AllNames 
+		{
+			get { return new NameCollector(Native.OBJ_NAME_TYPE_CIPHER_METH, false).Result.ToArray(); }
 		}
 
 		#region EVP_CIPHER

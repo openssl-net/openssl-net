@@ -56,6 +56,35 @@ namespace OpenSSL
 			bio.Write("MessageDigest");
 		}
 
+		/// <summary>
+		/// Calls EVP_get_digestbyname()
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public static MessageDigest CreateByName(string name) {
+			byte[] buf = Encoding.ASCII.GetBytes(name);
+			IntPtr ptr = Native.EVP_get_digestbyname(buf);
+			if (ptr == IntPtr.Zero)
+				return null;
+			return new MessageDigest(ptr, false);
+		}
+
+		/// <summary>
+		/// Calls OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH)
+		/// </summary>
+		public static string[] AllNamesSorted 
+		{
+			get { return new NameCollector(Native.OBJ_NAME_TYPE_MD_METH, true).Result.ToArray(); }
+		}
+
+		/// <summary>
+		/// Calls OBJ_NAME_do_all(OBJ_NAME_TYPE_CIPHER_METH)
+		/// </summary>
+		public static string[] AllNames 
+		{
+			get { return new NameCollector(Native.OBJ_NAME_TYPE_MD_METH, false).Result.ToArray(); }
+		}
+
 		#region EVP_MD
 		[StructLayout(LayoutKind.Sequential)]
 		struct EVP_MD

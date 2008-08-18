@@ -75,11 +75,16 @@ namespace OpenSSL.CLI
 
 		Program()
 		{
+			CmdCipher cmdCipher = new CmdCipher();
+			CmdDigest cmdDigest = new CmdDigest();
+
 			this.std_cmds.Add("dh", new CmdDH());
 			this.std_cmds.Add("gendh", new CmdGenDH());
 			this.std_cmds.Add("rsa", new CmdRSA());
 			this.std_cmds.Add("genrsa", new CmdGenRSA());
 			this.std_cmds.Add("version", new CmdVersion());
+			this.std_cmds.Add("enc", cmdCipher);
+			this.std_cmds.Add("dgst", cmdDigest);
 
 			#region Standard Commands
 			AddNullCommand(std_cmds, "asn1parse");
@@ -87,13 +92,11 @@ namespace OpenSSL.CLI
 			AddNullCommand(std_cmds, "ciphers");
 			AddNullCommand(std_cmds, "crl");
 			AddNullCommand(std_cmds, "crl2pkcs7");
-			AddNullCommand(std_cmds, "dgst");
 			AddNullCommand(std_cmds, "dhparam");
 			AddNullCommand(std_cmds, "dsa");
 			AddNullCommand(std_cmds, "dsaparam");
 			AddNullCommand(std_cmds, "ec");
 			AddNullCommand(std_cmds, "ecparam");
-			AddNullCommand(std_cmds, "enc");
 			AddNullCommand(std_cmds, "engine");
 			AddNullCommand(std_cmds, "errstr");
 			AddNullCommand(std_cmds, "gendsa");
@@ -119,16 +122,17 @@ namespace OpenSSL.CLI
 			#endregion
 
 			#region Message Digest commands
-			AddNullCommand(md_cmds, "md2");
-			AddNullCommand(md_cmds, "md4");
-			AddNullCommand(md_cmds, "md5");
-			AddNullCommand(md_cmds, "rmd160");
-			AddNullCommand(md_cmds, "sha");
-			AddNullCommand(md_cmds, "sha1");
+			foreach (string name in MessageDigest.AllNames) 
+			{
+				this.md_cmds.Add(name, cmdDigest);
+			}
 			#endregion
 
 			#region Cipher commands
-			AddNullCommand(cipher_cmds, "aes-128-cbc");
+			foreach (string name in Cipher.AllNames) 
+			{
+				this.cipher_cmds.Add(name, cmdCipher);
+			}
 			#endregion
 		}
 
@@ -145,20 +149,32 @@ namespace OpenSSL.CLI
 
 		void PrintCommands(IEnumerable<string> cmds)
 		{
+			const int COLUMN_WIDTH = 15;
 			int col = 0;
 			foreach (string cmd in cmds)
 			{
-				Console.Error.Write(cmd);
-				if (col++ == 4)
+				if (cmd == cmd.ToUpper())
+					continue;
+
+				if (cmd.Length > COLUMN_WIDTH) 
 				{
+					if (col > 0) 
+						Console.Error.WriteLine();
+					Console.Error.Write(cmd.PadRight(COLUMN_WIDTH));
 					Console.Error.WriteLine();
 					col = 0;
-					continue;
+				}
+				else 
+				{
+					Console.Error.Write(cmd.PadRight(COLUMN_WIDTH));
+					if (col++ == 4) 
+					{
+						Console.Error.WriteLine();
+						col = 0;
+						continue;
+					}
 				}
 
-				int remain = 15 - cmd.Length;
-				string padding = new string(' ', remain);
-				Console.Error.Write(padding);
 			}
 			Console.Error.WriteLine();
 		}

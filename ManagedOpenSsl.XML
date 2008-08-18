@@ -1570,6 +1570,16 @@
             EVP_aes_256_ofb()
             </summary>
         </member>
+        <member name="P:OpenSSL.Cipher.AllNamesSorted">
+            <summary>
+            Calls OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH)
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Cipher.AllNames">
+            <summary>
+            Calls OBJ_NAME_do_all(OBJ_NAME_TYPE_CIPHER_METH)
+            </summary>
+        </member>
         <member name="P:OpenSSL.Cipher.KeyLength">
             <summary>
             Returns the key_len field
@@ -1721,6 +1731,17 @@
             <param name="key"></param>
             <param name="iv"></param>
             <param name="padding"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CipherContext.BytesToKey(OpenSSL.MessageDigest,System.Byte[],System.Byte[],System.Int32,System.Byte[]@)">
+            <summary>
+            Calls EVP_BytesToKey
+            </summary>
+            <param name="md"></param>
+            <param name="salt"></param>
+            <param name="data"></param>
+            <param name="count"></param>
+            <param name="iv"></param>
             <returns></returns>
         </member>
         <member name="M:OpenSSL.CipherContext.OnDispose">
@@ -2515,6 +2536,13 @@
             </summary>
             <param name="bio"></param>
         </member>
+        <member name="M:OpenSSL.MessageDigest.CreateByName(System.String)">
+            <summary>
+            Calls EVP_get_digestbyname()
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
         <member name="F:OpenSSL.MessageDigest.Null">
             <summary>
             EVP_md_null()
@@ -2578,6 +2606,16 @@
         <member name="F:OpenSSL.MessageDigest.RipeMD160">
             <summary>
             EVP_ripemd160()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.MessageDigest.AllNamesSorted">
+            <summary>
+            Calls OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH)
+            </summary>
+        </member>
+        <member name="P:OpenSSL.MessageDigest.AllNames">
+            <summary>
+            Calls OBJ_NAME_do_all(OBJ_NAME_TYPE_CIPHER_METH)
             </summary>
         </member>
         <member name="P:OpenSSL.MessageDigest.BlockSize">
