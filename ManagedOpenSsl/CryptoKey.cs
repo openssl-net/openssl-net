@@ -112,7 +112,47 @@ namespace OpenSSL
 	/// </summary>
 	public class CryptoKey : Base, IDisposable
 	{
-		#region Initialization
+        public const int EVP_PKEY_RSA   = 6;
+        public const int EVP_PKEY_DSA   = 116;
+        public const int EVP_PKEY_DH    = 28;
+        public const int EVP_PKEY_EC    = 408;
+
+        [StructLayout(LayoutKind.Explicit)]
+        struct EVP_PKEY
+        {
+	        [FieldOffset(0)]
+            int type;
+	        [FieldOffset(4)]
+            int save_type;
+	        [FieldOffset(8)]
+            int references;
+	        //union	{
+		    [FieldOffset(12)]
+            IntPtr ptr;     //char *ptr;
+        #if !OPENSSL_NO_RSA
+		    [FieldOffset(12)]
+            IntPtr rsa;     //struct rsa_st *rsa;	/* RSA */
+        #endif
+        #if !OPENSSL_NO_DSA
+		    [FieldOffset(12)]
+            IntPtr dsa;     //struct dsa_st *dsa;	/* DSA */
+        #endif
+        #if !OPENSSL_NO_DH
+		    [FieldOffset(12)]
+            IntPtr dh;      //struct dh_st *dh;	/* DH */
+        #endif
+        #if !OPENSSL_NO_EC
+		    [FieldOffset(12)]
+            IntPtr ec;      //struct ec_key_st *ec;	/* ECC */
+        #endif
+		    //} pkey;
+	        [FieldOffset(16)]
+            int save_parameters;
+	        [FieldOffset(20)]
+            IntPtr attributes;   //STACK_OF(X509_ATTRIBUTE) *attributes; /* [ 0 ] */
+        }
+
+        #region Initialization
 		internal CryptoKey(IntPtr ptr, bool owner) : base(ptr, owner) { }
 		/// <summary>
 		/// Calls EVP_PKEY_new()
@@ -127,7 +167,11 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static CryptoKey FromPublicKey(string pem, string password)
 		{
-			return FromPublicKey(new BIO(pem), password);
+			//!!return FromPublicKey(new BIO(pem), password);
+            using (BIO bio = new BIO(pem))
+            {
+                return FromPublicKey(bio, password);
+            }
 		}
 
 		/// <summary>
@@ -170,7 +214,11 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(string pem, string password)
 		{
-			return FromPrivateKey(new BIO(pem), password);
+			//!!return FromPrivateKey(new BIO(pem), password);
+            using (BIO bio = new BIO(pem))
+            {
+                return FromPrivateKey(bio, password);
+            }
 		}
 
 		/// <summary>
@@ -255,7 +303,15 @@ namespace OpenSSL
 		#endregion
 
 		#region Methods
-		/// <summary>
+
+        public override void Addref()
+        {
+            int offset = (int)Marshal.OffsetOf(typeof(EVP_PKEY), "references");
+            IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
+            Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509_PKEY, "CryptoKey.cs", 0);
+        }
+        
+        /// <summary>
 		/// Calls EVP_PKEY_assign()
 		/// </summary>
 		/// <param name="type"></param>
@@ -291,6 +347,32 @@ namespace OpenSSL
 		{
 			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(this.ptr)), false);
 		}
+
+        /// <summary>
+        /// Calls PEM_write_bio_PKCS8PrivateKey
+        /// </summary>
+        /// <param name="bp"></param>
+        /// <param name="cipher"></param>
+        /// <param name="password"></param>
+                public void WritePrivateKey(BIO bp, Cipher cipher, string password)
+        {
+            PasswordCallback callback = new PasswordCallback(password);
+            WritePrivateKey(bp, cipher, callback.OnPassword, null);
+        }
+
+        /// <summary>
+        /// Calls PEM_write_bio_PKCS8PrivateKey
+        /// </summary>
+        /// <param name="bp"></param>
+        /// <param name="cipher"></param>
+        /// <param name="handler"></param>
+        /// <param name="arg"></param>
+        public void WritePrivateKey(BIO bp, Cipher cipher, PasswordHandler handler, object arg)
+        {
+            PasswordThunk thunk = new PasswordThunk(handler, null);
+            Native.ExpectSuccess(Native.PEM_write_bio_PKCS8PrivateKey(bp.Handle, this.ptr, cipher.Handle, IntPtr.Zero, 0, thunk.Callback, IntPtr.Zero));
+        }
+
 		#endregion
 
 		#region IDisposable Members

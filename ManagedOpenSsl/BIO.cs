@@ -56,14 +56,21 @@ namespace OpenSSL
 		{
 		}
 
-		/// <summary>
+        public static BIO MemoryBuffer(bool takeOwnership)
+        {
+            IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
+            return new BIO(ptr, takeOwnership);
+        }
+
+        /// <summary>
 		/// Factory method that calls BIO_new() with BIO_s_mem()
 		/// </summary>
 		/// <returns></returns>
 		public static BIO MemoryBuffer()
 		{
-			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
-			return new BIO(ptr, true);
+			//!!IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
+			//!!return new BIO(ptr, true);
+            return MemoryBuffer(true);
 		}
 
 		/// <summary>
@@ -74,10 +81,16 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static BIO File(string filename, string mode)
 		{
-			byte[] bufFilename = Encoding.ASCII.GetBytes(filename);
+            
+            //!!
+            /*
+            byte[] bufFilename = Encoding.ASCII.GetBytes(filename);
 			byte[] bufMode = Encoding.ASCII.GetBytes(mode);
 			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(bufFilename, bufMode));
 			return new BIO(ptr, true);
+            */
+            IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(filename, mode));
+            return new BIO(ptr, true);
 		}
 
 		private const int FD_STDIN = 0;
@@ -121,10 +134,35 @@ namespace OpenSSL
 		{
 			get { return Native.BIO_number_written(this.Handle); }
 		}
+
+        /// <summary>
+        /// Returns number of bytes buffered in the BIO - calls BIO_ctrl_pending
+        /// </summary>
+        public uint BytesPending
+        {
+            get { return Native.BIO_ctrl_pending(this.Handle); }
+        }
+
 		#endregion
 
 		#region Methods
-		/// <summary>
+        
+        public enum BioCloseOption
+        {
+            BIO_NoClose = 0,    // Don't close on free
+            BIO_Close = 1       // Close on free
+        }
+
+        /// <summary>
+        /// Calls BIO_set_close()
+        /// </summary>
+        /// <param name="opt"></param>
+        public void SetClose(BioCloseOption opt)
+        {
+            Native.BIO_set_close(this.ptr, (int)opt);
+        }
+
+        /// <summary>
 		/// Calls BIO_push()
 		/// </summary>
 		/// <param name="bio"></param>

@@ -207,7 +207,21 @@ namespace OpenSSL
 			return new DH(ptr, true);
 		}
 
-		/// <summary>
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr DH_new_delegate();
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr d2i_DHparams_delegate(out IntPtr a, IntPtr pp, int length);
+
+        private static IntPtr Managed_DH_new()
+        {
+            return Native.DH_new();
+        }
+
+        private static IntPtr Managed_d2i_DHparams(out IntPtr a, IntPtr pp, int length)
+        {
+            return Native.d2i_DHparams(out a, pp, length);
+        }
+        /// <summary>
 		/// Factory method that calls XXX() to deserialize
 		/// a DH object from a DER-formatted buffer using the BIO interface.
 		/// </summary>
@@ -215,7 +229,16 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static DH FromParametersDER(BIO bio)
 		{
-			IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
+            DH_new_delegate dh_new = new DH_new_delegate(Managed_DH_new);
+            d2i_DHparams_delegate d2i_DHparams = new d2i_DHparams_delegate(Managed_d2i_DHparams);
+            IntPtr dh_new_ptr = Marshal.GetFunctionPointerForDelegate(dh_new);
+            IntPtr d2i_DHparams_ptr = Marshal.GetFunctionPointerForDelegate(d2i_DHparams);
+            IntPtr ptr = Native.ExpectNonNull(Native.ASN1_d2i_bio(dh_new_ptr, d2i_DHparams_ptr, bio.Handle, IntPtr.Zero));
+            DH dh = new DH(ptr, true);
+            return dh;
+            //!!
+            /*
+            IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
 			IntPtr d2i = Native.GetProcAddress(hModule, "d2i_DHparams");
 			IntPtr xnew = Native.GetProcAddress(hModule, "DH_new");
 			Native.FreeLibrary(hModule);
@@ -223,6 +246,8 @@ namespace OpenSSL
 			IntPtr ptr = Native.ExpectNonNull(Native.ASN1_d2i_bio(xnew, d2i, bio.Handle, IntPtr.Zero));
 			DH dh = new DH(ptr, true);
 			return dh;
+            */
+
 		}
 		#endregion
 
@@ -257,17 +282,31 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.PEM_write_bio_DHparams(bio.Handle, this.ptr));
 		}
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int i2d_DHparams_delegate(IntPtr a, IntPtr pp);
+
+        private int Managed_i2d_DHparams(IntPtr a, IntPtr pp)
+        {
+            return Native.i2d_DHparams(a, pp);
+        }
+
 		/// <summary>
 		/// Calls ASN1_i2d_bio() with the i2d = i2d_DHparams().
 		/// </summary>
 		/// <param name="bio"></param>
 		public void WriteParametersDER(BIO bio)
 		{
-			IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
+            i2d_DHparams_delegate i2d_DHparams = new i2d_DHparams_delegate(Managed_i2d_DHparams);
+            IntPtr i2d_DHparams_ptr = Marshal.GetFunctionPointerForDelegate(i2d_DHparams);
+            Native.ExpectSuccess(Native.ASN1_i2d_bio(i2d_DHparams_ptr, bio.Handle, this.ptr));
+            //!!
+            /*
+            IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
 			IntPtr i2d = Native.GetProcAddress(hModule, "i2d_DHparams");
 			Native.FreeLibrary(hModule);
 			
 			Native.ExpectSuccess(Native.ASN1_i2d_bio(i2d, bio.Handle, this.ptr));
+            */
 		}
 
 		/// <summary>

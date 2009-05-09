@@ -55,9 +55,10 @@ namespace OpenSSL
 		/// <param name="filename"></param>
 		public void Load(string filename)
 		{
-			byte[] bytes = Encoding.ASCII.GetBytes(filename);
+			//!!byte[] bytes = Encoding.ASCII.GetBytes(filename);
 			int eline = 0;
-			Native.ExpectSuccess(Native.NCONF_load(this.ptr, bytes, ref eline));
+            //!!Native.ExpectSuccess(Native.NCONF_load(this.ptr, bytes, ref eline));
+            Native.ExpectSuccess(Native.NCONF_load(this.ptr, filename, ref eline));
 		}
 
 		#region X509v3Context

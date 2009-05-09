@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -54,8 +54,18 @@
     <Compile Include="MessageDigest.cs" />
     <Compile Include="Native.cs" />
     <Compile Include="OpenSslException.cs" />
+    <Compile Include="PKCS12.cs" />
+    <Compile Include="PKCS7.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RSA.cs" />
+    <Compile Include="Ssl.cs" />
+    <Compile Include="SslCipher.cs" />
+    <Compile Include="SslStreamClient.cs" />
+    <Compile Include="SslContext.cs" />
+    <Compile Include="SslMethod.cs" />
+    <Compile Include="SslStream.cs" />
+    <Compile Include="SslStreamBase.cs" />
+    <Compile Include="SslStreamServer.cs" />
     <Compile Include="Stack.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="X509Certificate.cs" />

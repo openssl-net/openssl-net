@@ -116,7 +116,7 @@ namespace OpenSSL
 		{
 		}
 
-		private static List<OpenSslError> GetCurrentContext()
+        private static List<OpenSslError> GetCurrentContext()
 		{
 			List<OpenSslError> ret = new List<OpenSslError>();
 			while (true)

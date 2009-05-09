@@ -89,7 +89,17 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
-		/// <summary>
+        
+        public override void Addref()
+        {
+            // X509_NAME doesn't support reference counting, so let's just
+            // duplicate the X509_NAME object instead
+            IntPtr new_ptr = Native.X509_NAME_dup(this.ptr);
+            this.ptr = new_ptr;
+            this.owner = true;
+        }
+        
+        /// <summary>
 		/// Returns X509_NAME_oneline()
 		/// </summary>
 		public string OneLine
@@ -391,6 +401,7 @@ namespace OpenSSL
 			if (ret <= 0)
 				throw new OpenSslException();
 		}
+
 		#endregion 
 
 		#region IDisposable Members

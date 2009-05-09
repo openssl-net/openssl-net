@@ -53,6 +53,7 @@ namespace OpenSSL
 		private X509Certificate cert;
 		private CryptoKey key;
 		private X509_INFO raw;
+        private bool owner;
 
 		~X509CertificateInfo()
 		{
@@ -63,7 +64,7 @@ namespace OpenSSL
 		{
 			get
 			{
-				if (this.cert != null)
+                if (this.cert != null)
 					return this.cert;
 
 				if (this.raw.x509 == IntPtr.Zero)
@@ -104,6 +105,33 @@ namespace OpenSSL
 			}
 		}
 
+        public bool IsOwner
+        {
+            get
+            {
+                return owner;
+            }
+            set
+            {
+                owner = value;
+            }
+        }
+
+        public void Addref()
+        {
+            int offset = (int)Marshal.OffsetOf(typeof(X509_INFO), "references");
+            IntPtr offset_ptr = new IntPtr((int)ptr + offset);
+            Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509_INFO, "X509Chain.cs", 0);
+        }
+
+        public void PrintRefCount(string method)
+        {
+            int offset = (int)Marshal.OffsetOf(typeof(X509_INFO), "references");
+            IntPtr offset_ptr = new IntPtr((int)ptr + offset);
+            int ref_count = Marshal.ReadInt32(offset_ptr);
+            Console.WriteLine("X509CertificateInfo:method={0}:ptr={1}:ref_count={2}", method, this.ptr, ref_count);
+        }
+
 		#endregion
 
 		#region IDisposable Members
@@ -112,7 +140,7 @@ namespace OpenSSL
 		{
 			if (this.isDisposed)
 				return;
-			if (this.ptr != IntPtr.Zero)
+            if (this.ptr != IntPtr.Zero && owner)
 				Native.X509_INFO_free(this.ptr);
 			this.isDisposed = true;
 		}
@@ -147,8 +175,11 @@ namespace OpenSSL
 				{
 					using (X509CertificateInfo xi = stack.Shift())
 					{
-						if (xi.Certificate != null)
-							this.Add(xi.Certificate);
+                        X509Certificate cert = xi.Certificate;
+                        if (cert != null)
+                        {
+                            this.Add(cert);
+                        }
 					}
 				}
 			}
@@ -176,7 +207,10 @@ namespace OpenSSL
 			IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, Native.IntegerToAsnInteger(serial));
 			if(ptr == IntPtr.Zero)
 				return null;
-			return new X509Certificate(ptr, false);
+            X509Certificate cert = new X509Certificate(ptr, true);
+            // Increase the reference count for the native pointer
+            cert.Addref();
+            return cert;
 		}
 
 		/// <summary>
@@ -189,7 +223,10 @@ namespace OpenSSL
 			IntPtr ptr = Native.X509_find_by_subject(this.ptr, subject.Handle);
 			if (ptr == IntPtr.Zero)
 				return null;
-			return new X509Certificate(ptr, false);
+            X509Certificate cert = new X509Certificate(ptr, true);
+            // Increase the reference count for the native pointer
+            cert.Addref();
+            return cert;
 		}
 		#endregion
 	}

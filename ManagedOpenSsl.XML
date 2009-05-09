@@ -4,623 +4,6 @@
         <name>ManagedOpenSsl</name>
     </assembly>
     <members>
-        <member name="T:OpenSSL.OpenSslError">
-            <summary>
-            This is a struct that contains a uint for the native openssl error code.
-            It provides helper methods to convert this error code into strings.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.OpenSslError.#ctor(System.UInt32)">
-            <summary>
-            Constructs an OpenSslError object.
-            </summary>
-            <param name="err">The native error code</param>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.ErrorCode">
-            <summary>
-            Returns the native error code
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Library">
-            <summary>
-            Returns the result of ERR_lib_error_string()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Reason">
-            <summary>
-            Returns the results of ERR_reason_error_string()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Function">
-            <summary>
-            Returns the results of ERR_func_error_string()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslError.Message">
-            <summary>
-            Returns the results of ERR_error_string_n()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.OpenSslException">
-            <summary>
-            Exception class to provide OpenSSL specific information when errors occur.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.OpenSslException.#ctor">
-            <summary>
-            When this class is instantiated, GetErrorMessage() is called automatically.
-            This will call ERR_get_error() on the native openssl interface, once for every
-            error that is in the current context. The exception message is the concatination
-            of each of these errors turned into strings using ERR_error_string_n().
-            </summary>
-        </member>
-        <member name="P:OpenSSL.OpenSslException.Errors">
-            <summary>
-            Returns the list of errors associated with this exception.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.DH">
-            <summary>
-            Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Base">
-            <summary>
-            Base class for all openssl wrapped objects. 
-            Contains the raw unmanaged pointer and has a Handle property to get access to it. 
-            Also overloads the ToString() method with a BIO print.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.IStackable">
-            <summary>
-            Simple interface used for the internal implementation of the generic OpenSSL.Stack
-            </summary>
-        </member>
-        <member name="P:OpenSSL.IStackable.Handle">
-            <summary>
-            Underlying native pointer
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Base.ptr">
-            <summary>
-            Raw unmanaged pointer
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Base.owner">
-            <summary>
-            If this object is the owner, then call the appropriate native free function.
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Base.isDisposed">
-            <summary>
-            This is to prevent double-deletion issues.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Base.Finalize">
-            <summary>
-            This destructor just calls Dispose().
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Base.#ctor(System.IntPtr,System.Boolean)">
-            <summary>
-            Constructor which takes the raw unmanged pointer. 
-            This is the only way to construct this object and all dervied types.
-            </summary>
-            <param name="ptr"></param>
-            <param name="takeOwnership"></param>
-        </member>
-        <member name="M:OpenSSL.Base.Print(OpenSSL.BIO)">
-            <summary>
-            This method is used by the ToString() implementation. A great number of
-            openssl objects support printing, so this is a conveinence method.
-            Dervied types should override this method and not ToString().
-            </summary>
-            <param name="bio">The BIO stream object to print into</param>
-        </member>
-        <member name="M:OpenSSL.Base.ToString">
-            <summary>
-            Override of ToString() which uses Print() into a BIO memory buffer.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Base.OnDispose">
-            <summary>
-            Default base implementation does nothing.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Base.Dispose">
-            <summary>
-            Implementation of the IDisposable interface.
-            If the native pointer is not null, we haven't been disposed, and we are the owner,
-            then call the virtual OnDispose() method.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Base.Handle">
-            <summary>
-            Access to the raw unmanaged pointer. Implements the IStackable interface.
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DH.Generator2">
-            <summary>
-            Constant generator value of 2.
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DH.Generator5">
-            <summary>
-            Constant generator value of 5.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32)">
-            <summary>
-            Calls DH_generate_parameters()
-            </summary>
-            <param name="primeLen"></param>
-            <param name="generator"></param>
-        </member>
-        <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
-            <summary>
-            Calls DH_generate_parameters_ex()
-            </summary>
-            <param name="primeLen"></param>
-            <param name="generator"></param>
-            <param name="callback"></param>
-            <param name="arg"></param>
-        </member>
-        <member name="M:OpenSSL.DH.#ctor">
-            <summary>
-            Calls DH_new().
-            </summary>
-        </member>
-        <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber)">
-            <summary>
-            Calls DH_new().
-            </summary>
-            <param name="p"></param>
-            <param name="g"></param>
-        </member>
-        <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber)">
-            <summary>
-            Calls DH_new().
-            </summary>
-            <param name="p"></param>
-            <param name="g"></param>
-            <param name="pub_key"></param>
-            <param name="priv_key"></param>
-        </member>
-        <member name="M:OpenSSL.DH.FromParameters(System.String)">
-            <summary>
-            Factory method that calls FromParametersPEM() to deserialize
-            a DH object from a PEM-formatted string.
-            </summary>
-            <param name="pem"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DH.FromParametersPEM(OpenSSL.BIO)">
-            <summary>
-            Factory method that calls PEM_read_bio_DHparams() to deserialize 
-            a DH object from a PEM-formatted string using the BIO interface.
-            </summary>
-            <param name="bio"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DH.FromParametersDER(OpenSSL.BIO)">
-            <summary>
-            Factory method that calls XXX() to deserialize
-            a DH object from a DER-formatted buffer using the BIO interface.
-            </summary>
-            <param name="bio"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DH.GenerateKeys">
-            <summary>
-            Calls DH_generate_key().
-            </summary>
-        </member>
-        <member name="M:OpenSSL.DH.ComputeKey(OpenSSL.BigNumber)">
-            <summary>
-            Calls DH_compute_key().
-            </summary>
-            <param name="pubkey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DH.WriteParametersPEM(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_write_bio_DHparams().
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.DH.WriteParametersDER(OpenSSL.BIO)">
-            <summary>
-            Calls ASN1_i2d_bio() with the i2d = i2d_DHparams().
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.DH.Print(OpenSSL.BIO)">
-            <summary>
-            Calls DHparams_print().
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.DH.Check">
-            <summary>
-            Calls DH_check().
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DH.OnDispose">
-            <summary>
-            Calls DH_free().
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.P">
-            <summary>
-            Accessor for the p value.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.G">
-            <summary>
-            Accessor for the g value.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.PublicKey">
-            <summary>
-            Accessor for the pub_key value.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.PrivateKey">
-            <summary>
-            Accessor for the priv_key value.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.PEM">
-            <summary>
-            Creates a BIO.MemoryBuffer(), calls WriteParametersPEM() into this buffer, 
-            then returns the buffer as a string.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.DER">
-            <summary>
-            Creates a BIO.MemoryBuffer(), calls WriteParametersDER() into this buffer, 
-            then returns the buffer.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DH.NoExpConstantTime">
-            <summary>
-            Sets or clears the FlagNoExpConstTime bit in the flags field.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.DH.CheckCode">
-            <summary>
-            Flags for the return value of DH_check().
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DH.CheckCode.CheckP_NotPrime">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DH.CheckCode.CheckP_NotSafePrime">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DH.CheckCode.UnableToCheckGenerator">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DH.CheckCode.NotSuitableGenerator">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="T:OpenSSL.X509Request">
-            <summary>
-            Wraps a X509_REQ object.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Request.#ctor">
-            <summary>
-            Calls X509_REQ_new()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Request.#ctor(System.Int32,OpenSSL.X509Name,OpenSSL.CryptoKey)">
-            <summary>
-            Calls X509_REQ_new() and then initializes versio, subject, and key.
-            </summary>
-            <param name="version"></param>
-            <param name="subject"></param>
-            <param name="key"></param>
-        </member>
-        <member name="M:OpenSSL.X509Request.#ctor(OpenSSL.BIO)">
-            <summary>
-            
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.X509Request.#ctor(System.String)">
-            <summary>
-            Creates a X509_REQ from a PEM formatted string.
-            </summary>
-            <param name="pem"></param>
-        </member>
-        <member name="M:OpenSSL.X509Request.Sign(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
-            <summary>
-            Sign this X509Request using the supplied key and digest.
-            </summary>
-            <param name="pkey"></param>
-            <param name="digest"></param>
-        </member>
-        <member name="M:OpenSSL.X509Request.Verify(OpenSSL.CryptoKey)">
-            <summary>
-            Verify this X509Request against the supplied key.
-            </summary>
-            <param name="pkey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Request.Print(OpenSSL.BIO)">
-            <summary>
-            Calls X509_REQ_print()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.X509Request.Write(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_write_bio_X509_REQ()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.X509Request.CreateCertificate(System.Int32,OpenSSL.CryptoKey)">
-            <summary>
-            Converts this request into a certificate using X509_REQ_to_X509().
-            </summary>
-            <param name="days"></param>
-            <param name="pkey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Request.OnDispose">
-            <summary>
-            Calls X509_REQ_free()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Request.Version">
-            <summary>
-            Accessor to the version field. The settor calls X509_REQ_set_version().
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Request.PublicKey">
-            <summary>
-            Accessor to the pubkey field. Uses X509_REQ_get_pubkey() and X509_REQ_set_pubkey()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Request.Subject">
-            <summary>
-            Accessor to the subject field. Setter calls X509_REQ_set_subject_name().
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Request.PEM">
-            <summary>
-            Returns the PEM formatted string for this object.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.BigNumber">
-            <summary>
-            Wraps the BN_* set of functions.
-            </summary>
-        </member>
-        <member name="F:OpenSSL.BigNumber.One">
-            <summary>
-            Creates a BigNumber object by calling BN_value_one()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.BigNumber.#ctor">
-            <summary>
-            Calls BN_new()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.BigNumber.#ctor(OpenSSL.BigNumber)">
-            <summary>
-            Calls BN_dup() on the BigNumber passed in.
-            </summary>
-            <param name="rhs"></param>
-        </member>
-        <member name="M:OpenSSL.BigNumber.#ctor(System.UInt32)">
-            <summary>
-            Creates a BigNumber by calling BN_set_word()
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:OpenSSL.BigNumber.FromDecimalString(System.String)">
-            <summary>
-            Calls BN_dec2bn()
-            </summary>
-            <param name="str"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.FromHexString(System.String)">
-            <summary>
-            Calls BN_hex2bn()
-            </summary>
-            <param name="str"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.FromArray(System.Byte[])">
-            <summary>
-            Calls BN_bin2bn()
-            </summary>
-            <param name="buf"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.ToDecimalString">
-            <summary>
-            Calls BN_bn2dec()
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.ToHexString">
-            <summary>
-            Calls BN_bn2hex()
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Implicit(OpenSSL.BigNumber)~System.UInt32">
-            <summary>
-            Calls BN_get_word()
-            </summary>
-            <param name="rhs"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Implicit(System.UInt32)~OpenSSL.BigNumber">
-            <summary>
-            Creates a new BigNumber object from a uint.
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Implicit(OpenSSL.BigNumber)~System.Byte[]">
-            <summary>
-            Calls BN_bn2bin()
-            </summary>
-            <param name="rhs"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.Clear">
-            <summary>
-            Calls BN_clear()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Addition(OpenSSL.BigNumber,OpenSSL.BigNumber)">
-            <summary>
-            Calls BN_add()
-            </summary>
-            <param name="lhs"></param>
-            <param name="rhs"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Subtraction(OpenSSL.BigNumber,OpenSSL.BigNumber)">
-            <summary>
-            Calls BN_sub()
-            </summary>
-            <param name="lhs"></param>
-            <param name="rhs"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Equality(OpenSSL.BigNumber,OpenSSL.BigNumber)">
-            <summary>
-            Determines if lhs is by-value equal to rhs
-            </summary>
-            <param name="lhs"></param>
-            <param name="rhs"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.op_Inequality(OpenSSL.BigNumber,OpenSSL.BigNumber)">
-            <summary>
-            Determines if lhs is by-value different than rhs
-            </summary>
-            <param name="lhs"></param>
-            <param name="rhs"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.Equals(System.Object)">
-            <summary>
-            Calls BN_cmp()
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.GetHashCode">
-            <summary>
-            Creates a hash code by converting this object to a decimal string and 
-            returns the hash code of that string.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BigNumber.Print(OpenSSL.BIO)">
-            <summary>
-            Calls BN_print()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.BigNumber.OnDispose">
-            <summary>
-            Calls BN_free()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.BigNumber.CompareTo(OpenSSL.BigNumber)">
-            <summary>
-            Calls BN_cmp()
-            </summary>
-            <param name="other"></param>
-            <returns></returns>
-        </member>
-        <member name="P:OpenSSL.BigNumber.Options">
-            <summary>
-            Calls BN_options()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.BigNumber.Bits">
-            <summary>
-            Returns BN_num_bits()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.BigNumber.Bytes">
-            <summary>
-            Converts the result of Bits into the number of bytes.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.BigNumber.GeneratorHandler">
-            <summary>
-            Generator callback. Used mostly for status indications for long-
-            running generator functions.
-            </summary>
-            <param name="p"></param>
-            <param name="n"></param>
-            <param name="arg"></param>
-            <returns></returns>
-        </member>
-        <member name="T:OpenSSL.Native">
-            <summary>
-            This is the low-level C-style interface to the crypto API.
-            Use this interface with caution.
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Native.DLLNAME">
-            <summary>
-            This is the name of the DLL that P/Invoke loads and tries to bind all of
-            these native functions to.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Native.OPENSSL_free(System.IntPtr)">
-            <summary>
-            #define OPENSSL_free(addr) CRYPTO_free(addr)
-            </summary>
-            <param name="p"></param>
-        </member>
-        <member name="M:OpenSSL.Native.OPENSSL_malloc(System.Int32)">
-            <summary>
-            #define OPENSSL_malloc(num)	CRYPTO_malloc((int)num,__FILE__,__LINE__)
-            </summary>
-            <param name="cbSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Native.CRYPTO_malloc_debug_init">
-            <summary>
-            #define CRYPTO_malloc_debug_init()	do {\
-            	CRYPTO_set_mem_debug_functions(\
-            	CRYPTO_dbg_malloc,\
-            	CRYPTO_dbg_realloc,\
-            	CRYPTO_dbg_free,\
-            	CRYPTO_dbg_set_options,\
-            	CRYPTO_dbg_get_options);\
-            	} while(0)
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Native.bn_gencb_st.arg">
-            To handle binary (in)compatibility 
-        </member>
-        <member name="F:OpenSSL.Native.bn_gencb_st.cb">
-            callback-specific data 
-        </member>
         <member name="T:OpenSSL.ISequenceNumber">
             <summary>
             Used for generating sequence numbers by the CertificateAuthority
@@ -732,161 +115,252 @@
             Accessor to the CA's key used for signing.
             </summary>
         </member>
-        <member name="T:OpenSSL.Identity">
+        <member name="T:OpenSSL.DSA">
             <summary>
-            Simple encapsulation of a local identity.
-            This includes the private key and the X509Certificate.
+            Wraps the DSA_* functions
             </summary>
         </member>
-        <member name="M:OpenSSL.Identity.#ctor(OpenSSL.CryptoKey)">
+        <member name="T:OpenSSL.Base">
             <summary>
-            Construct an Identity with a private key
+            Base class for all openssl wrapped objects. 
+            Contains the raw unmanaged pointer and has a Handle property to get access to it. 
+            Also overloads the ToString() method with a BIO print.
             </summary>
-            <param name="key"></param>
         </member>
-        <member name="M:OpenSSL.Identity.CreateRequest(System.String)">
+        <member name="T:OpenSSL.IStackable">
             <summary>
-            Create a X509Request for this identity, using the specified name.
+            Simple interface used for the internal implementation of the generic OpenSSL.Stack
             </summary>
-            <param name="name"></param>
+        </member>
+        <member name="M:OpenSSL.IStackable.Addref">
+            <summary>
+            Adds to the reference count of the native object
+            </summary>
+        </member>
+        <member name="P:OpenSSL.IStackable.Handle">
+            <summary>
+            Underlying native pointer
+            </summary>
+        </member>
+        <member name="P:OpenSSL.IStackable.IsOwner">
+            <summary>
+            Owership property for the stackable item
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.ptr">
+            <summary>
+            Raw unmanaged pointer
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.owner">
+            <summary>
+            If this object is the owner, then call the appropriate native free function.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.isDisposed">
+            <summary>
+            This is to prevent double-deletion issues.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Base.Finalize">
+            <summary>
+            This destructor just calls Dispose().
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Base.#ctor(System.IntPtr,System.Boolean)">
+            <summary>
+            Constructor which takes the raw unmanged pointer. 
+            This is the only way to construct this object and all dervied types.
+            </summary>
+            <param name="ptr"></param>
+            <param name="takeOwnership"></param>
+        </member>
+        <member name="M:OpenSSL.Base.Print(OpenSSL.BIO)">
+            <summary>
+            This method is used by the ToString() implementation. A great number of
+            openssl objects support printing, so this is a conveinence method.
+            Dervied types should override this method and not ToString().
+            </summary>
+            <param name="bio">The BIO stream object to print into</param>
+        </member>
+        <member name="M:OpenSSL.Base.ToString">
+            <summary>
+            Override of ToString() which uses Print() into a BIO memory buffer.
+            </summary>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.Identity.VerifyResponse(OpenSSL.X509Chain,System.String@)">
+        <member name="M:OpenSSL.Base.OnDispose">
             <summary>
-            Verify that the specified chain can be trusted.
+            Default base implementation does nothing.
             </summary>
-            <param name="chain"></param>
-            <param name="error"></param>
+        </member>
+        <member name="M:OpenSSL.Base.Dispose">
+            <summary>
+            Implementation of the IDisposable interface.
+            If the native pointer is not null, we haven't been disposed, and we are the owner,
+            then call the virtual OnDispose() method.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Base.IsOwner">
+            <summary>
+            gets/sets whether the object owns the Native pointer
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Base.Handle">
+            <summary>
+            Access to the raw unmanaged pointer. Implements the IStackable interface.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DSA.#ctor(System.Boolean)">
+            <summary>
+            Calls DSA_new() then DSA_generate_parameters_ex()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DSA.#ctor(System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
+            <summary>
+            Calls DSA_new() then DSA_generate_parameters_ex()
+            </summary>
+            <param name="bits"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.DSA.#ctor(System.Int32,System.Byte[],System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
+            <summary>
+            Calls DSA_new() then DSA_generate_parameters_ex()
+            </summary>
+            <param name="bits"></param>
+            <param name="seed"></param>
+            <param name="counter"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.DSA.FromPublicKey(System.String)">
+            <summary>
+            Returns PEM_read_bio_DSA_PUBKEY()
+            </summary>
+            <param name="pem"></param>
             <returns></returns>
         </member>
-        <member name="P:OpenSSL.Identity.PublicKey">
+        <member name="M:OpenSSL.DSA.FromPublicKey(OpenSSL.BIO)">
             <summary>
-            Returns the embedded public key of the X509Certificate
+            Returns PEM_read_bio_DSA_PUBKEY()
             </summary>
-        </member>
-        <member name="P:OpenSSL.Identity.PrivateKey">
-            <summary>
-            Returns the private key
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Identity.Certificate">
-            <summary>
-            Returns the X509Certificate
-            </summary>
-        </member>
-        <member name="T:OpenSSL.BIO">
-            <summary>
-            Encapsulates the BIO_* functions.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.BIO.#ctor(System.Byte[])">
-            <summary>
-            Calls BIO_new_mem_buf() from the specified buffer.
-            </summary>
-            <param name="buf"></param>
-        </member>
-        <member name="M:OpenSSL.BIO.#ctor(System.String)">
-            <summary>
-            Calls BIO_new_mem_buf() from the specified string.
-            </summary>
-            <param name="str"></param>
-        </member>
-        <member name="M:OpenSSL.BIO.MemoryBuffer">
-            <summary>
-            Factory method that calls BIO_new() with BIO_s_mem()
-            </summary>
+            <param name="bio"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.BIO.File(System.String,System.String)">
+        <member name="M:OpenSSL.DSA.FromPrivateKey(System.String)">
             <summary>
-            Factory method that calls BIO_new_file()
+            Returns PEM_read_bio_DSAPrivateKey()
             </summary>
-            <param name="filename"></param>
-            <param name="mode"></param>
+            <param name="pem"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.BIO.MessageDigest(OpenSSL.MessageDigest)">
+        <member name="M:OpenSSL.DSA.FromPrivateKey(OpenSSL.BIO)">
             <summary>
-            Factory method that calls BIO_new() with BIO_f_md()
+            Returns PEM_read_bio_DSAPrivateKey()
             </summary>
-            <param name="md"></param>
+            <param name="bio"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.BIO.Push(OpenSSL.BIO)">
+        <member name="M:OpenSSL.DSA.GenerateKeys">
             <summary>
-            Calls BIO_push()
+            Calls DSA_generate_key()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DSA.Sign(System.Byte[])">
+            <summary>
+            Returns DSA_sign()
+            </summary>
+            <param name="msg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DSA.Verify(System.Byte[],System.Byte[])">
+            <summary>
+            Returns DSA_verify()
+            </summary>
+            <param name="msg"></param>
+            <param name="sig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DSA.WritePublicKey(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_DSA_PUBKEY()
             </summary>
             <param name="bio"></param>
         </member>
-        <member name="M:OpenSSL.BIO.Write(System.Byte[])">
+        <member name="M:OpenSSL.DSA.WritePrivateKey(OpenSSL.BIO,OpenSSL.Cipher,OpenSSL.PasswordHandler,System.Object)">
             <summary>
-            Calls BIO_write()
+            Calls PEM_write_bio_DSAPrivateKey()
             </summary>
-            <param name="buf"></param>
+            <param name="bio"></param>
+            <param name="enc"></param>
+            <param name="passwd"></param>
+            <param name="arg"></param>
         </member>
-        <member name="M:OpenSSL.BIO.Write(System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.DSA.Print(OpenSSL.BIO)">
             <summary>
-            Calls BIO_write()
+            Calls DSA_print()
             </summary>
-            <param name="buf"></param>
-            <param name="len"></param>
+            <param name="bio"></param>
         </member>
-        <member name="M:OpenSSL.BIO.Write(System.Byte)">
+        <member name="M:OpenSSL.DSA.OnDispose">
             <summary>
-            Calls BIO_write()
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:OpenSSL.BIO.Write(System.UInt16)">
-            <summary>
-            Calls BIO_write()
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:OpenSSL.BIO.Write(System.UInt32)">
-            <summary>
-            Calls BIO_write()
-            </summary>
-            <param name="value"></param>
-        </member>
-        <member name="M:OpenSSL.BIO.Write(System.String)">
-            <summary>
-            Calls BIO_puts()
-            </summary>
-            <param name="str"></param>
-        </member>
-        <member name="M:OpenSSL.BIO.ReadBytes(System.Int32)">
-            <summary>
-            Calls BIO_read()
-            </summary>
-            <param name="count"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BIO.ReadString">
-            <summary>
-            Calls BIO_gets()
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BIO.GetMessageDigestContext">
-            <summary>
-            Returns the MessageDigestContext if this BIO's type if BIO_f_md()
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.BIO.OnDispose">
-            <summary>
-            Calls BIO_free()
+            Calls DSA_free()
             </summary>
         </member>
-        <member name="P:OpenSSL.BIO.NumberRead">
+        <member name="P:OpenSSL.DSA.P">
             <summary>
-            Returns BIO_number_read()
+            Returns the p field
             </summary>
         </member>
-        <member name="P:OpenSSL.BIO.NumberWritten">
+        <member name="P:OpenSSL.DSA.Q">
             <summary>
-            Returns BIO_number_written()
+            Returns the q field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.G">
+            <summary>
+            Returns the g field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.Size">
+            <summary>
+            Returns DSA_size()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.PublicKey">
+            <summary>
+            Returns the pub_key field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.PrivateKey">
+            <summary>
+            Returns the priv_key field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.PublicKeyAsPEM">
+            <summary>
+            Returns the pub_key field as a PEM string
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.PrivateKeyAsPEM">
+            <summary>
+            Returns the priv_key field as a PEM string
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.Counter">
+            <summary>
+            Returns the counter
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.H">
+            <summary>
+            Returns the h value
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DSA.ConstantTime">
+            <summary>
+            Accessor for the FlagNoExpConstTime flag
             </summary>
         </member>
         <member name="T:OpenSSL.X509Name">
@@ -1098,6 +572,372 @@
             <param name="index"></param>
             <returns></returns>
         </member>
+        <member name="M:OpenSSL.SslStreamBase.ProcessHandshake">
+            <summary>
+            Override to implement client/server specific handshake processing
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.SslStreamBase.Renegotiate">
+            <summary>
+            Renegotiate session keys - calls SSL_renegotiate
+            </summary>
+        </member>
+        <member name="T:OpenSSL.X509Request">
+            <summary>
+            Wraps a X509_REQ object.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor">
+            <summary>
+            Calls X509_REQ_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor(System.Int32,OpenSSL.X509Name,OpenSSL.CryptoKey)">
+            <summary>
+            Calls X509_REQ_new() and then initializes versio, subject, and key.
+            </summary>
+            <param name="version"></param>
+            <param name="subject"></param>
+            <param name="key"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor(OpenSSL.BIO)">
+            <summary>
+            
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.#ctor(System.String)">
+            <summary>
+            Creates a X509_REQ from a PEM formatted string.
+            </summary>
+            <param name="pem"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.Sign(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
+            <summary>
+            Sign this X509Request using the supplied key and digest.
+            </summary>
+            <param name="pkey"></param>
+            <param name="digest"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.Verify(OpenSSL.CryptoKey)">
+            <summary>
+            Verify this X509Request against the supplied key.
+            </summary>
+            <param name="pkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Request.Print(OpenSSL.BIO)">
+            <summary>
+            Calls X509_REQ_print()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.Write(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_X509_REQ()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Request.CreateCertificate(System.Int32,OpenSSL.CryptoKey)">
+            <summary>
+            Converts this request into a certificate using X509_REQ_to_X509().
+            </summary>
+            <param name="days"></param>
+            <param name="pkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Request.OnDispose">
+            <summary>
+            Calls X509_REQ_free()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.Version">
+            <summary>
+            Accessor to the version field. The settor calls X509_REQ_set_version().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.PublicKey">
+            <summary>
+            Accessor to the pubkey field. Uses X509_REQ_get_pubkey() and X509_REQ_set_pubkey()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.Subject">
+            <summary>
+            Accessor to the subject field. Setter calls X509_REQ_set_subject_name().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Request.PEM">
+            <summary>
+            Returns the PEM formatted string for this object.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.SslOptions">
+            <summary>
+            Options enumeration for Options property
+            </summary>
+        </member>
+        <member name="T:OpenSSL.SslContext">
+            <summary>
+            Wraps the SST_CTX structure and methods
+            </summary>
+        </member>
+        <member name="M:OpenSSL.SslContext.#ctor(OpenSSL.SslMethod)">
+            <summary>
+            Calls SSL_CTX_new(sslMethod)
+            </summary>
+            <param name="sslMethod"></param>
+        </member>
+        <member name="M:OpenSSL.SslContext.SetCertificateStore(OpenSSL.X509Store)">
+            <summary>
+            Sets the certificate store for the context - calls SSL_CTX_set_cert_store
+            The X509Store object and contents will be freed when the context is disposed.
+            Ensure that the store object and it's contents have IsOwner set to false
+            before assigning them into the context.
+            </summary>
+            <param name="store"></param>
+        </member>
+        <member name="M:OpenSSL.SslContext.SetVerify(OpenSSL.VerifyMode,OpenSSL.RemoteCertificateValidationCallback)">
+            <summary>
+            Sets the certificate verification mode and callback - calls SSL_CTX_set_verify
+            </summary>
+            <param name="mode"></param>
+            <param name="callback"></param>
+        </member>
+        <member name="M:OpenSSL.SslContext.SetVerifyDepth(System.Int32)">
+            <summary>
+            Sets the certificate verification depth - calls SSL_CTX_set_verify_depth
+            </summary>
+            <param name="depth"></param>
+        </member>
+        <member name="M:OpenSSL.SslContext.OnDispose">
+            <summary>
+            base override - calls SSL_CTX_free()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.SslContext.Options">
+            <summary>
+            Calls SSL_CTX_set_options
+            </summary>
+        </member>
+        <member name="P:OpenSSL.SslContext.CAList">
+            <summary>
+            Calls SSL_CTX_set_client_CA_list/SSL_CTX_get_client_CA_list
+            The Stack and the X509Name objects contined within them
+            are freed when the context is disposed.  Make sure that
+            the Stack and X509Name objects have set IsOwner to false
+            before assigning them to the context.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.RSA">
+            <summary>
+            Wraps the RSA_* functions
+            </summary>
+        </member>
+        <member name="M:OpenSSL.RSA.#ctor">
+            <summary>
+            Calls RSA_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.RSA.FromPublicKey(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_read_bio_RSA_PUBKEY()
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.FromPrivateKey(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_read_bio_RSAPrivateKey()
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.FromPublicKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
+            <summary>
+            Calls PEM_read_bio_RSA_PUBKEY()
+            </summary>
+            <param name="bio"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.FromPrivateKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
+            <summary>
+            Calls PEM_read_bio_RSAPrivateKey()
+            </summary>
+            <param name="bio"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.GenerateKeys(System.Int32,OpenSSL.BigNumber,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
+            <summary>
+            Calls RSA_generate_key_ex()
+            </summary>
+            <param name="bits"></param>
+            <param name="e"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.RSA.PublicEncrypt(System.Byte[],OpenSSL.RSA.Padding)">
+            <summary>
+            Calls RSA_public_encrypt()
+            </summary>
+            <param name="msg"></param>
+            <param name="padding"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.PrivateEncrypt(System.Byte[],OpenSSL.RSA.Padding)">
+            <summary>
+            Calls RSA_private_encrypt()
+            </summary>
+            <param name="msg"></param>
+            <param name="padding"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.PublicDecrypt(System.Byte[],OpenSSL.RSA.Padding)">
+            <summary>
+            Calls RSA_public_decrypt()
+            </summary>
+            <param name="msg"></param>
+            <param name="padding"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.PrivateDecrypt(System.Byte[],OpenSSL.RSA.Padding)">
+            <summary>
+            Calls RSA_private_decrypt()
+            </summary>
+            <param name="msg"></param>
+            <param name="padding"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.WritePublicKey(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_RSA_PUBKEY()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.RSA.WritePrivateKey(OpenSSL.BIO,OpenSSL.Cipher,OpenSSL.PasswordHandler,System.Object)">
+            <summary>
+            Calls PEM_write_bio_RSAPrivateKey()
+            </summary>
+            <param name="bio"></param>
+            <param name="enc"></param>
+            <param name="passwd"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.RSA.Check">
+            <summary>
+            Returns RSA_check_key()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.RSA.Print(OpenSSL.BIO)">
+            <summary>
+            Calls RSA_print()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.RSA.OnDispose">
+            <summary>
+            Calls RSA_free()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.Size">
+            <summary>
+            Returns RSA_size()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.ConstantTime">
+            <summary>
+            Not finished
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.PublicExponent">
+            <summary>
+            Accessor for the e field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.PublicModulus">
+            <summary>
+            Accessor for the n field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.PrivateExponent">
+            <summary>
+            Accessor for the d field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.SecretPrimeFactorP">
+            <summary>
+            Accessor for the p field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.SecretPrimeFactorQ">
+            <summary>
+            Accessor for the q field
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.DmodP1">
+            <summary>
+            Accessor for the dmp1 field.
+            d mod (p-1)
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.DmodQ1">
+            <summary>
+            Accessor for the dmq1 field.
+            d mod (q-1)
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.IQmodP">
+            <summary>
+            Accessor for the iqmp field.
+            q^-1 mod p
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.PublicKeyAsPEM">
+            <summary>
+            Returns the public key field as a PEM string
+            </summary>
+        </member>
+        <member name="P:OpenSSL.RSA.PrivateKeyAsPEM">
+            <summary>
+            Returns the private key field as a PEM string
+            </summary>
+        </member>
+        <member name="T:OpenSSL.RSA.Padding">
+            <summary>
+            RSA padding scheme
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.PKCS1">
+            <summary>
+            RSA_PKCS1_PADDING
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.SSLv23">
+            <summary>
+            RSA_SSLV23_PADDING
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.None">
+            <summary>
+            RSA_NO_PADDING
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.OAEP">
+            <summary>
+            RSA_PKCS1_OAEP_PADDING
+            Optimal Asymmetric Encryption Padding
+            </summary>
+        </member>
+        <member name="F:OpenSSL.RSA.Padding.X931">
+            <summary>
+            RSA_X931_PADDING
+            </summary>
+        </member>
         <member name="T:OpenSSL.X509Chain">
             <summary>
             Contains a chain X509_INFO objects.
@@ -1261,6 +1101,1017 @@
             Populates this list from a DER buffer.
             </summary>
             <param name="der"></param>
+        </member>
+        <member name="T:OpenSSL.Configuration">
+            <summary>
+            Wraps the NCONF_* functions
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Configuration.#ctor(System.String)">
+            <summary>
+            Calls NCONF_load()
+            </summary>
+            <param name="filename"></param>
+        </member>
+        <member name="M:OpenSSL.Configuration.Load(System.String)">
+            <summary>
+            Calls NCONF_load()
+            </summary>
+            <param name="filename"></param>
+        </member>
+        <member name="M:OpenSSL.Configuration.ApplyExtensions(System.String,OpenSSL.X509Certificate,OpenSSL.X509Certificate,OpenSSL.X509Request)">
+            <summary>
+            Creates a X509v3Context(), calls X509V3_set_ctx() on it, then calls
+            X509V3_EXT_add_nconf()
+            </summary>
+            <param name="section"></param>
+            <param name="issuer"></param>
+            <param name="subject"></param>
+            <param name="request"></param>
+        </member>
+        <member name="M:OpenSSL.Configuration.OnDispose">
+            <summary>
+            Calls NCONF_free()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.BigNumber">
+            <summary>
+            Wraps the BN_* set of functions.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.BigNumber.One">
+            <summary>
+            Creates a BigNumber object by calling BN_value_one()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.#ctor">
+            <summary>
+            Calls BN_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.#ctor(OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_dup() on the BigNumber passed in.
+            </summary>
+            <param name="rhs"></param>
+        </member>
+        <member name="M:OpenSSL.BigNumber.#ctor(System.UInt32)">
+            <summary>
+            Creates a BigNumber by calling BN_set_word()
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:OpenSSL.BigNumber.FromDecimalString(System.String)">
+            <summary>
+            Calls BN_dec2bn()
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.FromHexString(System.String)">
+            <summary>
+            Calls BN_hex2bn()
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.FromArray(System.Byte[])">
+            <summary>
+            Calls BN_bin2bn()
+            </summary>
+            <param name="buf"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.ToDecimalString">
+            <summary>
+            Calls BN_bn2dec()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.ToHexString">
+            <summary>
+            Calls BN_bn2hex()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Implicit(OpenSSL.BigNumber)~System.UInt32">
+            <summary>
+            Calls BN_get_word()
+            </summary>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Implicit(System.UInt32)~OpenSSL.BigNumber">
+            <summary>
+            Creates a new BigNumber object from a uint.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Implicit(OpenSSL.BigNumber)~System.Byte[]">
+            <summary>
+            Calls BN_bn2bin()
+            </summary>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.Clear">
+            <summary>
+            Calls BN_clear()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Addition(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_add()
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Subtraction(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_sub()
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Equality(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Determines if lhs is by-value equal to rhs
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.op_Inequality(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Determines if lhs is by-value different than rhs
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.Equals(System.Object)">
+            <summary>
+            Calls BN_cmp()
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.GetHashCode">
+            <summary>
+            Creates a hash code by converting this object to a decimal string and 
+            returns the hash code of that string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BigNumber.Print(OpenSSL.BIO)">
+            <summary>
+            Calls BN_print()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.BigNumber.OnDispose">
+            <summary>
+            Calls BN_free()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.BigNumber.CompareTo(OpenSSL.BigNumber)">
+            <summary>
+            Calls BN_cmp()
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OpenSSL.BigNumber.Options">
+            <summary>
+            Calls BN_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.BigNumber.Bits">
+            <summary>
+            Returns BN_num_bits()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.BigNumber.Bytes">
+            <summary>
+            Converts the result of Bits into the number of bytes.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.BigNumber.GeneratorHandler">
+            <summary>
+            Generator callback. Used mostly for status indications for long-
+            running generator functions.
+            </summary>
+            <param name="p"></param>
+            <param name="n"></param>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OpenSSL.Version">
+            <summary>
+            Contains the set of elements that make up a Version.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Version.#ctor(System.UInt32)">
+            <summary>
+            Create a Version from a raw uint value
+            </summary>
+            <param name="raw"></param>
+        </member>
+        <member name="M:OpenSSL.Version.ToString">
+            <summary>
+            Conversion to a string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Version.GetText(OpenSSL.Version.Format)">
+            <summary>
+            Calls SSLeay_version()
+            </summary>
+            <param name="format"></param>
+        </member>
+        <member name="P:OpenSSL.Version.Library">
+            <summary>
+            Returns the current version of the native library.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Wrapper">
+            <summary>
+            Returns the version that this wrapper is built for.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Major">
+            <summary>
+            Major portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Minor">
+            <summary>
+            Minor portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Fix">
+            <summary>
+            Fix portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Patch">
+            <summary>
+            Patch portion of the Version. These should start at 'a' and continue to 'z'.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Status">
+            <summary>
+            Status portion of the Version.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.Raw">
+            <summary>
+            The raw uint value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Version.RawStatus">
+            <summary>
+            Returns the raw status portion of a Version.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Version.StatusType">
+            <summary>
+            The kinds of status that 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.StatusType.Development">
+            <summary>
+            The status nibble has the value 0
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.StatusType.Beta">
+            <summary>
+            The status nibble is 1 to 14 (0x0e)
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.StatusType.Release">
+            <summary>
+            The status nibble is 0x0f
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Version.Format">
+            <summary>
+            SSLEAY_* constants used for with GetVersion()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.Text">
+            <summary>
+            SSLEAY_VERSION
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.CompilerFlags">
+            <summary>
+            SSLEAY_CFLAGS
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.BuildDate">
+            <summary>
+            SSLEAY_BUILT_ON
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.Platform">
+            <summary>
+            SSLEAY_PLATFORM
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Version.Format.BuildDirectory">
+            <summary>
+            SSLEAY_DIR
+            </summary>
+        </member>
+        <member name="T:OpenSSL.ThreadInitialization">
+            <summary>
+            static class for initialize OpenSSL/Crypto libraries for threading
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Native">
+            <summary>
+            This is the low-level C-style interface to the crypto API.
+            Use this interface with caution.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Native.DLLNAME">
+            <summary>
+            This is the name of the DLL that P/Invoke loads and tries to bind all of
+            these native functions to.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Native.OPENSSL_free(System.IntPtr)">
+            <summary>
+            #define OPENSSL_free(addr) CRYPTO_free(addr)
+            </summary>
+            <param name="p"></param>
+        </member>
+        <member name="M:OpenSSL.Native.OPENSSL_malloc(System.Int32)">
+            <summary>
+            #define OPENSSL_malloc(num)	CRYPTO_malloc((int)num,__FILE__,__LINE__)
+            </summary>
+            <param name="cbSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Native.SSL_CTX_set_mode(System.IntPtr,System.Int32)">
+            <summary>
+            #define SSL_CTX_ctrl in ssl.h - calls SSL_CTX_ctrl()
+            </summary>
+            <param name="ctx"></param>
+            <param name="op"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Native.SSL_CTX_set_options(System.IntPtr,System.Int32)">
+            <summary>
+            #define SSL_CTX_set_options in ssl.h - calls SSL_CTX_ctrl
+            </summary>
+            <param name="ctx"></param>
+            <param name="op"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Native.SSL_CTX_get_mode(System.IntPtr)">
+            <summary>
+            #define SSL_CTX_get_mode in ssl.h - calls SSL_CTX_ctrl
+            </summary>
+            <param name="ctx"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Native.SSL_CTX_get_options(System.IntPtr)">
+            <summary>
+            #define SSL_CTX_get_options in ssl.h - calls SSL_CTX_ctrl
+            </summary>
+            <param name="ctx"></param>
+            <returns>Int32 representation of options set in the context</returns>
+        </member>
+        <member name="F:OpenSSL.Native.bn_gencb_st.arg">
+            To handle binary (in)compatibility 
+        </member>
+        <member name="F:OpenSSL.Native.bn_gencb_st.cb">
+            callback-specific data 
+        </member>
+        <member name="T:OpenSSL.SslMethod">
+            <summary>
+            Wraps the SSL_METHOD structure and methods
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv2_method">
+            <summary>
+            SSLv2_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv2_server_method">
+            <summary>
+            SSLv2_server_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv2_client_method">
+            <summary>
+            SSLv2_client_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv3_method">
+            <summary>
+            SSLv3_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv3_server_method">
+            <summary>
+            SSLv3_server_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv3_client_method">
+            <summary>
+            SSLv3_client_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv23_method">
+            <summary>
+            SSLv23_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv23_server_method">
+            <summary>
+            SSLv23_server_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.SSLv23_client_method">
+            <summary>
+            SSLv23_client_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.TLSv1_method">
+            <summary>
+            TLSv1_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.TLSv1_server_method">
+            <summary>
+            TLSv1_server_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.TLSv1_client_method">
+            <summary>
+            TLSv1_client_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.DTLSv1_method">
+            <summary>
+            DTLSv1_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.DTLSv1_server_method">
+            <summary>
+            DTLSv1_server_method()
+            </summary>
+        </member>
+        <member name="F:OpenSSL.SslMethod.DTLSv1_client_method">
+            <summary>
+            DTLSv1_client_method()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.X509Certificate">
+            <summary>
+            Wraps the X509 object
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.#ctor">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.#ctor(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_read_bio_X509()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.FromDER(OpenSSL.BIO)">
+            <summary>
+            Factory method that returns a X509 using d2i_X509_bio()
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Finalize">
+            <summary>
+            Calls Dispose()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.#ctor(System.Int32,OpenSSL.X509Name,OpenSSL.X509Name,OpenSSL.CryptoKey,System.DateTime,System.DateTime)">
+            <summary>
+            Creates a new X509 certificate
+            </summary>
+            <param name="serial"></param>
+            <param name="subject"></param>
+            <param name="issuer"></param>
+            <param name="pubkey"></param>
+            <param name="start"></param>
+            <param name="end"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Sign(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
+            <summary>
+            Calls X509_sign()
+            </summary>
+            <param name="pkey"></param>
+            <param name="digest"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.CheckPrivateKey(OpenSSL.CryptoKey)">
+            <summary>
+            Returns X509_check_private_key()
+            </summary>
+            <param name="pkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.CheckTrust(System.Int32,System.Int32)">
+            <summary>
+            Returns X509_check_trust()
+            </summary>
+            <param name="id"></param>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Verify(OpenSSL.CryptoKey)">
+            <summary>
+            Returns X509_verify()
+            </summary>
+            <param name="pkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Digest(System.IntPtr,System.Byte[])">
+            <summary>
+            Returns X509_digest()
+            </summary>
+            <param name="type"></param>
+            <param name="digest"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.DigestPublicKey(System.IntPtr,System.Byte[])">
+            <summary>
+            Returns X509_pubkey_digest()
+            </summary>
+            <param name="type"></param>
+            <param name="digest"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Write(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_X509()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Print(OpenSSL.BIO)">
+            <summary>
+            Calls X509_print()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.CreateRequest(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
+            <summary>
+            Converts a X509 into a request using X509_to_X509_REQ()
+            </summary>
+            <param name="pkey"></param>
+            <param name="digest"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.AddExtension(OpenSSL.X509Extension)">
+            <summary>
+            Calls X509_add_ext()
+            </summary>
+            <param name="ext"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.AddExtension(System.String,System.Byte[],System.Int32,System.UInt32)">
+            <summary>
+            Calls X509_add1_ext_i2d()
+            </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+            <param name="crit"></param>
+            <param name="flags"></param>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.OnDispose">
+            <summary>
+            Calls X509_free()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.Equals(System.Object)">
+            <summary>
+            Compares X509Certificate
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.GetHashCode">
+            <summary>
+            Returns the hash code of the issuer's oneline xor'd with the serial number
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Certificate.CompareTo(OpenSSL.X509Certificate)">
+            <summary>
+            Returns X509_cmp()
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.Subject">
+            <summary>
+            Uses X509_get_subject_name() and X509_set_issuer_name()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.Issuer">
+            <summary>
+            Uses X509_get_issuer_name() and X509_set_issuer_name()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.SerialNumber">
+            <summary>
+            Uses X509_get_serialNumber() and X509_set_serialNumber()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.NotBefore">
+            <summary>
+            Uses the notBefore field and X509_set_notBefore()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.NotAfter">
+            <summary>
+            Uses the notAfter field and X509_set_notAfter()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.Version">
+            <summary>
+            Uses the version field and X509_set_version()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.PublicKey">
+            <summary>
+            Uses X509_get_pubkey() and X509_set_pubkey()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.X509Certificate.PEM">
+            <summary>
+            Returns the PEM formatted string of this object
+            </summary>
+        </member>
+        <member name="T:OpenSSL.X509Extension">
+            <summary>
+            Wraps the X509_EXTENSION object
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Extension.#ctor">
+            <summary>
+            Calls X509_EXTENSION_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Extension.OnDispose">
+            <summary>
+            Calls X509_EXTENSION_free()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.DH">
+            <summary>
+            Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.Generator2">
+            <summary>
+            Constant generator value of 2.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.Generator5">
+            <summary>
+            Constant generator value of 5.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Calls DH_generate_parameters()
+            </summary>
+            <param name="primeLen"></param>
+            <param name="generator"></param>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(System.Int32,System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
+            <summary>
+            Calls DH_generate_parameters_ex()
+            </summary>
+            <param name="primeLen"></param>
+            <param name="generator"></param>
+            <param name="callback"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor">
+            <summary>
+            Calls DH_new().
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls DH_new().
+            </summary>
+            <param name="p"></param>
+            <param name="g"></param>
+        </member>
+        <member name="M:OpenSSL.DH.#ctor(OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber,OpenSSL.BigNumber)">
+            <summary>
+            Calls DH_new().
+            </summary>
+            <param name="p"></param>
+            <param name="g"></param>
+            <param name="pub_key"></param>
+            <param name="priv_key"></param>
+        </member>
+        <member name="M:OpenSSL.DH.FromParameters(System.String)">
+            <summary>
+            Factory method that calls FromParametersPEM() to deserialize
+            a DH object from a PEM-formatted string.
+            </summary>
+            <param name="pem"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.FromParametersPEM(OpenSSL.BIO)">
+            <summary>
+            Factory method that calls PEM_read_bio_DHparams() to deserialize 
+            a DH object from a PEM-formatted string using the BIO interface.
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.FromParametersDER(OpenSSL.BIO)">
+            <summary>
+            Factory method that calls XXX() to deserialize
+            a DH object from a DER-formatted buffer using the BIO interface.
+            </summary>
+            <param name="bio"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.GenerateKeys">
+            <summary>
+            Calls DH_generate_key().
+            </summary>
+        </member>
+        <member name="M:OpenSSL.DH.ComputeKey(OpenSSL.BigNumber)">
+            <summary>
+            Calls DH_compute_key().
+            </summary>
+            <param name="pubkey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.WriteParametersPEM(OpenSSL.BIO)">
+            <summary>
+            Calls PEM_write_bio_DHparams().
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.DH.WriteParametersDER(OpenSSL.BIO)">
+            <summary>
+            Calls ASN1_i2d_bio() with the i2d = i2d_DHparams().
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.DH.Print(OpenSSL.BIO)">
+            <summary>
+            Calls DHparams_print().
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.DH.Check">
+            <summary>
+            Calls DH_check().
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.DH.OnDispose">
+            <summary>
+            Calls DH_free().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.P">
+            <summary>
+            Accessor for the p value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.G">
+            <summary>
+            Accessor for the g value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.PublicKey">
+            <summary>
+            Accessor for the pub_key value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.PrivateKey">
+            <summary>
+            Accessor for the priv_key value.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.PEM">
+            <summary>
+            Creates a BIO.MemoryBuffer(), calls WriteParametersPEM() into this buffer, 
+            then returns the buffer as a string.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.DER">
+            <summary>
+            Creates a BIO.MemoryBuffer(), calls WriteParametersDER() into this buffer, 
+            then returns the buffer.
+            </summary>
+        </member>
+        <member name="P:OpenSSL.DH.NoExpConstantTime">
+            <summary>
+            Sets or clears the FlagNoExpConstTime bit in the flags field.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.DH.CheckCode">
+            <summary>
+            Flags for the return value of DH_check().
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.CheckP_NotPrime">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.CheckP_NotSafePrime">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.UnableToCheckGenerator">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DH.CheckCode.NotSuitableGenerator">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:OpenSSL.PasswordHandler">
+            <summary>
+            Callback prototype. Must return the password or prompt for one.
+            </summary>
+            <param name="verify"></param>
+            <param name="userdata"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OpenSSL.PasswordCallback">
+            <summary>
+            Simple password callback that returns the contained password.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.PasswordCallback.#ctor(System.String)">
+            <summary>
+            Constructs a PasswordCallback
+            </summary>
+            <param name="password"></param>
+        </member>
+        <member name="M:OpenSSL.PasswordCallback.OnPassword(System.Boolean,System.Object)">
+            <summary>
+            Suitable callback to be used as a PasswordHandler
+            </summary>
+            <param name="verify"></param>
+            <param name="userdata"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OpenSSL.CryptoKey">
+            <summary>
+            Wraps the native OpenSSL EVP_PKEY object
+            </summary>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.#ctor">
+            <summary>
+            Calls EVP_PKEY_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.FromPublicKey(System.String,System.String)">
+            <summary>
+            Calls PEM_read_bio_PUBKEY()
+            </summary>
+            <param name="pem"></param>
+            <param name="password"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.FromPublicKey(OpenSSL.BIO,System.String)">
+            <summary>
+            Calls PEM_read_bio_PUBKEY()
+            </summary>
+            <param name="bio"></param>
+            <param name="password"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.FromPublicKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
+            <summary>
+            Calls PEM_read_bio_PUBKEY()
+            </summary>
+            <param name="bio"></param>
+            <param name="handler"></param>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.FromPrivateKey(System.String,System.String)">
+            <summary>
+            Calls PEM_read_bio_PrivateKey()
+            </summary>
+            <param name="pem"></param>
+            <param name="password"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.FromPrivateKey(OpenSSL.BIO,System.String)">
+            <summary>
+            Calls PEM_read_bio_PrivateKey()
+            </summary>
+            <param name="bio"></param>
+            <param name="passwd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.FromPrivateKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
+            <summary>
+            Calls PEM_read_bio_PrivateKey()
+            </summary>
+            <param name="bio"></param>
+            <param name="handler"></param>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.#ctor(OpenSSL.DSA)">
+            <summary>
+            Calls EVP_PKEY_set1_DSA()
+            </summary>
+            <param name="dsa"></param>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.#ctor(OpenSSL.RSA)">
+            <summary>
+            Calls EVP_PKEY_set1_RSA()
+            </summary>
+            <param name="rsa"></param>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.#ctor(OpenSSL.DH)">
+            <summary>
+            Calls EVP_PKEY_set1_DH()
+            </summary>
+            <param name="dh"></param>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.Assign(System.Int32,System.Byte[])">
+            <summary>
+            Calls EVP_PKEY_assign()
+            </summary>
+            <param name="type"></param>
+            <param name="key"></param>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.GetDSA">
+            <summary>
+            Returns EVP_PKEY_get1_DSA()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.GetDH">
+            <summary>
+            Returns EVP_PKEY_get1_DH()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.GetRSA">
+            <summary>
+            Returns EVP_PKEY_get1_RSA()
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.WritePrivateKey(OpenSSL.BIO,OpenSSL.Cipher,System.String)">
+            <summary>
+            Calls PEM_write_bio_PKCS8PrivateKey
+            </summary>
+            <param name="bp"></param>
+            <param name="cipher"></param>
+            <param name="password"></param>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.WritePrivateKey(OpenSSL.BIO,OpenSSL.Cipher,OpenSSL.PasswordHandler,System.Object)">
+            <summary>
+            Calls PEM_write_bio_PKCS8PrivateKey
+            </summary>
+            <param name="bp"></param>
+            <param name="cipher"></param>
+            <param name="handler"></param>
+            <param name="arg"></param>
+        </member>
+        <member name="M:OpenSSL.CryptoKey.OnDispose">
+            <summary>
+            Calls EVP_PKEY_free()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.CryptoKey.Bits">
+            <summary>
+            Returns EVP_PKEY_bits()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.CryptoKey.Size">
+            <summary>
+            Returns EVP_PKEY_size()
+            </summary>
         </member>
         <member name="T:OpenSSL.Cipher">
             <summary>
@@ -1754,768 +2605,201 @@
             Returns the EVP_CIPHER for this context.
             </summary>
         </member>
-        <member name="T:OpenSSL.Configuration">
+        <member name="T:OpenSSL.BIO">
             <summary>
-            Wraps the NCONF_* functions
+            Encapsulates the BIO_* functions.
             </summary>
         </member>
-        <member name="M:OpenSSL.Configuration.#ctor(System.String)">
+        <member name="M:OpenSSL.BIO.#ctor(System.Byte[])">
             <summary>
-            Calls NCONF_load()
-            </summary>
-            <param name="filename"></param>
-        </member>
-        <member name="M:OpenSSL.Configuration.Load(System.String)">
-            <summary>
-            Calls NCONF_load()
-            </summary>
-            <param name="filename"></param>
-        </member>
-        <member name="M:OpenSSL.Configuration.ApplyExtensions(System.String,OpenSSL.X509Certificate,OpenSSL.X509Certificate,OpenSSL.X509Request)">
-            <summary>
-            Creates a X509v3Context(), calls X509V3_set_ctx() on it, then calls
-            X509V3_EXT_add_nconf()
-            </summary>
-            <param name="section"></param>
-            <param name="issuer"></param>
-            <param name="subject"></param>
-            <param name="request"></param>
-        </member>
-        <member name="M:OpenSSL.Configuration.OnDispose">
-            <summary>
-            Calls NCONF_free()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Random">
-            <summary>
-            Exposes the RAND_* functions.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Random.Seed(System.Byte[])">
-            <summary>
-            Calls RAND_seed()
-            </summary>
-            <param name="seed"></param>
-        </member>
-        <member name="M:OpenSSL.Random.Seed(System.String)">
-            <summary>
-            Calls RAND_seed()
-            </summary>
-            <param name="seed"></param>
-        </member>
-        <member name="M:OpenSSL.Random.PseudoBytes(System.Int32)">
-            <summary>
-            Calls RAND_pseudo_bytes()
-            </summary>
-            <param name="len"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Random.Cleanup">
-            <summary>
-            Calls RAND_cleanup()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Random.Bytes(System.Int32)">
-            <summary>
-            Calls RAND_bytes()
-            </summary>
-            <param name="len"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Random.Add(System.Byte[],System.Double)">
-            <summary>
-            Calls RAND_add()
+            Calls BIO_new_mem_buf() from the specified buffer.
             </summary>
             <param name="buf"></param>
-            <param name="entropy"></param>
         </member>
-        <member name="M:OpenSSL.Random.LoadFile(System.String,System.Int32)">
+        <member name="M:OpenSSL.BIO.#ctor(System.String)">
             <summary>
-            Calls RAND_load_file()
+            Calls BIO_new_mem_buf() from the specified string.
             </summary>
-            <param name="filename"></param>
-            <param name="max_bytes"></param>
+            <param name="str"></param>
         </member>
-        <member name="M:OpenSSL.Random.WriteFile(System.String)">
+        <member name="M:OpenSSL.BIO.MemoryBuffer">
             <summary>
-            Calls RAND_write_file()
-            </summary>
-            <param name="filename"></param>
-        </member>
-        <member name="M:OpenSSL.Random.GetFilename">
-            <summary>
-            Calls RAND_file_name()
+            Factory method that calls BIO_new() with BIO_s_mem()
             </summary>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.Random.GatherEntropy(System.String,System.Byte[],System.Int32)">
+        <member name="M:OpenSSL.BIO.File(System.String,System.String)">
             <summary>
-            Calls RAND_query_egd_bytes()
+            Factory method that calls BIO_new_file()
             </summary>
-            <param name="path"></param>
+            <param name="filename"></param>
+            <param name="mode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BIO.MessageDigest(OpenSSL.MessageDigest)">
+            <summary>
+            Factory method that calls BIO_new() with BIO_f_md()
+            </summary>
+            <param name="md"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.BIO.SetClose(OpenSSL.BIO.BioCloseOption)">
+            <summary>
+            Calls BIO_set_close()
+            </summary>
+            <param name="opt"></param>
+        </member>
+        <member name="M:OpenSSL.BIO.Push(OpenSSL.BIO)">
+            <summary>
+            Calls BIO_push()
+            </summary>
+            <param name="bio"></param>
+        </member>
+        <member name="M:OpenSSL.BIO.Write(System.Byte[])">
+            <summary>
+            Calls BIO_write()
+            </summary>
             <param name="buf"></param>
-            <param name="bytes"></param>
         </member>
-        <member name="M:OpenSSL.Random.GatherEntropy(System.String)">
+        <member name="M:OpenSSL.BIO.Write(System.Byte[],System.Int32)">
             <summary>
-            Calls RAND_egd()
+            Calls BIO_write()
             </summary>
-            <param name="path"></param>
+            <param name="buf"></param>
+            <param name="len"></param>
         </member>
-        <member name="M:OpenSSL.Random.GatherEntropy(System.String,System.Int32)">
+        <member name="M:OpenSSL.BIO.Write(System.Byte)">
             <summary>
-            Calls RAND_egd_bytes()
-            </summary>
-            <param name="path"></param>
-            <param name="bytes"></param>
-        </member>
-        <member name="M:OpenSSL.Random.Poll">
-            <summary>
-            Calls RAND_poll()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Random.Next(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Calls BN_rand()
-            </summary>
-            <param name="bits"></param>
-            <param name="top"></param>
-            <param name="bottom"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Random.NextRange(OpenSSL.BigNumber)">
-            <summary>
-            Calls BN_rand_range()
-            </summary>
-            <param name="range"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Random.PseudoNext(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Calls BN_pseudo_rand()
-            </summary>
-            <param name="bits"></param>
-            <param name="top"></param>
-            <param name="bottom"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Random.PseudoNextRange(OpenSSL.BigNumber)">
-            <summary>
-            Calls BN_pseudo_rand_range()
-            </summary>
-            <param name="range"></param>
-            <returns></returns>
-        </member>
-        <member name="P:OpenSSL.Random.Status">
-            <summary>
-            Returns RAND_status()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.DSA">
-            <summary>
-            Wraps the DSA_* functions
-            </summary>
-        </member>
-        <member name="M:OpenSSL.DSA.#ctor(System.Boolean)">
-            <summary>
-            Calls DSA_new() then DSA_generate_parameters_ex()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.DSA.#ctor(System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
-            <summary>
-            Calls DSA_new() then DSA_generate_parameters_ex()
-            </summary>
-            <param name="bits"></param>
-            <param name="callback"></param>
-            <param name="arg"></param>
-        </member>
-        <member name="M:OpenSSL.DSA.#ctor(System.Int32,System.Byte[],System.Int32,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
-            <summary>
-            Calls DSA_new() then DSA_generate_parameters_ex()
-            </summary>
-            <param name="bits"></param>
-            <param name="seed"></param>
-            <param name="counter"></param>
-            <param name="callback"></param>
-            <param name="arg"></param>
-        </member>
-        <member name="M:OpenSSL.DSA.FromPublicKey(System.String)">
-            <summary>
-            Returns PEM_read_bio_DSA_PUBKEY()
-            </summary>
-            <param name="pem"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DSA.FromPublicKey(OpenSSL.BIO)">
-            <summary>
-            Returns PEM_read_bio_DSA_PUBKEY()
-            </summary>
-            <param name="bio"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DSA.FromPrivateKey(System.String)">
-            <summary>
-            Returns PEM_read_bio_DSAPrivateKey()
-            </summary>
-            <param name="pem"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DSA.FromPrivateKey(OpenSSL.BIO)">
-            <summary>
-            Returns PEM_read_bio_DSAPrivateKey()
-            </summary>
-            <param name="bio"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DSA.GenerateKeys">
-            <summary>
-            Calls DSA_generate_key()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.DSA.Sign(System.Byte[])">
-            <summary>
-            Returns DSA_sign()
-            </summary>
-            <param name="msg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DSA.Verify(System.Byte[],System.Byte[])">
-            <summary>
-            Returns DSA_verify()
-            </summary>
-            <param name="msg"></param>
-            <param name="sig"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.DSA.WritePublicKey(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_write_bio_DSA_PUBKEY()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.DSA.WritePrivateKey(OpenSSL.BIO,OpenSSL.Cipher,OpenSSL.PasswordHandler,System.Object)">
-            <summary>
-            Calls PEM_write_bio_DSAPrivateKey()
-            </summary>
-            <param name="bio"></param>
-            <param name="enc"></param>
-            <param name="passwd"></param>
-            <param name="arg"></param>
-        </member>
-        <member name="M:OpenSSL.DSA.Print(OpenSSL.BIO)">
-            <summary>
-            Calls DSA_print()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.DSA.OnDispose">
-            <summary>
-            Calls DSA_free()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.P">
-            <summary>
-            Returns the p field
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.Q">
-            <summary>
-            Returns the q field
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.G">
-            <summary>
-            Returns the g field
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.Size">
-            <summary>
-            Returns DSA_size()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.PublicKey">
-            <summary>
-            Returns the pub_key field
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.PrivateKey">
-            <summary>
-            Returns the priv_key field
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.PublicKeyAsPEM">
-            <summary>
-            Returns the pub_key field as a PEM string
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.PrivateKeyAsPEM">
-            <summary>
-            Returns the priv_key field as a PEM string
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.Counter">
-            <summary>
-            Returns the counter
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.H">
-            <summary>
-            Returns the h value
-            </summary>
-        </member>
-        <member name="P:OpenSSL.DSA.ConstantTime">
-            <summary>
-            Accessor for the FlagNoExpConstTime flag
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Version">
-            <summary>
-            Contains the set of elements that make up a Version.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Version.#ctor(System.UInt32)">
-            <summary>
-            Create a Version from a raw uint value
-            </summary>
-            <param name="raw"></param>
-        </member>
-        <member name="M:OpenSSL.Version.ToString">
-            <summary>
-            Conversion to a string.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.Version.GetText(OpenSSL.Version.Format)">
-            <summary>
-            Calls SSLeay_version()
-            </summary>
-            <param name="format"></param>
-        </member>
-        <member name="P:OpenSSL.Version.Library">
-            <summary>
-            Returns the current version of the native library.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Wrapper">
-            <summary>
-            Returns the version that this wrapper is built for.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Major">
-            <summary>
-            Major portion of the Version.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Minor">
-            <summary>
-            Minor portion of the Version.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Fix">
-            <summary>
-            Fix portion of the Version.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Patch">
-            <summary>
-            Patch portion of the Version. These should start at 'a' and continue to 'z'.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Status">
-            <summary>
-            Status portion of the Version.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.Raw">
-            <summary>
-            The raw uint value.
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Version.RawStatus">
-            <summary>
-            Returns the raw status portion of a Version.
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Version.StatusType">
-            <summary>
-            The kinds of status that 
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.StatusType.Development">
-            <summary>
-            The status nibble has the value 0
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.StatusType.Beta">
-            <summary>
-            The status nibble is 1 to 14 (0x0e)
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.StatusType.Release">
-            <summary>
-            The status nibble is 0x0f
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Version.Format">
-            <summary>
-            SSLEAY_* constants used for with GetVersion()
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.Format.Text">
-            <summary>
-            SSLEAY_VERSION
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.Format.CompilerFlags">
-            <summary>
-            SSLEAY_CFLAGS
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.Format.BuildDate">
-            <summary>
-            SSLEAY_BUILT_ON
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.Format.Platform">
-            <summary>
-            SSLEAY_PLATFORM
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Version.Format.BuildDirectory">
-            <summary>
-            SSLEAY_DIR
-            </summary>
-        </member>
-        <member name="T:OpenSSL.DebugOptions">
-            <summary>
-            V_CRYPTO_MDEBUG_*
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DebugOptions.Time">
-            <summary>
-            V_CRYPTO_MDEBUG_TIME 
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DebugOptions.Thread">
-            <summary>
-            V_CRYPTO_MDEBUG_THREAD
-            </summary>
-        </member>
-        <member name="F:OpenSSL.DebugOptions.All">
-            <summary>
-            V_CRYPTO_MDEBUG_ALL 
-            </summary>
-        </member>
-        <member name="T:OpenSSL.MemoryCheck">
-            <summary>
-            CRYPTO_MEM_CHECK_*
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.Off">
-            <summary>
-            CRYPTO_MEM_CHECK_OFF 
-            for applications
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.On">
-            <summary>
-            CRYPTO_MEM_CHECK_ON 
-            for applications
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.Enable">
-            <summary>
-            CRYPTO_MEM_CHECK_ENABLE
-            for library-internal use
-            </summary>
-        </member>
-        <member name="F:OpenSSL.MemoryCheck.Disable">
-            <summary>
-            CRYPTO_MEM_CHECK_DISABLE
-            for library-internal use
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Crypto">
-            <summary>
-            Exposes the CRYPTO_* functions
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Crypto.MallocDebugInit">
-            <summary>
-            Calls CRYPTO_malloc_debug_init()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Crypto.SetDebugOptions(OpenSSL.DebugOptions)">
-            <summary>
-            Calls CRYPTO_dbg_set_options()
-            </summary>
-            <param name="options"></param>
-        </member>
-        <member name="M:OpenSSL.Crypto.SetMemoryCheck(OpenSSL.MemoryCheck)">
-            <summary>
-            Calls CRYPTO_mem_ctrl()
-            </summary>
-            <param name="options"></param>
-        </member>
-        <member name="M:OpenSSL.Crypto.Cleanup">
-            <summary>
-            Calls CRYPTO_cleanup_all_ex_data()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Crypto.RemoveState(System.UInt32)">
-            <summary>
-            Calls ERR_remove_state()
+            Calls BIO_write()
             </summary>
             <param name="value"></param>
         </member>
-        <member name="M:OpenSSL.Crypto.CheckMemoryLeaks(OpenSSL.Crypto.MemoryLeakHandler)">
+        <member name="M:OpenSSL.BIO.Write(System.UInt16)">
             <summary>
-            Calls CRYPTO_mem_leaks_cb()
+            Calls BIO_write()
             </summary>
-            <param name="callback"></param>
+            <param name="value"></param>
         </member>
-        <member name="P:OpenSSL.Crypto.MD2_Options">
+        <member name="M:OpenSSL.BIO.Write(System.UInt32)">
             <summary>
-            Returns MD2_options()
+            Calls BIO_write()
             </summary>
+            <param name="value"></param>
         </member>
-        <member name="P:OpenSSL.Crypto.RC4_Options">
+        <member name="M:OpenSSL.BIO.Write(System.String)">
             <summary>
-            Returns RC4_options()
+            Calls BIO_puts()
             </summary>
+            <param name="str"></param>
         </member>
-        <member name="P:OpenSSL.Crypto.DES_Options">
+        <member name="M:OpenSSL.BIO.ReadBytes(System.Int32)">
             <summary>
-            Returns DES_options()
+            Calls BIO_read()
             </summary>
-        </member>
-        <member name="P:OpenSSL.Crypto.Idea_Options">
-            <summary>
-            Returns idea_options()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.Crypto.Blowfish_Options">
-            <summary>
-            Returns BF_options()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.Crypto.MemoryLeakHandler">
-            <summary>
-            CRYPTO_MEM_LEAK_CB
-            </summary>
-            <param name="order"></param>
-            <param name="file"></param>
-            <param name="line"></param>
-            <param name="num_bytes"></param>
-            <param name="addr"></param>
-        </member>
-        <member name="T:OpenSSL.RSA">
-            <summary>
-            Wraps the RSA_* functions
-            </summary>
-        </member>
-        <member name="M:OpenSSL.RSA.#ctor">
-            <summary>
-            Calls RSA_new()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.RSA.FromPublicKey(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_read_bio_RSA_PUBKEY()
-            </summary>
-            <param name="bio"></param>
+            <param name="count"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.RSA.FromPrivateKey(OpenSSL.BIO)">
+        <member name="M:OpenSSL.BIO.ReadString">
             <summary>
-            Calls PEM_read_bio_RSAPrivateKey()
-            </summary>
-            <param name="bio"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.FromPublicKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
-            <summary>
-            Calls PEM_read_bio_RSA_PUBKEY()
-            </summary>
-            <param name="bio"></param>
-            <param name="callback"></param>
-            <param name="arg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.FromPrivateKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
-            <summary>
-            Calls PEM_read_bio_RSAPrivateKey()
-            </summary>
-            <param name="bio"></param>
-            <param name="callback"></param>
-            <param name="arg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.GenerateKeys(System.Int32,OpenSSL.BigNumber,OpenSSL.BigNumber.GeneratorHandler,System.Object)">
-            <summary>
-            Calls RSA_generate_key_ex()
-            </summary>
-            <param name="bits"></param>
-            <param name="e"></param>
-            <param name="callback"></param>
-            <param name="arg"></param>
-        </member>
-        <member name="M:OpenSSL.RSA.PublicEncrypt(System.Byte[],OpenSSL.RSA.Padding)">
-            <summary>
-            Calls RSA_public_encrypt()
-            </summary>
-            <param name="msg"></param>
-            <param name="padding"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.PrivateEncrypt(System.Byte[],OpenSSL.RSA.Padding)">
-            <summary>
-            Calls RSA_private_encrypt()
-            </summary>
-            <param name="msg"></param>
-            <param name="padding"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.PublicDecrypt(System.Byte[],OpenSSL.RSA.Padding)">
-            <summary>
-            Calls RSA_public_decrypt()
-            </summary>
-            <param name="msg"></param>
-            <param name="padding"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.PrivateDecrypt(System.Byte[],OpenSSL.RSA.Padding)">
-            <summary>
-            Calls RSA_private_decrypt()
-            </summary>
-            <param name="msg"></param>
-            <param name="padding"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.RSA.WritePublicKey(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_write_bio_RSA_PUBKEY()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.RSA.WritePrivateKey(OpenSSL.BIO,OpenSSL.Cipher,OpenSSL.PasswordHandler,System.Object)">
-            <summary>
-            Calls PEM_write_bio_RSAPrivateKey()
-            </summary>
-            <param name="bio"></param>
-            <param name="enc"></param>
-            <param name="passwd"></param>
-            <param name="arg"></param>
-        </member>
-        <member name="M:OpenSSL.RSA.Check">
-            <summary>
-            Returns RSA_check_key()
+            Calls BIO_gets()
             </summary>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.RSA.Print(OpenSSL.BIO)">
+        <member name="M:OpenSSL.BIO.GetMessageDigestContext">
             <summary>
-            Calls RSA_print()
+            Returns the MessageDigestContext if this BIO's type if BIO_f_md()
             </summary>
-            <param name="bio"></param>
+            <returns></returns>
         </member>
-        <member name="M:OpenSSL.RSA.OnDispose">
+        <member name="M:OpenSSL.BIO.OnDispose">
             <summary>
-            Calls RSA_free()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.RSA.Size">
-            <summary>
-            Returns RSA_size()
+            Calls BIO_free()
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.ConstantTime">
+        <member name="P:OpenSSL.BIO.NumberRead">
             <summary>
-            Not finished
+            Returns BIO_number_read()
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.PublicExponent">
+        <member name="P:OpenSSL.BIO.NumberWritten">
             <summary>
-            Accessor for the e field
+            Returns BIO_number_written()
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.PublicModulus">
+        <member name="P:OpenSSL.BIO.BytesPending">
             <summary>
-            Accessor for the n field
+            Returns number of bytes buffered in the BIO - calls BIO_ctrl_pending
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.PrivateExponent">
+        <member name="T:OpenSSL.X509StoreContext">
             <summary>
-            Accessor for the d field
+            Wraps the X509_STORE_CTX object
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.SecretPrimeFactorP">
+        <member name="T:OpenSSL.X509Store">
             <summary>
-            Accessor for the p field
+            Wraps the X509_STORE_CONTEXT object
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.SecretPrimeFactorQ">
+        <member name="M:OpenSSL.X509Store.#ctor">
             <summary>
-            Accessor for the q field
+            Calls X509_STORE_new()
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.DmodP1">
+        <member name="M:OpenSSL.X509Store.#ctor(System.IntPtr,System.Boolean)">
             <summary>
-            Accessor for the dmp1 field.
-            d mod (p-1)
+            Initializes the X509Store object with a pre-existing native X509_STORE pointer
+            </summary>
+            <param name="ptr"></param>
+            <param name="takeOwnership"></param>
+        </member>
+        <member name="M:OpenSSL.X509Store.#ctor(OpenSSL.X509Chain)">
+            <summary>
+            Calls X509_STORE_new() and then adds the specified chain as trusted.
+            </summary>
+            <param name="chain"></param>
+        </member>
+        <member name="M:OpenSSL.X509Store.#ctor(OpenSSL.X509Chain,System.Boolean)">
+            <summary>
+            Calls X509_STORE_new() and then adds the specified chaing as trusted.
+            </summary>
+            <param name="chain"></param>
+            <param name="takeOwnership"></param>
+        </member>
+        <member name="M:OpenSSL.X509Store.Verify(OpenSSL.X509Certificate,System.String@)">
+            <summary>
+            Returns the trusted state of the specified certificate
+            </summary>
+            <param name="cert"></param>
+            <param name="error"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.X509Store.AddTrusted(OpenSSL.X509Chain)">
+            <summary>
+            Adds a chain to the trusted list.
+            </summary>
+            <param name="chain"></param>
+        </member>
+        <member name="M:OpenSSL.X509Store.AddTrusted(OpenSSL.X509Certificate)">
+            <summary>
+            Adds a certificate to the trusted list.
+            </summary>
+            <param name="cert"></param>
+        </member>
+        <member name="M:OpenSSL.X509Store.AddUntrusted(OpenSSL.X509Certificate)">
+            <summary>
+            Add an untrusted certificate
+            </summary>
+            <param name="cert"></param>
+        </member>
+        <member name="M:OpenSSL.X509Store.OnDispose">
+            <summary>
+            Calls X509_STORE_free()
             </summary>
         </member>
-        <member name="P:OpenSSL.RSA.DmodQ1">
+        <member name="P:OpenSSL.X509Store.Untrusted">
             <summary>
-            Accessor for the dmq1 field.
-            d mod (q-1)
-            </summary>
-        </member>
-        <member name="P:OpenSSL.RSA.IQmodP">
-            <summary>
-            Accessor for the iqmp field.
-            q^-1 mod p
-            </summary>
-        </member>
-        <member name="P:OpenSSL.RSA.PublicKeyAsPEM">
-            <summary>
-            Returns the public key field as a PEM string
-            </summary>
-        </member>
-        <member name="P:OpenSSL.RSA.PrivateKeyAsPEM">
-            <summary>
-            Returns the private key field as a PEM string
-            </summary>
-        </member>
-        <member name="T:OpenSSL.RSA.Padding">
-            <summary>
-            RSA padding scheme
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.Padding.PKCS1">
-            <summary>
-            RSA_PKCS1_PADDING
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.Padding.SSLv23">
-            <summary>
-            RSA_SSLV23_PADDING
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.Padding.None">
-            <summary>
-            RSA_NO_PADDING
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.Padding.OAEP">
-            <summary>
-            RSA_PKCS1_OAEP_PADDING
-            Optimal Asymmetric Encryption Padding
-            </summary>
-        </member>
-        <member name="F:OpenSSL.RSA.Padding.X931">
-            <summary>
-            RSA_X931_PADDING
+            Accessor to the untrusted list
             </summary>
         </member>
         <member name="T:OpenSSL.MessageDigest">
@@ -2741,405 +3025,349 @@
             Calls EVP_MD_CTX_cleanup() and EVP_MD_CTX_destroy()
             </summary>
         </member>
-        <member name="T:OpenSSL.PasswordHandler">
+        <member name="T:OpenSSL.Random">
             <summary>
-            Callback prototype. Must return the password or prompt for one.
+            Exposes the RAND_* functions.
             </summary>
-            <param name="verify"></param>
-            <param name="userdata"></param>
+        </member>
+        <member name="M:OpenSSL.Random.Seed(System.Byte[])">
+            <summary>
+            Calls RAND_seed()
+            </summary>
+            <param name="seed"></param>
+        </member>
+        <member name="M:OpenSSL.Random.Seed(System.String)">
+            <summary>
+            Calls RAND_seed()
+            </summary>
+            <param name="seed"></param>
+        </member>
+        <member name="M:OpenSSL.Random.PseudoBytes(System.Int32)">
+            <summary>
+            Calls RAND_pseudo_bytes()
+            </summary>
+            <param name="len"></param>
             <returns></returns>
         </member>
-        <member name="T:OpenSSL.PasswordCallback">
+        <member name="M:OpenSSL.Random.Cleanup">
             <summary>
-            Simple password callback that returns the contained password.
+            Calls RAND_cleanup()
             </summary>
         </member>
-        <member name="M:OpenSSL.PasswordCallback.#ctor(System.String)">
+        <member name="M:OpenSSL.Random.Bytes(System.Int32)">
             <summary>
-            Constructs a PasswordCallback
+            Calls RAND_bytes()
             </summary>
-            <param name="password"></param>
-        </member>
-        <member name="M:OpenSSL.PasswordCallback.OnPassword(System.Boolean,System.Object)">
-            <summary>
-            Suitable callback to be used as a PasswordHandler
-            </summary>
-            <param name="verify"></param>
-            <param name="userdata"></param>
+            <param name="len"></param>
             <returns></returns>
         </member>
-        <member name="T:OpenSSL.CryptoKey">
+        <member name="M:OpenSSL.Random.Add(System.Byte[],System.Double)">
             <summary>
-            Wraps the native OpenSSL EVP_PKEY object
+            Calls RAND_add()
             </summary>
+            <param name="buf"></param>
+            <param name="entropy"></param>
         </member>
-        <member name="M:OpenSSL.CryptoKey.#ctor">
+        <member name="M:OpenSSL.Random.LoadFile(System.String,System.Int32)">
             <summary>
-            Calls EVP_PKEY_new()
+            Calls RAND_load_file()
             </summary>
+            <param name="filename"></param>
+            <param name="max_bytes"></param>
         </member>
-        <member name="M:OpenSSL.CryptoKey.FromPublicKey(System.String,System.String)">
+        <member name="M:OpenSSL.Random.WriteFile(System.String)">
             <summary>
-            Calls PEM_read_bio_PUBKEY()
+            Calls RAND_write_file()
             </summary>
-            <param name="pem"></param>
-            <param name="password"></param>
+            <param name="filename"></param>
+        </member>
+        <member name="M:OpenSSL.Random.GetFilename">
+            <summary>
+            Calls RAND_file_name()
+            </summary>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.FromPublicKey(OpenSSL.BIO,System.String)">
+        <member name="M:OpenSSL.Random.GatherEntropy(System.String,System.Byte[],System.Int32)">
             <summary>
-            Calls PEM_read_bio_PUBKEY()
+            Calls RAND_query_egd_bytes()
             </summary>
-            <param name="bio"></param>
-            <param name="password"></param>
+            <param name="path"></param>
+            <param name="buf"></param>
+            <param name="bytes"></param>
+        </member>
+        <member name="M:OpenSSL.Random.GatherEntropy(System.String)">
+            <summary>
+            Calls RAND_egd()
+            </summary>
+            <param name="path"></param>
+        </member>
+        <member name="M:OpenSSL.Random.GatherEntropy(System.String,System.Int32)">
+            <summary>
+            Calls RAND_egd_bytes()
+            </summary>
+            <param name="path"></param>
+            <param name="bytes"></param>
+        </member>
+        <member name="M:OpenSSL.Random.Poll">
+            <summary>
+            Calls RAND_poll()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Random.Next(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Calls BN_rand()
+            </summary>
+            <param name="bits"></param>
+            <param name="top"></param>
+            <param name="bottom"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.FromPublicKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
+        <member name="M:OpenSSL.Random.NextRange(OpenSSL.BigNumber)">
             <summary>
-            Calls PEM_read_bio_PUBKEY()
+            Calls BN_rand_range()
             </summary>
-            <param name="bio"></param>
-            <param name="handler"></param>
-            <param name="arg"></param>
+            <param name="range"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.FromPrivateKey(System.String,System.String)">
+        <member name="M:OpenSSL.Random.PseudoNext(System.Int32,System.Int32,System.Int32)">
             <summary>
-            Calls PEM_read_bio_PrivateKey()
+            Calls BN_pseudo_rand()
             </summary>
-            <param name="pem"></param>
-            <param name="password"></param>
+            <param name="bits"></param>
+            <param name="top"></param>
+            <param name="bottom"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.FromPrivateKey(OpenSSL.BIO,System.String)">
+        <member name="M:OpenSSL.Random.PseudoNextRange(OpenSSL.BigNumber)">
             <summary>
-            Calls PEM_read_bio_PrivateKey()
+            Calls BN_pseudo_rand_range()
             </summary>
-            <param name="bio"></param>
-            <param name="passwd"></param>
+            <param name="range"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.FromPrivateKey(OpenSSL.BIO,OpenSSL.PasswordHandler,System.Object)">
+        <member name="P:OpenSSL.Random.Status">
             <summary>
-            Calls PEM_read_bio_PrivateKey()
+            Returns RAND_status()
             </summary>
-            <param name="bio"></param>
-            <param name="handler"></param>
-            <param name="arg"></param>
-            <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.#ctor(OpenSSL.DSA)">
+        <member name="T:OpenSSL.OpenSslError">
             <summary>
-            Calls EVP_PKEY_set1_DSA()
+            This is a struct that contains a uint for the native openssl error code.
+            It provides helper methods to convert this error code into strings.
             </summary>
-            <param name="dsa"></param>
         </member>
-        <member name="M:OpenSSL.CryptoKey.#ctor(OpenSSL.RSA)">
+        <member name="M:OpenSSL.OpenSslError.#ctor(System.UInt32)">
             <summary>
-            Calls EVP_PKEY_set1_RSA()
+            Constructs an OpenSslError object.
             </summary>
-            <param name="rsa"></param>
+            <param name="err">The native error code</param>
         </member>
-        <member name="M:OpenSSL.CryptoKey.#ctor(OpenSSL.DH)">
+        <member name="P:OpenSSL.OpenSslError.ErrorCode">
             <summary>
-            Calls EVP_PKEY_set1_DH()
+            Returns the native error code
             </summary>
-            <param name="dh"></param>
         </member>
-        <member name="M:OpenSSL.CryptoKey.Assign(System.Int32,System.Byte[])">
+        <member name="P:OpenSSL.OpenSslError.Library">
             <summary>
-            Calls EVP_PKEY_assign()
+            Returns the result of ERR_lib_error_string()
             </summary>
-            <param name="type"></param>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Reason">
+            <summary>
+            Returns the results of ERR_reason_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Function">
+            <summary>
+            Returns the results of ERR_func_error_string()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslError.Message">
+            <summary>
+            Returns the results of ERR_error_string_n()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.OpenSslException">
+            <summary>
+            Exception class to provide OpenSSL specific information when errors occur.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.OpenSslException.#ctor">
+            <summary>
+            When this class is instantiated, GetErrorMessage() is called automatically.
+            This will call ERR_get_error() on the native openssl interface, once for every
+            error that is in the current context. The exception message is the concatination
+            of each of these errors turned into strings using ERR_error_string_n().
+            </summary>
+        </member>
+        <member name="P:OpenSSL.OpenSslException.Errors">
+            <summary>
+            Returns the list of errors associated with this exception.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.DebugOptions">
+            <summary>
+            V_CRYPTO_MDEBUG_*
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.Time">
+            <summary>
+            V_CRYPTO_MDEBUG_TIME 
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.Thread">
+            <summary>
+            V_CRYPTO_MDEBUG_THREAD
+            </summary>
+        </member>
+        <member name="F:OpenSSL.DebugOptions.All">
+            <summary>
+            V_CRYPTO_MDEBUG_ALL 
+            </summary>
+        </member>
+        <member name="T:OpenSSL.MemoryCheck">
+            <summary>
+            CRYPTO_MEM_CHECK_*
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Off">
+            <summary>
+            CRYPTO_MEM_CHECK_OFF 
+            for applications
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.On">
+            <summary>
+            CRYPTO_MEM_CHECK_ON 
+            for applications
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Enable">
+            <summary>
+            CRYPTO_MEM_CHECK_ENABLE
+            for library-internal use
+            </summary>
+        </member>
+        <member name="F:OpenSSL.MemoryCheck.Disable">
+            <summary>
+            CRYPTO_MEM_CHECK_DISABLE
+            for library-internal use
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Crypto">
+            <summary>
+            Exposes the CRYPTO_* functions
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Crypto.MallocDebugInit">
+            <summary>
+            Calls CRYPTO_malloc_debug_init()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Crypto.SetDebugOptions(OpenSSL.DebugOptions)">
+            <summary>
+            Calls CRYPTO_dbg_set_options()
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:OpenSSL.Crypto.SetMemoryCheck(OpenSSL.MemoryCheck)">
+            <summary>
+            Calls CRYPTO_mem_ctrl()
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:OpenSSL.Crypto.Cleanup">
+            <summary>
+            Calls CRYPTO_cleanup_all_ex_data()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Crypto.RemoveState(System.UInt32)">
+            <summary>
+            Calls ERR_remove_state()
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:OpenSSL.Crypto.CheckMemoryLeaks(OpenSSL.Crypto.MemoryLeakHandler)">
+            <summary>
+            Calls CRYPTO_mem_leaks_cb()
+            </summary>
+            <param name="callback"></param>
+        </member>
+        <member name="P:OpenSSL.Crypto.MD2_Options">
+            <summary>
+            Returns MD2_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.RC4_Options">
+            <summary>
+            Returns RC4_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.DES_Options">
+            <summary>
+            Returns DES_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.Idea_Options">
+            <summary>
+            Returns idea_options()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Crypto.Blowfish_Options">
+            <summary>
+            Returns BF_options()
+            </summary>
+        </member>
+        <member name="T:OpenSSL.Crypto.MemoryLeakHandler">
+            <summary>
+            CRYPTO_MEM_LEAK_CB
+            </summary>
+            <param name="order"></param>
+            <param name="file"></param>
+            <param name="line"></param>
+            <param name="num_bytes"></param>
+            <param name="addr"></param>
+        </member>
+        <member name="T:OpenSSL.Identity">
+            <summary>
+            Simple encapsulation of a local identity.
+            This includes the private key and the X509Certificate.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Identity.#ctor(OpenSSL.CryptoKey)">
+            <summary>
+            Construct an Identity with a private key
+            </summary>
             <param name="key"></param>
         </member>
-        <member name="M:OpenSSL.CryptoKey.GetDSA">
+        <member name="M:OpenSSL.Identity.CreateRequest(System.String)">
             <summary>
-            Returns EVP_PKEY_get1_DSA()
+            Create a X509Request for this identity, using the specified name.
             </summary>
+            <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.CryptoKey.GetDH">
+        <member name="M:OpenSSL.Identity.VerifyResponse(OpenSSL.X509Chain,System.String@)">
             <summary>
-            Returns EVP_PKEY_get1_DH()
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.CryptoKey.GetRSA">
-            <summary>
-            Returns EVP_PKEY_get1_RSA()
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.CryptoKey.OnDispose">
-            <summary>
-            Calls EVP_PKEY_free()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.CryptoKey.Bits">
-            <summary>
-            Returns EVP_PKEY_bits()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.CryptoKey.Size">
-            <summary>
-            Returns EVP_PKEY_size()
-            </summary>
-        </member>
-        <member name="T:OpenSSL.X509Store">
-            <summary>
-            Wraps the X509_STORE_CONTEXT object
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Store.#ctor">
-            <summary>
-            Calls X509_STORE_new()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Store.#ctor(OpenSSL.X509Chain)">
-            <summary>
-            Calls X509_STORE_new() and then adds the specified chain as trusted.
+            Verify that the specified chain can be trusted.
             </summary>
             <param name="chain"></param>
-        </member>
-        <member name="M:OpenSSL.X509Store.Verify(OpenSSL.X509Certificate,System.String@)">
-            <summary>
-            Returns the trusted state of the specified certificate
-            </summary>
-            <param name="cert"></param>
             <param name="error"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.X509Store.AddTrusted(OpenSSL.X509Chain)">
+        <member name="P:OpenSSL.Identity.PublicKey">
             <summary>
-            Adds a chain to the trusted list.
-            </summary>
-            <param name="chain"></param>
-        </member>
-        <member name="M:OpenSSL.X509Store.AddTrusted(OpenSSL.X509Certificate)">
-            <summary>
-            Adds a certificate to the trusted list.
-            </summary>
-            <param name="cert"></param>
-        </member>
-        <member name="M:OpenSSL.X509Store.AddUntrusted(OpenSSL.X509Certificate)">
-            <summary>
-            Add an untrusted certificate
-            </summary>
-            <param name="cert"></param>
-        </member>
-        <member name="M:OpenSSL.X509Store.OnDispose">
-            <summary>
-            Calls X509_STORE_free()
+            Returns the embedded public key of the X509Certificate
             </summary>
         </member>
-        <member name="P:OpenSSL.X509Store.Untrusted">
+        <member name="P:OpenSSL.Identity.PrivateKey">
             <summary>
-            Accessor to the untrusted list
+            Returns the private key
             </summary>
         </member>
-        <member name="T:OpenSSL.X509Store.Context">
+        <member name="P:OpenSSL.Identity.Certificate">
             <summary>
-            Wraps the X509_STORE_CTX object
-            </summary>
-        </member>
-        <member name="T:OpenSSL.X509Certificate">
-            <summary>
-            Wraps the X509 object
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.#ctor">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.#ctor(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_read_bio_X509()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.FromDER(OpenSSL.BIO)">
-            <summary>
-            Factory method that returns a X509 using d2i_X509_bio()
-            </summary>
-            <param name="bio"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Finalize">
-            <summary>
-            Calls Dispose()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.#ctor(System.Int32,OpenSSL.X509Name,OpenSSL.X509Name,OpenSSL.CryptoKey,System.DateTime,System.DateTime)">
-            <summary>
-            Creates a new X509 certificate
-            </summary>
-            <param name="serial"></param>
-            <param name="subject"></param>
-            <param name="issuer"></param>
-            <param name="pubkey"></param>
-            <param name="start"></param>
-            <param name="end"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Sign(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
-            <summary>
-            Calls X509_sign()
-            </summary>
-            <param name="pkey"></param>
-            <param name="digest"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.CheckPrivateKey(OpenSSL.CryptoKey)">
-            <summary>
-            Returns X509_check_private_key()
-            </summary>
-            <param name="pkey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.CheckTrust(System.Int32,System.Int32)">
-            <summary>
-            Returns X509_check_trust()
-            </summary>
-            <param name="id"></param>
-            <param name="flags"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Verify(OpenSSL.CryptoKey)">
-            <summary>
-            Returns X509_verify()
-            </summary>
-            <param name="pkey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Digest(System.IntPtr,System.Byte[])">
-            <summary>
-            Returns X509_digest()
-            </summary>
-            <param name="type"></param>
-            <param name="digest"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.DigestPublicKey(System.IntPtr,System.Byte[])">
-            <summary>
-            Returns X509_pubkey_digest()
-            </summary>
-            <param name="type"></param>
-            <param name="digest"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Write(OpenSSL.BIO)">
-            <summary>
-            Calls PEM_write_bio_X509()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Print(OpenSSL.BIO)">
-            <summary>
-            Calls X509_print()
-            </summary>
-            <param name="bio"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.CreateRequest(OpenSSL.CryptoKey,OpenSSL.MessageDigest)">
-            <summary>
-            Converts a X509 into a request using X509_to_X509_REQ()
-            </summary>
-            <param name="pkey"></param>
-            <param name="digest"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.AddExtension(OpenSSL.X509Extension)">
-            <summary>
-            Calls X509_add_ext()
-            </summary>
-            <param name="ext"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.AddExtension(System.String,System.Byte[],System.Int32,System.UInt32)">
-            <summary>
-            Calls X509_add1_ext_i2d()
-            </summary>
-            <param name="name"></param>
-            <param name="value"></param>
-            <param name="crit"></param>
-            <param name="flags"></param>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.OnDispose">
-            <summary>
-            Calls X509_free()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.Equals(System.Object)">
-            <summary>
-            Compares X509Certificate
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.GetHashCode">
-            <summary>
-            Returns the hash code of the issuer's oneline xor'd with the serial number
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OpenSSL.X509Certificate.CompareTo(OpenSSL.X509Certificate)">
-            <summary>
-            Returns X509_cmp()
-            </summary>
-            <param name="other"></param>
-            <returns></returns>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.Subject">
-            <summary>
-            Uses X509_get_subject_name() and X509_set_issuer_name()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.Issuer">
-            <summary>
-            Uses X509_get_issuer_name() and X509_set_issuer_name()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.SerialNumber">
-            <summary>
-            Uses X509_get_serialNumber() and X509_set_serialNumber()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.NotBefore">
-            <summary>
-            Uses the notBefore field and X509_set_notBefore()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.NotAfter">
-            <summary>
-            Uses the notAfter field and X509_set_notAfter()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.Version">
-            <summary>
-            Uses the version field and X509_set_version()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.PublicKey">
-            <summary>
-            Uses X509_get_pubkey() and X509_set_pubkey()
-            </summary>
-        </member>
-        <member name="P:OpenSSL.X509Certificate.PEM">
-            <summary>
-            Returns the PEM formatted string of this object
-            </summary>
-        </member>
-        <member name="T:OpenSSL.X509Extension">
-            <summary>
-            Wraps the X509_EXTENSION object
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Extension.#ctor">
-            <summary>
-            Calls X509_EXTENSION_new()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Extension.OnDispose">
-            <summary>
-            Calls X509_EXTENSION_free()
+            Returns the X509Certificate
             </summary>
         </member>
     </members>

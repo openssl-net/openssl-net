@@ -61,10 +61,25 @@ namespace OpenSSL
 			Dispose();
 		}
 
+        /// <summary>
+        /// gets/sets whether the object owns the Native pointer
+        /// </summary>
+        public virtual bool IsOwner
+        {
+            get
+            {
+                return owner;
+            }
+            set
+            {
+                owner = value;
+            }
+        }
+
 		/// <summary>
 		/// Access to the raw unmanaged pointer. Implements the IStackable interface.
 		/// </summary>
-		public IntPtr Handle
+		public virtual IntPtr Handle
 		{
 			get { return this.ptr; }
 			set
@@ -75,6 +90,10 @@ namespace OpenSSL
 				this.ptr = value;
 			}
 		}
+
+        public virtual void Addref()
+        {
+        }
 
 		/// <summary>
 		/// Constructor which takes the raw unmanged pointer. 

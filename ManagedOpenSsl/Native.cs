@@ -30,22 +30,60 @@ using System.Runtime.InteropServices;
 using System.Globalization;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace OpenSSL
 {
+    public static class FIPS
+    {
+        private static bool enabled = false;
+
+        public static bool Enabled
+        {
+            get
+            {
+                return enabled;
+            }
+            set
+            {
+                enabled = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// static class for initialize OpenSSL/Crypto libraries for threading
+    /// </summary>
+    public class ThreadInitialization
+    {
+        public static void InitializeThreads()
+        {
+            Native.InitializeThreads();
+        }
+
+        public static void UninitializeThreads()
+        {
+            Native.UninitializeThreads();
+        }
+    }
+
 	/// <summary>
 	/// This is the low-level C-style interface to the crypto API.
 	/// Use this interface with caution.
 	/// </summary>
 	internal class Native
 	{
-		/// <summary>
+        /// <summary>
 		/// This is the name of the DLL that P/Invoke loads and tries to bind all of
 		/// these native functions to.
 		/// </summary>
-		public const string DLLNAME = "libeay32.dll";
+		public const string DLLNAME = "libeay32";
+        public const string SSLDLLNAME = "ssleay32";
 
-		#region Kernel32
+        //!! Removed OS specific library loading methods (these were used by CRYPTO_malloc_debug_init())
+        //!! but, that code has been removed, and the native CRYPTO_malloc_debug_init() function is used instead
+        /*
+        #region Kernel32
 		[DllImport("kernel32.dll")]
 		public extern static IntPtr LoadLibrary(string lpFileName);
 
@@ -55,6 +93,7 @@ namespace OpenSSL
 		[DllImport("kernel32.dll")]
 		public extern static IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 		#endregion
+        */
 
 		#region Delegates
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -65,25 +104,89 @@ namespace OpenSSL
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void ObjectNameHandler(IntPtr name, IntPtr arg);
-		#endregion
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void CRYPTO_locking_callback(int mode, int type, string file, int line);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate uint CRYPTO_id_callback();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int VerifyCertCallback(int ok, IntPtr x509_store_ctx);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int client_cert_cb(IntPtr ssl, out IntPtr x509, out IntPtr pkey);
+
+        #endregion
 		
 		#region Initialization
 		static Native()
 		{
-			Version lib = Version.Library;
+            Version lib = Version.Library;
 			Version wrapper = Version.Wrapper;
 			uint mmf = lib.Raw & 0xfffff000;
 			if (mmf != wrapper.Raw)
 				throw new Exception(string.Format("Invalid version of {0}, expecting {1}, got: {2}", 
 					DLLNAME, wrapper, lib));
 
-			ERR_load_crypto_strings();
+            // Enable FIPS mode
+            if (FIPS.Enabled)
+            {
+                if (FIPS_mode_set(1) == 0)
+                {
+                    throw new Exception("Failed to initialize FIPS mode");
+                }
+            }
+
+            // Initialize SSL library
+            SSL_library_init();
+
+            ERR_load_crypto_strings();
+            SSL_load_error_strings();
 			OPENSSL_add_all_algorithms_noconf();
-			byte[] seed = new byte[128];
+
+            byte[] seed = new byte[128];
 			RandomNumberGenerator rng = RandomNumberGenerator.Create();
 			rng.GetBytes(seed);
 			RAND_seed(seed, seed.Length);
 		}
+
+        public static void InitializeThreads()
+        {
+            // Initialize the threading locks
+            int nLocks = CRYPTO_num_locks();
+            lock_objects = new List<object>(nLocks);
+            for (int i = 0; i < nLocks; i++)
+            {
+                Object obj = new Object();
+                lock_objects.Add(obj);
+            }
+            // Initialize the internal thread id stack
+            threadIDs = new System.Collections.Generic.Stack<uint>();
+            // Initialize the delegate for the locking callback
+            CRYPTO_locking_callback_delegate = new CRYPTO_locking_callback(LockingCallback);
+            CRYPTO_set_locking_callback(CRYPTO_locking_callback_delegate);
+            // Initialze the thread id callback
+            CRYPTO_id_callback_delegate = new CRYPTO_id_callback(ThreadIDCallback);
+            CRYPTO_set_id_callback(CRYPTO_id_callback_delegate);
+        }
+
+        public static void UninitializeThreads()
+        {
+            // Cleanup the thread lock objects
+            CRYPTO_set_locking_callback(null);
+            lock_objects.Clear();
+            CRYPTO_set_id_callback(null);
+            // Clean up error state for each thread that was used by OpenSSL
+            if (threadIDs != null)
+            {
+                foreach (uint id in threadIDs)
+                {
+                    Native.ERR_remove_state(id);
+                }
+            }
+        }
+
 		#endregion
 
 		#region Version
@@ -115,8 +218,91 @@ namespace OpenSSL
 
 		#endregion
 
-		#region CRYPTO
-		[DllImport(DLLNAME)]
+        #region Threading
+        private static List<Object> lock_objects;
+        private static CRYPTO_locking_callback CRYPTO_locking_callback_delegate;
+        private static CRYPTO_id_callback CRYPTO_id_callback_delegate;
+
+        [DllImport(DLLNAME)]
+        public extern static void CRYPTO_set_id_callback(CRYPTO_id_callback cb);
+
+        [DllImport(DLLNAME)]
+        public extern static void CRYPTO_set_locking_callback(CRYPTO_locking_callback cb);
+
+        [DllImport(DLLNAME)]
+        public extern static int CRYPTO_num_locks();
+
+        public enum CryptoLockTypes
+        {
+            CRYPTO_LOCK_ERR			= 1,
+            CRYPTO_LOCK_EX_DATA		= 2,
+            CRYPTO_LOCK_X509		= 3,
+            CRYPTO_LOCK_X509_INFO	= 4,
+            CRYPTO_LOCK_X509_PKEY	= 5,
+            CRYPTO_LOCK_X509_CRL	= 6,
+            CRYPTO_LOCK_X509_REQ	= 7,
+            CRYPTO_LOCK_DSA			= 8,
+            CRYPTO_LOCK_RSA			= 9,
+            CRYPTO_LOCK_EVP_PKEY	= 10,
+            CRYPTO_LOCK_X509_STORE	= 11,
+            CRYPTO_LOCK_SSL_CTX		= 12,
+            CRYPTO_LOCK_SSL_CERT	= 13,
+            CRYPTO_LOCK_SSL_SESSION	= 14,
+            CRYPTO_LOCK_SSL_SESS_CERT = 15,
+            CRYPTO_LOCK_SSL			= 16,
+            CRYPTO_LOCK_SSL_METHOD	= 17,
+            CRYPTO_LOCK_RAND		= 18,
+            CRYPTO_LOCK_RAND2		= 19,
+            CRYPTO_LOCK_MALLOC		= 20,
+            CRYPTO_LOCK_BIO			= 21,
+            CRYPTO_LOCK_GETHOSTBYNAME	= 22,
+            CRYPTO_LOCK_GETSERVBYNAME	= 23,
+            CRYPTO_LOCK_READDIR		= 24,
+            CRYPTO_LOCK_RSA_BLINDING	= 25,
+            CRYPTO_LOCK_DH			= 26,
+            CRYPTO_LOCK_MALLOC2		= 27,
+            CRYPTO_LOCK_DSO			= 28,
+            CRYPTO_LOCK_DYNLOCK		= 29,
+            CRYPTO_LOCK_ENGINE		= 30,
+            CRYPTO_LOCK_UI			= 31,
+            CRYPTO_LOCK_HWCRHK		= 32, /* This is a HACK which will disappear in 0.9.8 */
+            CRYPTO_LOCK_FIPS		= 33,
+            CRYPTO_LOCK_FIPS2		= 34
+        }
+
+        [DllImport(DLLNAME)]
+        public extern static int CRYPTO_add_lock(IntPtr ptr, int amount, CryptoLockTypes type, string file, int line);
+
+        public const int CRYPTO_LOCK = 1;
+
+        public static void LockingCallback(int mode, int type, string file, int line)
+        {
+            if ((mode & CRYPTO_LOCK) == CRYPTO_LOCK)
+            {
+                Monitor.Enter(lock_objects[type]);
+            }
+            else
+            {
+                Monitor.Exit(lock_objects[type]);
+            }
+        }
+
+        private static System.Collections.Generic.Stack<uint> threadIDs;
+
+        public static uint ThreadIDCallback()
+        {
+            uint threadID = (uint)Thread.CurrentThread.ManagedThreadId;
+            if (!threadIDs.Contains(threadID))
+            {
+                threadIDs.Push(threadID);
+            }
+            return threadID;
+        }
+
+        #endregion
+
+        #region CRYPTO
+        [DllImport(DLLNAME)]
 		public extern static void OPENSSL_add_all_algorithms_noconf();
 
 		[DllImport(DLLNAME)]
@@ -147,10 +333,22 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static IntPtr CRYPTO_malloc(int num, string file, int line);
 
-		[DllImport(DLLNAME)]
-		public extern static int CRYPTO_set_mem_debug_functions(IntPtr m, IntPtr r, IntPtr f, IntPtr so, IntPtr go);
+        //!!
+        [DllImport(DLLNAME)]
+        public extern static IntPtr CRYPTO_realloc(IntPtr ptr, int num, string file, int line);
 
-		/// <summary>
+        //!! - Expose the default CRYPTO_malloc_debug_init() - this method hooks up the default 
+        //!! - debug functions in the crypto library, this allows us to utilize the MemoryTracker
+        //!! - on non-Windows systems as well.
+        [DllImport(DLLNAME)]
+        public extern static void CRYPTO_malloc_debug_init();
+
+//!! Removed method that requires Win32 library functions
+        /*
+        [DllImport(DLLNAME)]
+        public extern static int CRYPTO_set_mem_debug_functions(IntPtr m, IntPtr r, IntPtr f, IntPtr so, IntPtr go);
+
+        /// <summary>
 		/// #define CRYPTO_malloc_debug_init()	do {\
 		///		CRYPTO_set_mem_debug_functions(\
 		///		CRYPTO_dbg_malloc,\
@@ -160,20 +358,21 @@ namespace OpenSSL
 		///		CRYPTO_dbg_get_options);\
 		///		} while(0)
 		/// </summary>
-		public static void CRYPTO_malloc_debug_init()
-		{
-			IntPtr hModule = LoadLibrary(DLLNAME);
-			IntPtr m = GetProcAddress(hModule, "CRYPTO_dbg_malloc");
-			IntPtr r = GetProcAddress(hModule, "CRYPTO_dbg_realloc");
-			IntPtr f = GetProcAddress(hModule, "CRYPTO_dbg_free");
-			IntPtr so = GetProcAddress(hModule, "CRYPTO_dbg_set_options");
-			IntPtr go = GetProcAddress(hModule, "CRYPTO_dbg_get_options");
-			FreeLibrary(hModule);
-			
-			ExpectSuccess(CRYPTO_set_mem_debug_functions(m, r, f, so, go));
-		}
+        public static void CRYPTO_malloc_debug_init()
+        {
+            IntPtr hModule = LoadLibrary(DLLNAME);
+            IntPtr m = GetProcAddress(hModule, "CRYPTO_dbg_malloc");
+            IntPtr r = GetProcAddress(hModule, "CRYPTO_dbg_realloc");
+            IntPtr f = GetProcAddress(hModule, "CRYPTO_dbg_free");
+            IntPtr so = GetProcAddress(hModule, "CRYPTO_dbg_set_options");
+            IntPtr go = GetProcAddress(hModule, "CRYPTO_dbg_get_options");
+            FreeLibrary(hModule);
 
-		[DllImport(DLLNAME)]
+            ExpectSuccess(CRYPTO_set_mem_debug_functions(m, r, f, so, go));
+        }
+        */
+
+        [DllImport(DLLNAME)]
 		public extern static void CRYPTO_dbg_set_options(int bits);
 
 		[DllImport(DLLNAME)]
@@ -221,7 +420,8 @@ namespace OpenSSL
 		public extern static void OBJ_NAME_do_all_sorted(int type, ObjectNameHandler fn, IntPtr arg);
 
 		[DllImport(DLLNAME)]
-		public extern static int OBJ_txt2nid(byte[] s);
+        //!!public extern static int OBJ_txt2nid(byte[] s);
+        public extern static int OBJ_txt2nid(string s);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr OBJ_nid2obj(int n);
@@ -512,7 +712,20 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static void X509_STORE_CTX_free(IntPtr x);
-		#endregion
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr X509_STORE_CTX_get_current_cert(IntPtr x509_store_ctx);
+
+        [DllImport(DLLNAME)]
+        public extern static int X509_STORE_CTX_get_error_depth(IntPtr x509_store_ctx);
+
+        [DllImport(DLLNAME)]
+        public extern static int X509_STORE_CTX_get_error(IntPtr x509_store_ctx);
+
+        [DllImport(DLLNAME)]
+        public extern static void X509_STORE_CTX_set_error(IntPtr x509_store_ctx, int error);
+
+        #endregion
 
 		#region X509_INFO
 		[DllImport(DLLNAME)]
@@ -841,6 +1054,10 @@ namespace OpenSSL
 		//#define CHECKED_PTR_OF(type, p) \
 		//    ((void*) (1 ? p : (type*)0))
 
+        //!!
+        //DH *	d2i_DHparams(DH **a,const unsigned char **pp, long length);
+        [DllImport(DLLNAME)]
+        public static extern IntPtr d2i_DHparams(out IntPtr a, IntPtr pp, int length);
 
 		//int i2d_DHparams(const DH *a,unsigned char **pp);
 		[DllImport(DLLNAME)]
@@ -863,7 +1080,31 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr PEM_read_bio_X509(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
-		#endregion
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr PEM_read_bio_PKCS7(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr d2i_PKCS7_bio(IntPtr bp, IntPtr p7);
+
+        [DllImport(DLLNAME)]
+        public extern static void PKCS7_free(IntPtr p7);
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr d2i_PKCS12_bio(IntPtr bp, IntPtr p12);
+
+        [DllImport(DLLNAME)]
+        //int PKCS12_parse(PKCS12 *p12, const char *pass, EVP_PKEY **pkey, X509 **cert, STACK_OF(X509) **ca);
+        public extern static int PKCS12_parse(IntPtr p12, string pass, out IntPtr pkey, out IntPtr cert, out IntPtr ca);
+
+        [DllImport(DLLNAME)]
+        public extern static void PKCS12_free(IntPtr p12);
+
+        [DllImport(DLLNAME)]
+        //!!int PEM_write_bio_PKCS8PrivateKey(BIO *bp, EVP_PKEY *x, const EVP_CIPHER *enc, char *kstr, int klen, pem_password_cb *cb, void *u);
+        public extern static int PEM_write_bio_PKCS8PrivateKey(IntPtr bp, IntPtr evp_pkey, IntPtr evp_cipher, IntPtr kstr, int klen, pem_password_cb cb, IntPtr user_data);
+
+        #endregion
 
 		#region X509_INFO
 		[DllImport(DLLNAME)]
@@ -1324,7 +1565,8 @@ namespace OpenSSL
 
 		#region BIO
 		[DllImport(DLLNAME)]
-		public extern static IntPtr BIO_new_file(byte[] filename, byte[] mode);
+        //!!public extern static IntPtr BIO_new_file(byte[] filename, byte[] mode);
+        public extern static IntPtr BIO_new_file(string filename, string mode);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_new_mem_buf(byte[] buf, int len);
@@ -1395,6 +1637,14 @@ namespace OpenSSL
 			Native.ExpectSuccess(BIO_ctrl(bp, BIO_C_SET_MD_CTX, 0, mdcp));
 		}
 
+        const int BIO_CTRL_SET_CLOSE = 9;  /* man - set the 'close' on free */
+
+        //#define BIO_set_close(b,c)	(int)BIO_ctrl(b,BIO_CTRL_SET_CLOSE,(c),NULL)
+        public static int BIO_set_close(IntPtr bp, int arg)
+        {
+            return BIO_ctrl(bp, BIO_CTRL_SET_CLOSE, arg, IntPtr.Zero);
+        }
+
 		[DllImport(DLLNAME)]
 		public extern static IntPtr BIO_push(IntPtr bp, IntPtr append);
 
@@ -1427,7 +1677,11 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static uint BIO_number_written(IntPtr bio);
-		#endregion
+
+        [DllImport(DLLNAME)]
+        public extern static uint BIO_ctrl_pending(IntPtr bio);
+
+        #endregion
 
 		#region ERR
 		[DllImport(DLLNAME)]
@@ -1451,7 +1705,10 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static void ERR_remove_state(uint pid);
 
-		#endregion ERR
+        [DllImport(DLLNAME)]
+        public extern static void ERR_clear_error();
+
+        #endregion ERR
 
 		#region NCONF
 
@@ -1462,7 +1719,8 @@ namespace OpenSSL
 		public extern static void NCONF_free(IntPtr conf);
 
 		[DllImport(DLLNAME)]
-		public extern static int NCONF_load(IntPtr conf, byte[] file, ref int eline);
+        //!!public extern static int NCONF_load(IntPtr conf, byte[] file, ref int eline);
+        public extern static int NCONF_load(IntPtr conf, string file, ref int eline);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr NCONF_get_string(IntPtr conf, byte[] group, byte[] name);
@@ -1478,8 +1736,349 @@ namespace OpenSSL
 
 		#endregion
 
-		#region Utilties
-		public static string PtrToStringAnsi(IntPtr ptr, bool hasOwnership)
+        #region FIPS
+        [DllImport(DLLNAME)]
+        public extern static int FIPS_mode_set(int onoff);
+
+        #endregion
+
+        #region SSL Routines
+        #region Initialization
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_load_error_strings();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_library_init();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void ERR_free_strings();
+
+        #endregion
+
+        #region SSL Methods
+        
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv2_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv2_server_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv2_client_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv3_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv3_server_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv3_client_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv23_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv23_server_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSLv23_client_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr TLSv1_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr TLSv1_client_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr TLSv1_server_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr DTLSv1_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr DTLSv1_client_method();
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr DTLSv1_server_method();
+
+        #endregion
+
+        #region SSL_CTX
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_CTX_new(IntPtr sslMethod);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_free(IntPtr ctx);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_ctrl(IntPtr ctx, int cmd, int arg, IntPtr parg);
+
+        public const int SSL_CTRL_OPTIONS   = 32;
+        public const int SSL_CTRL_MODE      = 33;
+
+        public const int SSL_OP_MICROSOFT_SESS_ID_BUG               = 0x00000001;
+        public const int SSL_OP_NETSCAPE_CHALLENGE_BUG			    = 0x00000002;
+        public const int SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG    = 0x00000008;
+        public const int SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG         = 0x00000010;
+        public const int SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER		    = 0x00000020;
+        public const int SSL_OP_MSIE_SSLV2_RSA_PADDING			    = 0x00000040; /* no effect since 0.9.7h and 0.9.8b */
+        public const int SSL_OP_SSLEAY_080_CLIENT_DH_BUG			= 0x00000080;
+        public const int SSL_OP_TLS_D5_BUG				            = 0x00000100;
+        public const int SSL_OP_TLS_BLOCK_PADDING_BUG			    = 0x00000200;
+
+        /* Disable SSL 3.0/TLS 1.0 CBC vulnerability workaround that was added
+         * in OpenSSL 0.9.6d.  Usually (depending on the application protocol)
+         * the workaround is not needed.  Unfortunately some broken SSL/TLS
+         * implementations cannot handle it at all, which is why we include
+         * it in SSL_OP_ALL. */
+        public const int SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS         = 0x00000800; /* added in 0.9.6e */
+
+        /* SSL_OP_ALL: various bug workarounds that should be rather harmless.
+         *             This used to be 0x000FFFFFL before 0.9.7. */
+        public const int SSL_OP_ALL					                = (0x00000FFF^SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG);
+
+        /* As server, disallow session resumption on renegotiation */
+        public const int SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION  = 0x00010000;
+        /* If set, always create a new key when using tmp_dh parameters */
+        public const int SSL_OP_SINGLE_DH_USE				            = 0x00100000;
+        /* Set to always use the tmp_rsa key when doing RSA operations,
+         * even when this violates protocol specs */
+        public const int SSL_OP_EPHEMERAL_RSA				            = 0x00200000;
+        /* Set on servers to choose the cipher according to the server's
+         * preferences */
+        public const int SSL_OP_CIPHER_SERVER_PREFERENCE			    = 0x00400000;
+        /* If set, a server will allow a client to issue a SSLv3.0 version number
+         * as latest version supported in the premaster secret, even when TLSv1.0
+         * (version 3.1) was announced in the client hello. Normally this is
+         * forbidden to prevent version rollback attacks. */
+        public const int SSL_OP_TLS_ROLLBACK_BUG				        = 0x00800000;
+
+        public const int SSL_OP_NO_SSLv2					            = 0x01000000;
+        public const int SSL_OP_NO_SSLv3					            = 0x02000000;
+        public const int SSL_OP_NO_TLSv1					            = 0x04000000;
+
+        /* The next flag deliberately changes the ciphertest, this is a check
+         * for the PKCS#1 attack */
+        public const int SSL_OP_PKCS1_CHECK_1				            = 0x08000000;
+        public const int SSL_OP_PKCS1_CHECK_2				            = 0x10000000;
+        public const int SSL_OP_NETSCAPE_CA_DN_BUG			            = 0x20000000;
+        public const int SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG		    = 0x40000000;
+
+
+        /* Allow SSL_write(..., n) to return r with 0 < r < n (i.e. report success
+         * when just a single record has been written): */
+        public const int SSL_MODE_ENABLE_PARTIAL_WRITE                  = 0x00000001;
+        /* Make it possible to retry SSL_write() with changed buffer location
+         * (buffer contents must stay the same!); this is not the default to avoid
+         * the misconception that non-blocking SSL_write() behaves like
+         * non-blocking write(): */
+        public const int SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER            = 0x00000002;
+        /* Never bother the application with retries if the transport
+         * is blocking: */
+        public const int SSL_MODE_AUTO_RETRY                            = 0x00000004;
+        /* Don't attempt to automatically build certificate chain */
+        public const int SSL_MODE_NO_AUTO_CHAIN                         = 0x00000008;
+
+        /// <summary>
+        /// #define SSL_CTX_ctrl in ssl.h - calls SSL_CTX_ctrl()
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="op"></param>
+        /// <returns></returns>
+        public static int SSL_CTX_set_mode(IntPtr ctx, int op)
+        {
+            return SSL_CTX_ctrl(ctx, SSL_CTRL_MODE, op, IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// #define SSL_CTX_set_options in ssl.h - calls SSL_CTX_ctrl
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="op"></param>
+        /// <returns></returns>
+        public static int SSL_CTX_set_options(IntPtr ctx, int op)
+        {
+            return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, op, IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// #define SSL_CTX_get_mode in ssl.h - calls SSL_CTX_ctrl
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static int SSL_CTX_get_mode(IntPtr ctx)
+        {
+            return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, 0, IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// #define SSL_CTX_get_options in ssl.h - calls SSL_CTX_ctrl
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns>Int32 representation of options set in the context</returns>
+        public static int SSL_CTX_get_options(IntPtr ctx)
+        {
+            return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, 0, IntPtr.Zero);
+        }
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_cert_store(IntPtr ctx, IntPtr cert_store);
+
+        public const int SSL_VERIFY_NONE = 0x00;
+        public const int SSL_VERIFY_PEER			        = 0x01;
+        public const int SSL_VERIFY_FAIL_IF_NO_PEER_CERT	= 0x02;
+        public const int SSL_VERIFY_CLIENT_ONCE             = 0x04;
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_verify(IntPtr ctx, int mode, VerifyCertCallback callback);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_verify_depth(IntPtr ctx, int depth);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_client_CA_list(IntPtr ctx, IntPtr name_list);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_CTX_get_client_CA_list(IntPtr ctx);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_load_verify_locations(IntPtr ctx, string file, string path);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_set_default_verify_paths(IntPtr ctx);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_set_cipher_list(IntPtr ctx, string cipher_string);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_use_certificate_chain_file(IntPtr ctx, string file);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_use_certificate(IntPtr ctx, IntPtr cert);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_use_PrivateKey(IntPtr ctx, IntPtr pkey);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_use_PrivateKey_file(IntPtr ctx, string file, int type);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_check_private_key(IntPtr ctx);
+
+        public const int SSL_MAX_SID_CTX_LENGTH = 32;
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CTX_set_session_id_context(IntPtr ctx, byte[] sid_ctx, uint sid_ctx_len);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_default_passwd_cb_userdata(IntPtr ssl, IntPtr data);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_default_passwd_cb(IntPtr ssl, pem_password_cb callback);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_CTX_set_client_cert_cb(IntPtr ssl_ctx, client_cert_cb callback);
+
+        #endregion
+
+        #region SSL functions
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_CIPHER_description(IntPtr ssl_cipher, byte[] buf, int buf_len);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static string SSL_CIPHER_name(IntPtr ssl_cipher);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_CIPHER_get_bits(IntPtr ssl_cipher, out int alg_bits);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_get_current_cipher(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_get_verify_result(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_set_verify_result(IntPtr ssl, int v);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_get_peer_certificate(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_get_error(IntPtr ssl, int ret_code);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_accept(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_shutdown(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_write(IntPtr ssl, byte[] buf, int len);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_read(IntPtr ssl, byte[] buf, int len);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_renegotiate(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_set_session_id_context(IntPtr ssl, byte[] sid_ctx, uint sid_ctx_len);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_do_handshake(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_set_connect_state(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_set_accept_state(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_connect(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_new(IntPtr ctx);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_free(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_set_bio(IntPtr ssl, IntPtr read_bio, IntPtr write_bio);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_use_certificate_file(IntPtr ssl, string file, int type);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_use_PrivateKey_file(IntPtr ssl, string file, int type);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_clear(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_load_client_CA_file(string file);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_get_client_CA_list(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static void SSL_set_client_CA_list(IntPtr ssl, IntPtr name_list);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static IntPtr SSL_get_certificate(IntPtr ssl);
+
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_use_certificate(IntPtr ssl, IntPtr x509);
+        
+        [DllImport(SSLDLLNAME)]
+        public extern static int SSL_use_PrivateKey(IntPtr ssl, IntPtr evp_pkey);
+
+        #endregion
+        
+        #endregion
+
+        #region Utilties
+        public static string PtrToStringAnsi(IntPtr ptr, bool hasOwnership)
 		{
 			int len = 0;
 			for (int i = 0; i < 1024; i++, len++)
@@ -1550,7 +2149,8 @@ namespace OpenSSL
 
 		public static int TextToNID(string text)
 		{
-			int nid = Native.OBJ_txt2nid(Encoding.ASCII.GetBytes(text));
+            //!!int nid = Native.OBJ_txt2nid(Encoding.ASCII.GetBytes(text));
+            int nid = Native.OBJ_txt2nid(text);
 			if (nid == Native.NID_undef)
 				throw new OpenSslException();
 			return nid;
