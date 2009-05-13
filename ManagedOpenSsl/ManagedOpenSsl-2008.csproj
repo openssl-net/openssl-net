@@ -50,6 +50,7 @@
     <Compile Include="CryptoKey.cs" />
     <Compile Include="DH.cs" />
     <Compile Include="DSA.cs" />
+    <Compile Include="HMAC.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="MessageDigest.cs" />
     <Compile Include="Native.cs" />
