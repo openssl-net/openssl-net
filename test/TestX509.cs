@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using OpenSSL;
 
 namespace test
@@ -35,21 +36,93 @@ namespace test
 		#region ICommand Members
 
 		public void Execute(string[] args)
-		{
-			using (Configuration cfg = new Configuration("openssl.cnf"))
-			{
-				using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
-					cfg,
-					new SimpleSerialNumber(),
-					"Root1",
-					DateTime.Now,
-					TimeSpan.FromDays(365)))
-				{
-					Console.WriteLine(root.Certificate);
-				}
-			}
-		}
+        {
+            using (Configuration cfg = new Configuration("openssl.cnf"))
+            {
+                // Test default DSA method
+                using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
+                    cfg,
+                    new SimpleSerialNumber(),
+                    "Root1",
+                    DateTime.Now,
+                    TimeSpan.FromDays(365)))
+                {
+                    Console.WriteLine(root.Certificate);
+                }
+            }
+            using (Configuration cfg = new Configuration("openssl.cnf"))
+            {
+                // Test RSA/SHA1 with other SelfSigned method
+                BigNumber bn = 0x10001;
+                RSA rsa = new RSA();
+                rsa.GenerateKeys(2048, bn, OnGenerator, null);
+                CryptoKey key = new CryptoKey(rsa);
+                // rsa is assigned, we no longer need this instance
+                rsa.Dispose();
+                using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
+                    cfg,
+                    new SimpleSerialNumber(),
+                    key,
+                    MessageDigest.SHA1,
+                    "Root1",
+                    DateTime.Now,
+                    TimeSpan.FromDays(365)))
+                {
+                    Console.WriteLine(root.Certificate);
+                }
+            }
+
+            // Test without a configuration file
+            {
+                BigNumber bn = 0x10001;
+                RSA rsa = new RSA();
+                rsa.GenerateKeys(2048, bn, OnGenerator, null);
+                CryptoKey key = new CryptoKey(rsa);
+                // rsa is assigned, we no longer need this instance
+                rsa.Dispose();
+
+                X509V3ExtensionList extList = new X509V3ExtensionList();
+                extList.Add(new X509V3ExtensionValue("subjectKeyIdentifier", false, "hash"));
+                extList.Add(new X509V3ExtensionValue("authorityKeyIdentifier", false, "keyid:always,issuer:always"));
+                extList.Add(new X509V3ExtensionValue("basicConstraints", true, "critical,CA:true"));
+                extList.Add(new X509V3ExtensionValue("keyUsage", false, "cRLSign,keyCertSign"));
+
+                using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
+                    new SimpleSerialNumber(),
+                    key,
+                    MessageDigest.SHA1,
+                    "Root1",
+                    DateTime.Now,
+                    TimeSpan.FromDays(365),
+                    extList))
+                {
+                    Console.WriteLine(root.Certificate);
+                    // Iterate the extensions
+                    Console.WriteLine("X509v3 Extensions:");
+                    OpenSSL.Stack<X509Extension> ext_stack = root.Certificate.Extensions;
+                    foreach (X509Extension ext in ext_stack)
+                    {
+                        //Console.WriteLine("", ext.Name, ext.IsCritical, BitConverter.ToString(ext.Data));
+                        Console.WriteLine("Name:{0}\nIsCritical:{1}\nValue:{2}", ext.Name, ext.IsCritical, ext);
+                    }
+                }
+            }
+        }
 
 		#endregion
-	}
+        public static int OnGenerator(int p, int n, object arg)
+        {
+            TextWriter cout = Console.Error;
+
+            switch (p)
+            {
+                case 0: cout.Write('.'); break;
+                case 1: cout.Write('+'); break;
+                case 2: cout.Write('*'); break;
+                case 3: cout.WriteLine(); break;
+            }
+
+            return 1;
+        }
+    }
 }

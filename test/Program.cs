@@ -81,6 +81,8 @@ namespace test
 			tests.Add("rand", new TestRandom());
 			tests.Add("x509", new TestX509());
 			tests.Add("aes", new TestAES());
+            tests.Add("hmac", new TestHMAC());
+            tests.Add("server", new TestServer());
 
 			AddNullCommand(tests, "bf");
 			AddNullCommand(tests, "bn");
@@ -93,7 +95,6 @@ namespace test
 			AddNullCommand(tests, "engine");
 			AddNullCommand(tests, "evp");
 			AddNullCommand(tests, "exp");
-			AddNullCommand(tests, "hmac");
 			AddNullCommand(tests, "idea");
 			AddNullCommand(tests, "ige");
 			AddNullCommand(tests, "md2");
@@ -147,6 +148,18 @@ namespace test
 				Usage();
 				return;
 			}
+            
+            // Check to see if "fips" is an argument, if so, set FIPS mode 
+            // here (before any other calls to the crypto lib)
+            foreach (string arg in args)
+            {
+                if (arg.ToLower() == "fips")
+                {
+                    Console.WriteLine("Executing test in FIPS mode.");
+                    FIPS.Enabled = true;
+                    break;
+                }
+            }
 
 			MemoryTracker.Start();
 			cmd.Execute(args);
@@ -170,8 +183,11 @@ namespace test
 			Crypto.Cleanup();
 			Crypto.RemoveState(0);
 
-			GC.Collect();
-			Crypto.CheckMemoryLeaks(OnMemoryLeak);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            Crypto.CheckMemoryLeaks(OnMemoryLeak);
 			if (leaked > 0)
 				Console.WriteLine("Leaked total bytes: {0}", leaked);
 		}
