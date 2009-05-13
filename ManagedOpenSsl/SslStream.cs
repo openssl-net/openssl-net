@@ -45,9 +45,10 @@ namespace OpenSSL
 
     public enum SslStrength
     {
-        High,   //256
-        Medium, //128
-        Low     //40
+        High = 4,   //256
+        Medium = 2, //128
+        Low = 1,    //40
+        All = High | Medium | Low
     }
 
     public class SslStream : AuthenticatedStream
@@ -268,6 +269,14 @@ namespace OpenSSL
                     return SslProtocols.None;
                 }
                 return sslStream.SslProtocol;
+            }
+        }
+
+        public List<string> CipherList
+        {
+            get
+            {
+                return sslStream.CipherList;
             }
         }
         
