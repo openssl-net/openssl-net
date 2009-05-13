@@ -508,10 +508,13 @@ namespace OpenSSL
             Stack<SslCipher> stack = new Stack<SslCipher>(raw.cipher_list, false);
             foreach (SslCipher cipher in stack)
             {
-                byte[] buf = new byte[512];
-                Native.SSL_CIPHER_description(cipher.Handle, buf, 512);
-                string str = Encoding.ASCII.GetString(buf);
-                ret.Add(str);
+                IntPtr cipher_ptr = Native.SSL_CIPHER_description(cipher.Handle, null, 0);
+                if (cipher_ptr != IntPtr.Zero)
+                {
+                    string strCipher = Marshal.PtrToStringAnsi(cipher_ptr);
+                    ret.Add(strCipher);
+                    Native.OPENSSL_free(cipher_ptr);
+                }
             }
             return ret;
         }
