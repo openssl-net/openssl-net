@@ -520,7 +520,34 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static void ASN1_TIME_free(IntPtr x);
-		#endregion
+
+        public const int V_ASN1_OCTET_STRING = 4;
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr ASN1_STRING_type_new(int type);
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr ASN1_STRING_dup(IntPtr a);
+
+        [DllImport(DLLNAME)]
+        public extern static void ASN1_STRING_free(IntPtr a);
+
+        [DllImport(DLLNAME)]
+        public extern static int ASN1_STRING_cmp(IntPtr a, IntPtr b);
+
+        [DllImport(DLLNAME)]
+        public extern static int ASN1_STRING_set(IntPtr str, byte[] data, int len);
+
+        [DllImport(DLLNAME)]
+        public extern static IntPtr ASN1_STRING_data(IntPtr x);
+
+        [DllImport(DLLNAME)]
+        public extern static int ASN1_STRING_length(IntPtr x);
+
+        [DllImport(DLLNAME)]
+        public extern static void ASN1_OBJECT_free(IntPtr obj);
+
+        #endregion
 
 		#region X509_REQ
 		[DllImport(DLLNAME)]
@@ -656,7 +683,11 @@ namespace OpenSSL
 
 		[DllImport(DLLNAME)]
 		public extern static int i2d_X509_bio(IntPtr x509, IntPtr bp);
-		#endregion
+
+        [DllImport(DLLNAME)]
+        public extern static void X509_PUBKEY_free(IntPtr pkey);
+
+        #endregion
 
 		#region X509_EXTENSION
 		[DllImport(DLLNAME)]
@@ -680,14 +711,35 @@ namespace OpenSSL
 		[DllImport(DLLNAME)]
 		public extern static int X509_add1_ext_i2d(IntPtr x, int nid, byte[] value, int crit, uint flags);
 
+        //X509_EXTENSION* X509V3_EXT_conf_nid(LHASH* conf, X509V3_CTX* ctx, int ext_nid, char* value);
+        [DllImport(DLLNAME)]
+        public extern static IntPtr X509V3_EXT_conf_nid(IntPtr conf, IntPtr ctx, int ext_nid, string value);
+
 		//X509_EXTENSION* X509_EXTENSION_create_by_NID(X509_EXTENSION** ex, int nid, int crit, ASN1_OCTET_STRING* data);
+        [DllImport(DLLNAME)]
+        public extern static IntPtr X509_EXTENSION_create_by_NID(IntPtr ex, int nid, int crit, IntPtr data);
+
 		//X509_EXTENSION* X509_EXTENSION_create_by_OBJ(X509_EXTENSION** ex, ASN1_OBJECT* obj, int crit, ASN1_OCTET_STRING* data);
 		//int X509_EXTENSION_set_object(X509_EXTENSION* ex, ASN1_OBJECT* obj);
 		//int X509_EXTENSION_set_critical(X509_EXTENSION* ex, int crit);
-		//int X509_EXTENSION_set_data(X509_EXTENSION* ex, ASN1_OCTET_STRING* data);
-		//ASN1_OBJECT* X509_EXTENSION_get_object(X509_EXTENSION* ex);
-		//ASN1_OCTET_STRING* X509_EXTENSION_get_data(X509_EXTENSION* ne);
-		//int X509_EXTENSION_get_critical(X509_EXTENSION* ex);
+        [DllImport(DLLNAME)]
+        public extern static int X509_EXTENSION_set_critical(IntPtr ex, int crit);
+
+        //int X509_EXTENSION_set_data(X509_EXTENSION* ex, ASN1_OCTET_STRING* data);
+        [DllImport(DLLNAME)]
+        public extern static int X509_EXTENSION_set_data(IntPtr ex, IntPtr data);
+
+        //ASN1_OBJECT* X509_EXTENSION_get_object(X509_EXTENSION* ex);
+        [DllImport(DLLNAME)]
+        public extern static IntPtr X509_EXTENSION_get_object(IntPtr ex);
+
+        //ASN1_OCTET_STRING* X509_EXTENSION_get_data(X509_EXTENSION* ne);
+        [DllImport(DLLNAME)]
+        public extern static IntPtr X509_EXTENSION_get_data(IntPtr ne);
+
+        //int X509_EXTENSION_get_critical(X509_EXTENSION* ex);
+        [DllImport(DLLNAME)]
+        public extern static int X509_EXTENSION_get_critical(IntPtr ex);
 
 		#endregion
 
@@ -1219,7 +1271,7 @@ namespace OpenSSL
 		#region EVP
 
 		#region Constants
-		public const int EVP_MAX_MD_SIZE = (16+20);
+        public const int EVP_MAX_MD_SIZE = 64; //!!(16+20);
 		public const int EVP_MAX_KEY_LENGTH = 32;
 		public const int EVP_MAX_IV_LENGTH = 16;
 		public const int EVP_MAX_BLOCK_LENGTH = 32;
@@ -1284,9 +1336,35 @@ namespace OpenSSL
 		public extern static IntPtr EVP_ripemd160();
 		#endregion
 
-		#region Ciphers
+        #region HMAC
+        public const int FIPS_HMAC_MAX_MD_CBLOCK = 128;
+        public const int HMAC_MAX_MD_CBLOCK = 128;
 
+        //!!void HMAC_CTX_init(HMAC_CTX *ctx);
 		[DllImport(DLLNAME)]
+		public extern static void HMAC_CTX_init(IntPtr ctx);
+        [DllImport(DLLNAME)]
+		public extern static void HMAC_CTX_set_flags(IntPtr ctx, uint flags);
+        [DllImport(DLLNAME)]
+		public extern static void HMAC_CTX_cleanup(IntPtr ctx);
+        [DllImport(DLLNAME)]
+		public extern static void HMAC_Init(IntPtr ctx, byte[] key, int len, IntPtr md); /* deprecated */
+		//!!public extern static void HMAC_Init_ex(IntPtr ctx, const void *key, int len, const EVP_MD *md, ENGINE *impl);
+        [DllImport(DLLNAME)]
+		public extern static void HMAC_Init_ex(IntPtr ctx, byte[] key, int len, IntPtr md, IntPtr engine_impl);
+        [DllImport(DLLNAME)]
+		public extern static void HMAC_Update(IntPtr ctx, byte[] data, int len);
+        [DllImport(DLLNAME)]
+		public extern static void HMAC_Final(IntPtr ctx, byte[] md, ref uint len);
+        [DllImport(DLLNAME)]
+		public extern static IntPtr HMAC(IntPtr evp_md, byte[] key, int key_len, byte[] d, int n, byte[] md, ref uint md_len);
+
+        
+        #endregion
+
+        #region Ciphers
+
+        [DllImport(DLLNAME)]
 		public extern static IntPtr EVP_get_cipherbyname(byte[] name);
 		[DllImport(DLLNAME)]
 		public extern static IntPtr EVP_enc_null();
