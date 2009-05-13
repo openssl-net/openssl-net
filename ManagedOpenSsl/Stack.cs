@@ -245,22 +245,19 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Calls sk_zero()
+		/// Clear all items from the stack
 		/// </summary>
 		public void Clear()
 		{
-            // Dispose the items in the stack
-            int count = Native.sk_num(this.ptr);
-            for (int i = 0; i < count; i++)
+            IntPtr value_ptr = Native.sk_shift(this.ptr);
+            while (value_ptr != IntPtr.Zero)
             {
-                IntPtr value_ptr = Native.sk_value(this.ptr, i);
                 T item = new T();
                 item.Handle = value_ptr;
                 item.IsOwner = true;
                 item.Dispose();
+                value_ptr = Native.sk_shift(this.ptr);
             }
-            // Clear the stack
-            Native.sk_zero(this.ptr);
 		}
 
 		/// <summary>
