@@ -46,7 +46,7 @@ namespace OpenSSL
             Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509, "X509Certificate.cs", 0);
         }
 
-        public void PrintRefCount(string method)
+        private void PrintRefCount(string method)
         {
             int offset = (int)Marshal.OffsetOf(typeof(X509), "references");
             IntPtr offset_ptr = new IntPtr((int)ptr + offset);
@@ -115,18 +115,19 @@ namespace OpenSSL
 
         public static X509Certificate FromPKCS12(BIO bio, string password)
         {
+            X509Certificate ret = null;
+
             PKCS12 p12 = new PKCS12(bio, password);
             if (p12 != null)
             {
                 X509Certificate p12Cert = p12.Certificate;
                 if (p12Cert != null)
                 {
-                    X509Certificate ret = new X509Certificate(Native.X509_dup(p12Cert.Handle), true);
-                    ret.PrivateKey = p12Cert.PrivateKey;
-                    return ret;
+                    ret = p12Cert;
                 }
+                p12.Dispose();
             }
-            return null;
+            return ret;
         }
 
 		/// <summary>
@@ -159,7 +160,7 @@ namespace OpenSSL
 			this.SerialNumber = serial;
 			this.Subject = subject;
 			this.Issuer = issuer;
-			this.PublicKey = pubkey;
+            this.PublicKey = pubkey;
 			this.NotBefore = start;
 			this.NotAfter = end;
 		}
@@ -493,6 +494,26 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.X509_add1_ext_i2d(this.ptr, Native.TextToNID(name), value, crit, flags));
 		}
 
+        public Stack<X509Extension> Extensions
+        {
+            get
+            {
+                if (RawCertInfo.extensions != IntPtr.Zero)
+                {
+                    return new Stack<X509Extension>(RawCertInfo.extensions, false);
+                }
+                return null;
+            }
+        }
+
+        public void AddExtensions(Stack<X509Extension> sk_ext)
+        {
+            foreach (X509Extension ext in sk_ext)
+            {
+                AddExtension(ext);
+            }
+        }
+
 		#endregion
 
 		#region IDisposable Members
@@ -501,8 +522,15 @@ namespace OpenSSL
 		/// </summary>
 		public override void OnDispose()
 		{
+            //!!PrintRefCount("OnDispose");
+
             Native.X509_free(this.ptr);
 			this.ptr = IntPtr.Zero;
+            if (privateKey != null)
+            {
+                privateKey.Dispose();
+                privateKey = null;
+            }
 			//!!GC.SuppressFinalize(this);
 		}
 		#endregion
@@ -546,17 +574,160 @@ namespace OpenSSL
 		#endregion
 	}
 
-	/// <summary>
+    public class ASN1OctectString : Base, IDisposable, IStackable, IComparable<ASN1OctectString>
+    {
+        public ASN1OctectString()
+            : base(Native.ASN1_STRING_type_new(Native.V_ASN1_OCTET_STRING), true)
+        {
+        }
+
+        public ASN1OctectString(IntPtr ptr, bool takeOwnership)
+            : base(ptr, takeOwnership)
+        {
+        }
+
+        public ASN1OctectString(byte[] data)
+            : this()
+        {
+            Native.ExpectSuccess(Native.ASN1_STRING_set(this.ptr, data, data.Length));
+        }
+
+        ~ASN1OctectString()
+        {
+            Dispose();
+        }
+
+        public int Length
+        {
+            get
+            {
+                return Native.ASN1_STRING_length(this.ptr);
+            }
+        }
+
+        public byte[] Data
+        {
+            get
+            {
+                IntPtr ret = Native.ASN1_STRING_data(this.ptr);
+                byte[] byteArray = new byte[Length];
+                Marshal.Copy(ret, byteArray, 0, Length);
+                return byteArray;
+            }
+        }
+
+        public override void Addref()
+        {
+            // No reference counting on this object, so dup it
+            IntPtr new_ptr = Native.ExpectNonNull(Native.ASN1_STRING_dup(this.ptr));
+            this.ptr = new_ptr;
+        }
+
+        public override bool Equals(object obj)
+        {
+            ASN1OctectString asn1 = obj as ASN1OctectString;
+            if (asn1 == null)
+            {
+                return false;
+            }
+            return (CompareTo(asn1) == 0);
+        }
+
+        public override void OnDispose()
+        {
+            Native.ASN1_STRING_free(this.ptr);
+        }
+
+        #region IComparable<ASN1OctectString> Members
+
+        public int CompareTo(ASN1OctectString other)
+        {
+            return Native.ASN1_STRING_cmp(this.ptr, other.Handle);
+        }
+
+        #endregion
+    }
+
+    /// <summary>
 	/// Wraps the X509_EXTENSION object
 	/// </summary>
 	public class X509Extension : Base, IDisposable, IStackable
 	{
-		/// <summary>
+        /// <summary>
 		/// Calls X509_EXTENSION_new()
 		/// </summary>
 		public X509Extension()
 			: base(Native.ExpectNonNull(Native.X509_EXTENSION_new()), true)
 		{ }
+
+        public X509Extension(X509Certificate issuer, X509Certificate subject, string name, bool critical, string value)
+            : base(IntPtr.Zero, false)
+        {
+            X509v3Context ctx = new X509v3Context();
+            Native.X509V3_set_ctx(ctx.Handle, issuer.Handle, subject.Handle, IntPtr.Zero, IntPtr.Zero, 0);
+            this.ptr = Native.ExpectNonNull(Native.X509V3_EXT_conf_nid(IntPtr.Zero, ctx.Handle, Native.TextToNID(name), value));
+            this.owner = true;
+            ctx.Dispose();
+        }
+
+        public string Name
+        {
+            get
+            {
+                string ret = "";
+
+                // Don't free the obj_ptr
+                IntPtr obj_ptr = Native.X509_EXTENSION_get_object(this.ptr);
+                if (obj_ptr != IntPtr.Zero)
+                {
+                    int nid = Native.OBJ_obj2nid(obj_ptr);
+                    ret = Marshal.PtrToStringAnsi(Native.OBJ_nid2ln(nid));
+                }
+                return ret;
+            }
+        }
+
+        public int NID
+        {
+            get
+            {
+                int ret = 0;
+
+                // Don't free the obj_ptr
+                IntPtr obj_ptr = Native.X509_EXTENSION_get_object(this.ptr);
+                if (obj_ptr != IntPtr.Zero)
+                {
+                    ret = Native.OBJ_obj2nid(obj_ptr);
+                }
+                return ret;
+            }
+        }
+
+        public bool IsCritical
+        {
+            get
+            {
+                int nCritical = Native.X509_EXTENSION_get_critical(this.ptr);
+                return (nCritical == 1);
+            }
+        }
+
+        public byte[] Data
+        {
+            get
+            {
+                ASN1OctectString str_data = new ASN1OctectString(Native.X509_EXTENSION_get_data(this.ptr), false);
+                return str_data.Data;
+            }
+        }
+
+        public override void Addref()
+        {
+            // No reference counting availabe, do dupe the object
+            IntPtr new_ptr = Native.ExpectNonNull(Native.X509_EXTENSION_dup(this.ptr));
+            this.ptr = new_ptr;
+            this.owner = true;
+        }
 
 		#region IDisposable Members
 
@@ -569,6 +740,12 @@ namespace OpenSSL
 		}
 
 		#endregion
-	}
+    
+        public override void Print(BIO bio)
+        {
+            Native.X509V3_EXT_print(bio.Handle, this.ptr, 0, 0);
+        }
+
+    }
 
 }
