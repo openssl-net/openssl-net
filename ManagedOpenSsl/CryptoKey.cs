@@ -309,8 +309,17 @@ namespace OpenSSL
             int offset = (int)Marshal.OffsetOf(typeof(EVP_PKEY), "references");
             IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
             Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509_PKEY, "CryptoKey.cs", 0);
+            //!!PrintRefCount();
         }
-        
+
+        private void PrintRefCount()
+        {
+            int offset = (int)Marshal.OffsetOf(typeof(EVP_PKEY), "references");
+            IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
+            int count = Marshal.ReadInt32(offset_ptr);
+            Console.WriteLine("CryptoKey:ptr:{0}-ref_count:{1}", this.ptr, count);
+        }
+
         /// <summary>
 		/// Calls EVP_PKEY_assign()
 		/// </summary>
@@ -382,7 +391,8 @@ namespace OpenSSL
 		/// </summary>
 		public override void OnDispose()
 		{
-			Native.EVP_PKEY_free(this.ptr);
+            //!!PrintRefCount();
+            Native.EVP_PKEY_free(this.ptr);
 		}
 
 		#endregion
