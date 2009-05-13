@@ -82,13 +82,24 @@ namespace OpenSSL
 		/// <returns></returns>
 		public X509Request CreateRequest(string name)
 		{
-			X509Name subject = new X509Name(name);
-			X509Request request = new X509Request(2, subject, this.key);
-
-			request.Sign(key, MessageDigest.DSS1);
-
-			return request;
+            return CreateRequest(name, MessageDigest.DSS1);
 		}
+
+        /// <summary>
+        /// Create a X509Request for this identity, using the specified name and digest.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="digest"></param>
+        /// <returns></returns>
+        public X509Request CreateRequest(string name, MessageDigest digest)
+        {
+            X509Name subject = new X509Name(name);
+            X509Request request = new X509Request(2, subject, this.key);
+
+            request.Sign(key, digest);
+
+            return request;
+        }
 
 		/// <summary>
 		/// Verify that the specified chain can be trusted.
