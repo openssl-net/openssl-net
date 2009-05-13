@@ -124,12 +124,12 @@ namespace OpenSSL
             private object locker = new object();
             private AsyncCallback userCallback;
             private object userState;
-            private Exception asyncException; //!!_asyncException;
-            private ManualResetEvent asyncWaitHandle; //!!handle;
-            private bool isCompleted; //!!completed;
+            private Exception asyncException;
+            private ManualResetEvent asyncWaitHandle;
+            private bool isCompleted;
             private int bytesRead;
-            private bool isWriteOperation; //!!_fromWrite;
-            private bool continueAfterHandshake; //!!_proceedAfterHandshake;
+            private bool isWriteOperation;
+            private bool continueAfterHandshake;
 
             private byte[] buffer;
             private int offset;
@@ -1152,6 +1152,11 @@ namespace OpenSSL
                             BeginWrite(new byte[0], 0, 0, new AsyncCallback(AsyncHandshakeCallback), internalAsyncResult);
                         }
                     }
+                    else
+                    {
+                        // Read read 0 bytes, the remote socket has been closed, so complete the operation
+                        internalAsyncResult.SetComplete(new IOException("The remote stream has been closed"));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1245,11 +1250,11 @@ namespace OpenSSL
         {
             string str = "";
 
-            if (FIPSmode || (sslStrength == SslStrength.High))
+            if (FIPSmode || ((sslStrength & SslStrength.High) == SslStrength.High))
             {
                 str = "HIGH";
             }
-            if (FIPSmode || (sslStrength == SslStrength.Medium))
+            if (FIPSmode || ((sslStrength & SslStrength.Medium) == SslStrength.Medium))
             {
                 if (String.IsNullOrEmpty(str))
                 {
@@ -1260,7 +1265,7 @@ namespace OpenSSL
                     str += ":MEDIUM";
                 }
             }
-            if (!FIPSmode && (sslStrength == SslStrength.Low))
+            if (!FIPSmode && ((sslStrength & SslStrength.Low) == SslStrength.Low))
             {
                 if (String.IsNullOrEmpty(str))
                 {
