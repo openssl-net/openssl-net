@@ -30,7 +30,49 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-	/// <summary>
+    #region X509v3Context
+    #region X509V3_CTX
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct X509V3_CTX
+    {
+        public int flags;
+        public IntPtr issuer_cert;
+        public IntPtr subject_cert;
+        public IntPtr subject_req;
+        public IntPtr crl;
+        public IntPtr db_meth;
+        public IntPtr db;
+    }
+    #endregion
+
+    public class X509v3Context : Base, IDisposable
+    {
+        public X509v3Context()
+            : base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))), true)
+        { }
+
+        /// <summary>
+        /// X509V3_set_ctx_nodb - sets the db pointer to NULL
+        /// </summary>
+        public void SetNoDB()
+        {
+            int db_offset = (int)Marshal.OffsetOf(typeof(X509V3_CTX), "db");
+            IntPtr db_param = new IntPtr((int)this.ptr + db_offset);
+            Marshal.WriteIntPtr(db_param, IntPtr.Zero);
+        }
+
+        #region IDisposable Members
+
+        public override void OnDispose()
+        {
+            Native.OPENSSL_free(this.ptr);
+        }
+
+        #endregion
+    }
+    #endregion
+
+    /// <summary>
 	/// Wraps the NCONF_* functions
 	/// </summary>
 	public class Configuration : Base, IDisposable
@@ -60,38 +102,6 @@ namespace OpenSSL
             //!!Native.ExpectSuccess(Native.NCONF_load(this.ptr, bytes, ref eline));
             Native.ExpectSuccess(Native.NCONF_load(this.ptr, filename, ref eline));
 		}
-
-		#region X509v3Context
-		#region X509V3_CTX
-		[StructLayout(LayoutKind.Sequential)]
-		internal struct X509V3_CTX
-		{
-			public int flags;
-			public IntPtr issuer_cert;
-			public IntPtr subject_cert;
-			public IntPtr subject_req;
-			public IntPtr crl;
-			public IntPtr db_meth;
-			public IntPtr db;
-		}
-		#endregion
-
-		class X509v3Context : Base, IDisposable
-		{
-			public X509v3Context()
-				: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))), true)
-			{ }
-
-			#region IDisposable Members
-
-			public override void OnDispose()
-			{
-				Native.OPENSSL_free(this.ptr);
-			}
-
-			#endregion
-		}
-		#endregion
 
 		/// <summary>
 		/// Creates a X509v3Context(), calls X509V3_set_ctx() on it, then calls
