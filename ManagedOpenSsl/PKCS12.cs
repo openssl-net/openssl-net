@@ -53,7 +53,9 @@ namespace OpenSSL
                 if (privateKey != null)
                 {
                     // We have a private key, assign it to the cert
-                    certificate.PrivateKey = privateKey;
+                    privateKey.Addref();
+                    CryptoKey key = new CryptoKey(privateKey.Handle, true);
+                    certificate.PrivateKey = key;
                 }
             }
             if (cacerts != IntPtr.Zero)
@@ -66,8 +68,19 @@ namespace OpenSSL
         {
             get
             {
-                shouldDisposeCertificate = false;
-                return certificate;
+                if (certificate != null)
+                {
+                    certificate.Addref();                    
+                    X509Certificate cert = new X509Certificate(certificate.Handle, true);
+                    if (privateKey != null)
+                    {
+                        privateKey.Addref();
+                        CryptoKey key = new CryptoKey(privateKey.Handle, true);
+                        cert.PrivateKey = key;
+                    }
+                    return cert;
+                }
+                return null;
             }
         }
 
@@ -75,8 +88,13 @@ namespace OpenSSL
         {
             get
             {
-                shouldDisposePrivateKey = false;
-                return privateKey;
+                if (privateKey != null)
+                {
+                    privateKey.Addref();
+                    CryptoKey key = new CryptoKey(privateKey.Handle, true);
+                    return key;
+                }
+                return null;
             }
         }
 
@@ -91,15 +109,15 @@ namespace OpenSSL
 
         public override void OnDispose()
         {
-            if (certificate != null && ! shouldDisposeCertificate)
+            if (certificate != null)
             {
                 certificate.Dispose();
             }
-            if (privateKey != null && ! shouldDisposePrivateKey)
+            if (privateKey != null)
             {
                 privateKey.Dispose();
             }
-            if (caCertificates != null && ! shouldDisposeCACertificates)
+            if (caCertificates != null)
             {
                 caCertificates.Dispose();
             }
