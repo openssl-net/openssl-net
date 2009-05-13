@@ -34,7 +34,6 @@ namespace OpenSSL
     /// <summary>
     /// Wraps the X509_STORE_CTX object
     /// </summary>
-    //!!internal class Context : IDisposable
     public class X509StoreContext : IDisposable
     {
         #region X509_STORE_CONTEXT
@@ -370,7 +369,7 @@ namespace OpenSSL
             Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509_STORE, "X509Store.cs", 0);
         }
 
-        public void PrintRefCount(string method)
+        private void PrintRefCount(string method)
         {
             int offset = (int)Marshal.OffsetOf(typeof(X509_STORE), "references");
             IntPtr offset_ptr = new IntPtr((int)ptr + offset);
@@ -396,18 +395,6 @@ namespace OpenSSL
 		/// <returns></returns>
 		public bool Verify(X509Certificate cert, out string error)
 		{
-            //!!
-            /*
-            Context ctx = new Context();
-			ctx.init(this, cert, this.untrusted);
-			if (ctx.verify())
-			{
-				error = "";
-				return true;
-			}
-			error = ctx.ErrorString;
-			return false;
-            */
             using (X509StoreContext ctx = new X509StoreContext())
             {
                 ctx.init(this, cert, this.untrusted);
