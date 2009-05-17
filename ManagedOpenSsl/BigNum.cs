@@ -353,14 +353,23 @@ namespace OpenSSL
 
 			internal int OnGeneratorThunk(int p, int n, IntPtr arg)
 			{
-				try
-				{
-					return OnGenerator(p, n, this.arg);
-				}
-				catch (Exception)
-				{
-					return 0;
-				}
+                if (OnGenerator != null)
+                {
+                    try
+                    {
+                        return OnGenerator(p, n, this.arg);
+                    }
+                    catch (Exception)
+                    {
+                        return 0;
+                    }
+                }
+                else
+                {
+                    // return 1 to allow generation to succeed with
+                    // no user callback
+                    return 1;
+                }
 			}
 		}
 
