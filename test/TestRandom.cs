@@ -36,6 +36,7 @@ namespace test
 
 		public void Execute(string[] args)
 		{
+			Console.WriteLine("Testing random");
 			int err = 0;
 
 			byte[] buf = OpenSSL.Random.PseudoBytes(2500);
@@ -155,6 +156,8 @@ namespace test
 			}
 			Console.WriteLine("test 4 done");
 			#endregion
+
+			Console.WriteLine("done");
 		}
 
 		#endregion
