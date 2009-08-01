@@ -35,94 +35,95 @@ namespace test
 	{
 		#region ICommand Members
 
-		public void Execute(string[] args)
-        {
-            using (Configuration cfg = new Configuration("openssl.cnf"))
-            {
-                // Test default DSA method
-                using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
-                    cfg,
-                    new SimpleSerialNumber(),
-                    "Root1",
-                    DateTime.Now,
-                    TimeSpan.FromDays(365)))
-                {
-                    Console.WriteLine(root.Certificate);
-                }
-            }
-            using (Configuration cfg = new Configuration("openssl.cnf"))
-            {
-                // Test RSA/SHA1 with other SelfSigned method
-                BigNumber bn = 0x10001;
-                RSA rsa = new RSA();
-                rsa.GenerateKeys(2048, bn, OnGenerator, null);
-                CryptoKey key = new CryptoKey(rsa);
-                // rsa is assigned, we no longer need this instance
-                rsa.Dispose();
-                using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
-                    cfg,
-                    new SimpleSerialNumber(),
-                    key,
-                    MessageDigest.SHA1,
-                    "Root1",
-                    DateTime.Now,
-                    TimeSpan.FromDays(365)))
-                {
-                    Console.WriteLine(root.Certificate);
-                }
-            }
+		public void Execute(string[] args) {
+//			TestDefaultDSA();
+//			TestRsaSha1();
+			TestWithoutCfg();
+		}
 
-            // Test without a configuration file
-            {
-                BigNumber bn = 0x10001;
-                RSA rsa = new RSA();
-                rsa.GenerateKeys(2048, bn, OnGenerator, null);
-                CryptoKey key = new CryptoKey(rsa);
-                // rsa is assigned, we no longer need this instance
-                rsa.Dispose();
+		private void TestDefaultDSA() {
+			using (Configuration cfg = new Configuration("openssl.cnf")) {
+				// Test default DSA method
+				using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
+					cfg,
+					new SimpleSerialNumber(),
+					"Root1",
+					DateTime.Now,
+					TimeSpan.FromDays(365))) {
+					Console.WriteLine(root.Certificate);
+				}
+			}
+		}
 
-                X509V3ExtensionList extList = new X509V3ExtensionList();
-                extList.Add(new X509V3ExtensionValue("subjectKeyIdentifier", false, "hash"));
-                extList.Add(new X509V3ExtensionValue("authorityKeyIdentifier", false, "keyid:always,issuer:always"));
-                extList.Add(new X509V3ExtensionValue("basicConstraints", true, "critical,CA:true"));
-                extList.Add(new X509V3ExtensionValue("keyUsage", false, "cRLSign,keyCertSign"));
+		private void TestRsaSha1() {
+			using (Configuration cfg = new Configuration("openssl.cnf")) {
+				// Test RSA/SHA1 with other SelfSigned method
+				BigNumber bn = 0x10001;
+				RSA rsa = new RSA();
+				rsa.GenerateKeys(2048, bn, OnGenerator, null);
+				CryptoKey key = new CryptoKey(rsa);
+				// rsa is assigned, we no longer need this instance
+				rsa.Dispose();
+				using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
+					cfg,
+					new SimpleSerialNumber(),
+					key,
+					MessageDigest.SHA1,
+					"Root1",
+					DateTime.Now,
+					TimeSpan.FromDays(365))) {
+					Console.WriteLine(root.Certificate);
+				}
+			}
+		}
 
-                using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
-                    new SimpleSerialNumber(),
-                    key,
-                    MessageDigest.SHA1,
-                    "Root1",
-                    DateTime.Now,
-                    TimeSpan.FromDays(365),
-                    extList))
-                {
-                    Console.WriteLine(root.Certificate);
-                    // Iterate the extensions
-                    Console.WriteLine("X509v3 Extensions:");
-                    OpenSSL.Stack<X509Extension> ext_stack = root.Certificate.Extensions;
-                    foreach (X509Extension ext in ext_stack)
-                    {
-                        //Console.WriteLine("", ext.Name, ext.IsCritical, BitConverter.ToString(ext.Data));
-                        Console.WriteLine("Name:{0}\nIsCritical:{1}\nValue:{2}", ext.Name, ext.IsCritical, ext);
-                    }
-                }
-            }
-        }
+		private void TestWithoutCfg() {
+			BigNumber bn = 0x10001;
+			CryptoKey key;
+			using (RSA rsa = new RSA()) {
+				rsa.GenerateKeys(2048, bn, OnGenerator, null);
+				key = new CryptoKey(rsa);
+				// rsa is assigned, we no longer need this instance
+			}
+
+			X509V3ExtensionList extList = new X509V3ExtensionList();
+			extList.Add(new X509V3ExtensionValue("subjectKeyIdentifier", false, "hash"));
+			extList.Add(new X509V3ExtensionValue("authorityKeyIdentifier", false, "keyid:always,issuer:always"));
+			extList.Add(new X509V3ExtensionValue("basicConstraints", true, "critical,CA:true"));
+			extList.Add(new X509V3ExtensionValue("keyUsage", false, "cRLSign,keyCertSign"));
+
+			using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
+				new SimpleSerialNumber(),
+				key,
+				MessageDigest.SHA1,
+				"Root1",
+				DateTime.Now,
+				TimeSpan.FromDays(365),
+				extList)) {
+				Console.WriteLine(root.Certificate);
+				// Iterate the extensions
+				Console.WriteLine("X509v3 Extensions:");
+				using (OpenSSL.Stack<X509Extension> ext_stack = root.Certificate.Extensions) {
+					foreach (X509Extension ext in ext_stack) {
+						Console.WriteLine("Name:{0}, IsCritical:{1}, Value:{2}", ext.Name, ext.IsCritical, ext);
+						//ext.Dispose();
+					}
+				}
+			}
+		}
 
 		#endregion
-        public static int OnGenerator(int p, int n, object arg)
-        {
-            TextWriter cout = Console.Error;
+		public static int OnGenerator(int p, int n, object arg) {
+			TextWriter cout = Console.Error;
 
-            switch (p)
-            {
-                case 0: cout.Write('.'); break;
-                case 1: cout.Write('+'); break;
-                case 2: cout.Write('*'); break;
-                case 3: cout.WriteLine(); break;
-            }
+			switch (p) {
+				case 0: cout.Write('.'); break;
+				case 1: cout.Write('+'); break;
+				case 2: cout.Write('*'); break;
+				case 3: cout.WriteLine(); break;
+			}
 
-            return 1;
-        }
-    }
+			return 1;
+		}
+	}
 }
