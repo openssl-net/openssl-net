@@ -393,8 +393,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls DSA_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.DSA_free(this.ptr);
 		}
 		#endregion

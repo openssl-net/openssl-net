@@ -409,7 +409,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls X509_NAME_free()
 		/// </summary>
-		public override void OnDispose()
+		protected override void OnDispose()
 		{
 			Native.X509_NAME_free(this.ptr);
 		}

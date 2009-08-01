@@ -294,8 +294,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls BIO_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.BIO_free(this.ptr);
 		}
 

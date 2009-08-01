@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006-2007 Frank Laub
+﻿// Copyright (c) 2006-2009 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -56,44 +56,46 @@ namespace OpenSSL
 		/// <summary>
 		/// This destructor just calls Dispose().
 		/// </summary>
-		~Base()
-		{
+		~Base() {
 			Dispose();
 		}
 
-        /// <summary>
-        /// gets/sets whether the object owns the Native pointer
-        /// </summary>
-        public virtual bool IsOwner
-        {
-            get
-            {
-                return owner;
-            }
-            set
-            {
-                owner = value;
-            }
-        }
+		/// <summary>
+		/// gets/sets whether the object owns the Native pointer
+		/// </summary>
+		public virtual bool IsOwner {
+			get { return owner; }
+			set { owner = value; }
+		}
 
 		/// <summary>
 		/// Access to the raw unmanaged pointer. Implements the IStackable interface.
 		/// </summary>
-		public virtual IntPtr Handle
-		{
+		public virtual IntPtr Handle {
 			get { return this.ptr; }
-			set
-			{
-				if (this.owner && this.ptr != IntPtr.Zero)
+			set {
+				if (this.owner && this.ptr != IntPtr.Zero) {
 					this.OnDispose();
+					DoAfterDispose();
+				}
 				this.owner = false;
 				this.ptr = value;
+				if (this.ptr != IntPtr.Zero) {
+					GC.ReRegisterForFinalize(this);
+					this.OnNewHandle(this.ptr);
+				}
 			}
 		}
 
-        public virtual void Addref()
-        {
-        }
+		/// <summary>
+		/// Do nothing in the base class.
+		/// </summary>
+		/// <param name="ptr"></param>
+		protected virtual void OnNewHandle(IntPtr ptr) {
+		}
+
+		public virtual void Addref() {
+		}
 
 		/// <summary>
 		/// Constructor which takes the raw unmanged pointer. 
@@ -101,8 +103,7 @@ namespace OpenSSL
 		/// </summary>
 		/// <param name="ptr"></param>
 		/// <param name="takeOwnership"></param>
-		public Base(IntPtr ptr, bool takeOwnership)
-		{
+		public Base(IntPtr ptr, bool takeOwnership) {
 			this.ptr = ptr;
 			this.owner = takeOwnership;
 		}
@@ -119,21 +120,17 @@ namespace OpenSSL
 		/// Override of ToString() which uses Print() into a BIO memory buffer.
 		/// </summary>
 		/// <returns></returns>
-		public override string ToString()
-		{
-			try
-			{
+		public override string ToString() {
+			try {
 				if (this.ptr == IntPtr.Zero)
 					return "(null)";
 
-				using (BIO bio = BIO.MemoryBuffer())
-				{
+				using (BIO bio = BIO.MemoryBuffer()) {
 					this.Print(bio);
 					return bio.ReadString();
 				}
 			}
-			catch (Exception)
-			{
+			catch (Exception) {
 				return "<exception>";
 			}
 		}
@@ -141,7 +138,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Default base implementation does nothing.
 		/// </summary>
-		public virtual void OnDispose() { }
+		protected abstract void OnDispose();
 
 		#region IDisposable Members
 
@@ -150,14 +147,33 @@ namespace OpenSSL
 		/// If the native pointer is not null, we haven't been disposed, and we are the owner,
 		/// then call the virtual OnDispose() method.
 		/// </summary>
-		public void Dispose()
-		{
-			if (!this.isDisposed && this.owner && this.ptr != IntPtr.Zero)
+		public void Dispose() {
+			if (!this.isDisposed && this.owner && this.ptr != IntPtr.Zero) {
 				this.OnDispose();
+				DoAfterDispose();
+			}
 			this.isDisposed = true;
 		}
 
 		#endregion
+
+		private void DoAfterDispose() {
+			this.ptr = IntPtr.Zero;
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Calls CRYPTO_add_lock()
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="lockType"></param>
+		/// <param name="file"></param>
+		protected object DoAddRef(Type type, CryptoLockTypes lockType, string file) {
+			IntPtr offset = Marshal.OffsetOf(type, "references");
+			IntPtr offset_ptr = new IntPtr((long)this.ptr + (long)offset);
+			Native.CRYPTO_add_lock(offset_ptr, 1, lockType, file, 0);
+			return this;
+		}
 	}
 	#endregion
 }

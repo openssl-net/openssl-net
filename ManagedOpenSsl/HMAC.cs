@@ -82,8 +82,7 @@ namespace OpenSSL
             Native.HMAC_CTX_init(this.ptr);
         }
 
-        public override void  OnDispose()
-        {
+		protected override void OnDispose() {
             // Clean up the context
             Native.HMAC_CTX_cleanup(this.ptr);
             // Free the structure allocation

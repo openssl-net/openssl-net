@@ -39,6 +39,10 @@ namespace OpenSSL
         {
         }
 
+		protected override void OnDispose() {
+			throw new NotImplementedException();
+		}
+
         /// <summary>
         /// SSLv2_method()
         /// </summary>

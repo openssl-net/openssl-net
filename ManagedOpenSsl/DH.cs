@@ -449,8 +449,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls DH_free().
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.DH_free(this.ptr);
 		}
 

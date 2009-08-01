@@ -121,7 +121,7 @@ namespace OpenSSL
         {
             int offset = (int)Marshal.OffsetOf(typeof(X509_INFO), "references");
             IntPtr offset_ptr = new IntPtr((int)ptr + offset);
-            Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509_INFO, "X509Chain.cs", 0);
+            Native.CRYPTO_add_lock(offset_ptr, 1, CryptoLockTypes.CRYPTO_LOCK_X509_INFO, "X509Chain.cs", 0);
         }
 
         private void PrintRefCount(string method)

@@ -296,10 +296,8 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls BN_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.BN_free(this.ptr);
-			GC.SuppressFinalize(this);
 		}
 
 		#endregion

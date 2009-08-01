@@ -107,19 +107,22 @@ namespace OpenSSL
             }
         }
 
-        public override void OnDispose()
+        protected override void OnDispose()
         {
             if (certificate != null)
             {
                 certificate.Dispose();
+				certificate = null;
             }
             if (privateKey != null)
             {
                 privateKey.Dispose();
+				privateKey = null;
             }
             if (caCertificates != null)
             {
                 caCertificates.Dispose();
+				caCertificates = null;
             }
             Native.PKCS12_free(this.ptr);
         }

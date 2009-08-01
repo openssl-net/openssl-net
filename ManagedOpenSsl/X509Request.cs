@@ -248,10 +248,8 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls X509_REQ_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.X509_REQ_free(this.ptr);
-			GC.SuppressFinalize(this);
 		}
 
 		#endregion

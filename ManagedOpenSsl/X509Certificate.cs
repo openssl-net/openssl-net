@@ -43,7 +43,7 @@ namespace OpenSSL
         {
             long offset = (long)Marshal.OffsetOf(typeof(X509), "references");
             IntPtr offset_ptr = new IntPtr((long)ptr + offset);
-            Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509, "X509Certificate.cs", 0);
+            Native.CRYPTO_add_lock(offset_ptr, 1, CryptoLockTypes.CRYPTO_LOCK_X509, "X509Certificate.cs", 0);
         }
 
         private void PrintRefCount(string method)
@@ -129,14 +129,6 @@ namespace OpenSSL
             }
             return ret;
         }
-
-		/// <summary>
-		/// Calls Dispose()
-		/// </summary>
-		~X509Certificate()
-		{
-			Dispose();
-		}
 
 		/// <summary>
 		/// Creates a new X509 certificate
@@ -520,24 +512,19 @@ namespace OpenSSL
 
 		#endregion
 
-		#region IDisposable Members
 		/// <summary>
 		/// Calls X509_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
             //!!PrintRefCount("OnDispose");
 
             Native.X509_free(this.ptr);
-			this.ptr = IntPtr.Zero;
             if (privateKey != null)
             {
                 privateKey.Dispose();
                 privateKey = null;
             }
-			//!!GC.SuppressFinalize(this);
 		}
-		#endregion
 
 		#region Overrides
 		/// <summary>
@@ -577,179 +564,4 @@ namespace OpenSSL
 
 		#endregion
 	}
-
-    public class Asn1String : Base, IDisposable, IStackable, IComparable<Asn1String>
-    {
-        public Asn1String()
-            : base(Native.ASN1_STRING_type_new(Native.V_ASN1_OCTET_STRING), true)
-        {
-        }
-
-        public Asn1String(IntPtr ptr, bool takeOwnership)
-            : base(ptr, takeOwnership)
-        {
-        }
-
-        public Asn1String(byte[] data)
-            : this()
-        {
-            Native.ExpectSuccess(Native.ASN1_STRING_set(this.ptr, data, data.Length));
-        }
-
-        ~Asn1String()
-        {
-            Dispose();
-        }
-
-        public int Length
-        {
-            get
-            {
-                return Native.ASN1_STRING_length(this.ptr);
-            }
-        }
-
-        public byte[] Data
-        {
-            get
-            {
-                IntPtr ret = Native.ASN1_STRING_data(this.ptr);
-                byte[] byteArray = new byte[Length];
-                Marshal.Copy(ret, byteArray, 0, Length);
-                return byteArray;
-            }
-        }
-
-        public override void Addref()
-        {
-            // No reference counting on this object, so dup it
-            IntPtr new_ptr = Native.ExpectNonNull(Native.ASN1_STRING_dup(this.ptr));
-            this.ptr = new_ptr;
-        }
-
-        public override bool Equals(object obj)
-        {
-            Asn1String asn1 = obj as Asn1String;
-            if (asn1 == null)
-            {
-                return false;
-            }
-            return (CompareTo(asn1) == 0);
-        }
-
-        public override void OnDispose()
-        {
-            Native.ASN1_STRING_free(this.ptr);
-        }
-
-        #region IComparable<Asn1String> Members
-
-        public int CompareTo(Asn1String other)
-        {
-            return Native.ASN1_STRING_cmp(this.ptr, other.Handle);
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-	/// Wraps the X509_EXTENSION object
-	/// </summary>
-	public class X509Extension : Base, IDisposable, IStackable
-	{
-        /// <summary>
-		/// Calls X509_EXTENSION_new()
-		/// </summary>
-		public X509Extension()
-			: base(Native.ExpectNonNull(Native.X509_EXTENSION_new()), true)
-		{ }
-
-        public X509Extension(X509Certificate issuer, X509Certificate subject, string name, bool critical, string value)
-            : base(IntPtr.Zero, false)
-        {
-            X509v3Context ctx = new X509v3Context();
-            Native.X509V3_set_ctx(ctx.Handle, issuer.Handle, subject.Handle, IntPtr.Zero, IntPtr.Zero, 0);
-            this.ptr = Native.ExpectNonNull(Native.X509V3_EXT_conf_nid(IntPtr.Zero, ctx.Handle, Native.TextToNID(name), value));
-            this.owner = true;
-            ctx.Dispose();
-        }
-
-        public string Name
-        {
-            get
-            {
-                string ret = "";
-
-                // Don't free the obj_ptr
-                IntPtr obj_ptr = Native.X509_EXTENSION_get_object(this.ptr);
-                if (obj_ptr != IntPtr.Zero)
-                {
-                    int nid = Native.OBJ_obj2nid(obj_ptr);
-                    ret = Marshal.PtrToStringAnsi(Native.OBJ_nid2ln(nid));
-                }
-                return ret;
-            }
-        }
-
-        public int NID
-        {
-            get
-            {
-                int ret = 0;
-
-                // Don't free the obj_ptr
-                IntPtr obj_ptr = Native.X509_EXTENSION_get_object(this.ptr);
-                if (obj_ptr != IntPtr.Zero)
-                {
-                    ret = Native.OBJ_obj2nid(obj_ptr);
-                }
-                return ret;
-            }
-        }
-
-        public bool IsCritical
-        {
-            get
-            {
-                int nCritical = Native.X509_EXTENSION_get_critical(this.ptr);
-                return (nCritical == 1);
-            }
-        }
-
-        public byte[] Data
-        {
-            get
-            {
-                Asn1String str_data = new Asn1String(Native.X509_EXTENSION_get_data(this.ptr), false);
-                return str_data.Data;
-            }
-        }
-
-        public override void Addref()
-        {
-            // No reference counting availabe, do dupe the object
-            IntPtr new_ptr = Native.ExpectNonNull(Native.X509_EXTENSION_dup(this.ptr));
-            this.ptr = new_ptr;
-            this.owner = true;
-        }
-
-		#region IDisposable Members
-
-		/// <summary>
-		/// Calls X509_EXTENSION_free()
-		/// </summary>
-		public override void OnDispose()
-		{
-			Native.X509_EXTENSION_free(this.ptr);
-		}
-
-		#endregion
-    
-        public override void Print(BIO bio)
-        {
-            Native.X509V3_EXT_print(bio.Handle, this.ptr, 0, 0);
-        }
-
-    }
-
 }

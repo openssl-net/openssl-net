@@ -526,11 +526,8 @@ namespace OpenSSL
         /// <summary>
         /// base override - calls SSL_CTX_free()
         /// </summary>
-        public override void  OnDispose()
-        {
+		protected override void OnDispose() {
  	        Native.SSL_CTX_free(this.ptr);
-            this.ptr = IntPtr.Zero;
-            GC.SuppressFinalize(this);
         }
 
         #endregion

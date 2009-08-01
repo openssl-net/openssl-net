@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Asn1String.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Base.cs" />
     <Compile Include="BigNum.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="X509Certificate.cs" />
     <Compile Include="X509CertificateAuthority.cs" />
     <Compile Include="X509Chain.cs" />
+    <Compile Include="X509Extension.cs" />
     <Compile Include="X509Name.cs" />
     <Compile Include="X509Request.cs" />
     <Compile Include="X509Store.cs" />

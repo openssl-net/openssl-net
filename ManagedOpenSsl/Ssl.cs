@@ -358,10 +358,8 @@ namespace OpenSSL
         }
 
         #endregion
-        public override void OnDispose()
-        {
+		protected override void OnDispose() {
             Native.SSL_free(this.Handle);
-            GC.SuppressFinalize(this);
         }
 
         public int Accept()

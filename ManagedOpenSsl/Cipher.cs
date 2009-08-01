@@ -52,6 +52,10 @@ namespace OpenSSL
 			bio.Write(this.LongName);
 		}
 
+		protected override void OnDispose() {
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Returns EVP_get_cipherbyname()
 		/// </summary>
@@ -828,8 +832,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls EVP_CIPHER_CTX_clean() and then OPENSSL_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.EVP_CIPHER_CTX_cleanup(this.ptr);
 			Native.OPENSSL_free(this.ptr);
 		}

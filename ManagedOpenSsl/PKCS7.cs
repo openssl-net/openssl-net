@@ -114,8 +114,7 @@ namespace OpenSSL
             }
         }
 
-        public override void OnDispose()
-        {
+		protected override void OnDispose() {
             Native.PKCS7_free(this.ptr);            
         }
         #region IDisposable Members

@@ -151,8 +151,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls sk_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
             // Free the items
             Clear();
 

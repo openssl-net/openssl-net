@@ -481,8 +481,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls RSA_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.RSA_free(this.ptr);
 		}
 

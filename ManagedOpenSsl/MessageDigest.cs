@@ -56,6 +56,10 @@ namespace OpenSSL
 			bio.Write("MessageDigest");
 		}
 
+		protected override void OnDispose() {
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// Calls EVP_get_digestbyname()
 		/// </summary>
@@ -426,8 +430,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls EVP_MD_CTX_cleanup() and EVP_MD_CTX_destroy()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.EVP_MD_CTX_cleanup(this.ptr);
 			Native.EVP_MD_CTX_destroy(this.ptr);
 		}

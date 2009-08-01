@@ -408,12 +408,8 @@ namespace OpenSSL
             }
         }
 
-        public override void OnDispose()
-        {
-            if (owner)
-            {
-                Native.OPENSSL_free(this.ptr);
-            }
-        }
+		protected override void OnDispose() {
+			Native.OPENSSL_free(this.ptr);
+		}
     }
 }

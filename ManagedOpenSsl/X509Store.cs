@@ -242,8 +242,7 @@ namespace OpenSSL
 
         //!! TODO - Add support for CRL
 
-        public override void  OnDispose()
-        {
+		protected override void OnDispose() {
  	         //!! TODO
         }
 
@@ -358,7 +357,7 @@ namespace OpenSSL
         {
             int offset = (int)Marshal.OffsetOf(typeof(X509_STORE), "references");
             IntPtr offset_ptr = new IntPtr((int)ptr + offset);
-            Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509_STORE, "X509Store.cs", 0);
+            Native.CRYPTO_add_lock(offset_ptr, 1, CryptoLockTypes.CRYPTO_LOCK_X509_STORE, "X509Store.cs", 0);
         }
 
         private void PrintRefCount(string method)
@@ -448,8 +447,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls X509_STORE_free()
 		/// </summary>
-		public override void OnDispose()
-		{
+		protected override void OnDispose() {
 			Native.X509_STORE_free(this.ptr);
             if (this.untrusted != null)
             {

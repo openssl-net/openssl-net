@@ -63,7 +63,7 @@ namespace OpenSSL
 
         #region IDisposable Members
 
-        public override void OnDispose()
+        protected override void OnDispose()
         {
             Native.OPENSSL_free(this.ptr);
         }
@@ -138,7 +138,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls NCONF_free()
 		/// </summary>
-		public override void OnDispose()
+		protected override void OnDispose()
 		{
 			Native.NCONF_free(this.ptr);
 		}

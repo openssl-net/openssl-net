@@ -51,7 +51,45 @@ namespace OpenSSL
         }
     }
 
-    /// <summary>
+	public enum CryptoLockTypes
+	{
+		CRYPTO_LOCK_ERR = 1,
+		CRYPTO_LOCK_EX_DATA = 2,
+		CRYPTO_LOCK_X509 = 3,
+		CRYPTO_LOCK_X509_INFO = 4,
+		CRYPTO_LOCK_X509_PKEY = 5,
+		CRYPTO_LOCK_X509_CRL = 6,
+		CRYPTO_LOCK_X509_REQ = 7,
+		CRYPTO_LOCK_DSA = 8,
+		CRYPTO_LOCK_RSA = 9,
+		CRYPTO_LOCK_EVP_PKEY = 10,
+		CRYPTO_LOCK_X509_STORE = 11,
+		CRYPTO_LOCK_SSL_CTX = 12,
+		CRYPTO_LOCK_SSL_CERT = 13,
+		CRYPTO_LOCK_SSL_SESSION = 14,
+		CRYPTO_LOCK_SSL_SESS_CERT = 15,
+		CRYPTO_LOCK_SSL = 16,
+		CRYPTO_LOCK_SSL_METHOD = 17,
+		CRYPTO_LOCK_RAND = 18,
+		CRYPTO_LOCK_RAND2 = 19,
+		CRYPTO_LOCK_MALLOC = 20,
+		CRYPTO_LOCK_BIO = 21,
+		CRYPTO_LOCK_GETHOSTBYNAME = 22,
+		CRYPTO_LOCK_GETSERVBYNAME = 23,
+		CRYPTO_LOCK_READDIR = 24,
+		CRYPTO_LOCK_RSA_BLINDING = 25,
+		CRYPTO_LOCK_DH = 26,
+		CRYPTO_LOCK_MALLOC2 = 27,
+		CRYPTO_LOCK_DSO = 28,
+		CRYPTO_LOCK_DYNLOCK = 29,
+		CRYPTO_LOCK_ENGINE = 30,
+		CRYPTO_LOCK_UI = 31,
+		CRYPTO_LOCK_HWCRHK = 32, /* This is a HACK which will disappear in 0.9.8 */
+		CRYPTO_LOCK_FIPS = 33,
+		CRYPTO_LOCK_FIPS2 = 34
+	}
+
+	/// <summary>
     /// static class for initialize OpenSSL/Crypto libraries for threading
     /// </summary>
     public class ThreadInitialization
@@ -231,44 +269,6 @@ namespace OpenSSL
 
         [DllImport(DLLNAME)]
         public extern static int CRYPTO_num_locks();
-
-        public enum CryptoLockTypes
-        {
-            CRYPTO_LOCK_ERR			= 1,
-            CRYPTO_LOCK_EX_DATA		= 2,
-            CRYPTO_LOCK_X509		= 3,
-            CRYPTO_LOCK_X509_INFO	= 4,
-            CRYPTO_LOCK_X509_PKEY	= 5,
-            CRYPTO_LOCK_X509_CRL	= 6,
-            CRYPTO_LOCK_X509_REQ	= 7,
-            CRYPTO_LOCK_DSA			= 8,
-            CRYPTO_LOCK_RSA			= 9,
-            CRYPTO_LOCK_EVP_PKEY	= 10,
-            CRYPTO_LOCK_X509_STORE	= 11,
-            CRYPTO_LOCK_SSL_CTX		= 12,
-            CRYPTO_LOCK_SSL_CERT	= 13,
-            CRYPTO_LOCK_SSL_SESSION	= 14,
-            CRYPTO_LOCK_SSL_SESS_CERT = 15,
-            CRYPTO_LOCK_SSL			= 16,
-            CRYPTO_LOCK_SSL_METHOD	= 17,
-            CRYPTO_LOCK_RAND		= 18,
-            CRYPTO_LOCK_RAND2		= 19,
-            CRYPTO_LOCK_MALLOC		= 20,
-            CRYPTO_LOCK_BIO			= 21,
-            CRYPTO_LOCK_GETHOSTBYNAME	= 22,
-            CRYPTO_LOCK_GETSERVBYNAME	= 23,
-            CRYPTO_LOCK_READDIR		= 24,
-            CRYPTO_LOCK_RSA_BLINDING	= 25,
-            CRYPTO_LOCK_DH			= 26,
-            CRYPTO_LOCK_MALLOC2		= 27,
-            CRYPTO_LOCK_DSO			= 28,
-            CRYPTO_LOCK_DYNLOCK		= 29,
-            CRYPTO_LOCK_ENGINE		= 30,
-            CRYPTO_LOCK_UI			= 31,
-            CRYPTO_LOCK_HWCRHK		= 32, /* This is a HACK which will disappear in 0.9.8 */
-            CRYPTO_LOCK_FIPS		= 33,
-            CRYPTO_LOCK_FIPS2		= 34
-        }
 
         [DllImport(DLLNAME)]
         public extern static int CRYPTO_add_lock(IntPtr ptr, int amount, CryptoLockTypes type, string file, int line);
