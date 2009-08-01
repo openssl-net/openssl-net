@@ -41,8 +41,8 @@ namespace OpenSSL
 
         public override void Addref()
         {
-            int offset = (int)Marshal.OffsetOf(typeof(X509), "references");
-            IntPtr offset_ptr = new IntPtr((int)ptr + offset);
+            long offset = (long)Marshal.OffsetOf(typeof(X509), "references");
+            IntPtr offset_ptr = new IntPtr((long)ptr + offset);
             Native.CRYPTO_add_lock(offset_ptr, 1, Native.CryptoLockTypes.CRYPTO_LOCK_X509, "X509Certificate.cs", 0);
         }
 
@@ -210,12 +210,16 @@ namespace OpenSSL
 			public int ex_data_dummy;
 			#endregion
 			public int ex_pathlen;
+			public int ex_pcpathlen;
 			public uint ex_flags;
 			public uint ex_kusage;
 			public uint ex_xkusage;
 			public uint ex_nscert;
 			public IntPtr skid;
 			public IntPtr akid;
+			public IntPtr policy_cache;
+			public IntPtr rfc3779_addr;
+			public IntPtr rfc3779_asid;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.SHA_DIGEST_LENGTH)]
 			public byte[] sha1_hash;
 			public IntPtr aux;
@@ -574,25 +578,25 @@ namespace OpenSSL
 		#endregion
 	}
 
-    public class ASN1OctectString : Base, IDisposable, IStackable, IComparable<ASN1OctectString>
+    public class Asn1String : Base, IDisposable, IStackable, IComparable<Asn1String>
     {
-        public ASN1OctectString()
+        public Asn1String()
             : base(Native.ASN1_STRING_type_new(Native.V_ASN1_OCTET_STRING), true)
         {
         }
 
-        public ASN1OctectString(IntPtr ptr, bool takeOwnership)
+        public Asn1String(IntPtr ptr, bool takeOwnership)
             : base(ptr, takeOwnership)
         {
         }
 
-        public ASN1OctectString(byte[] data)
+        public Asn1String(byte[] data)
             : this()
         {
             Native.ExpectSuccess(Native.ASN1_STRING_set(this.ptr, data, data.Length));
         }
 
-        ~ASN1OctectString()
+        ~Asn1String()
         {
             Dispose();
         }
@@ -625,7 +629,7 @@ namespace OpenSSL
 
         public override bool Equals(object obj)
         {
-            ASN1OctectString asn1 = obj as ASN1OctectString;
+            Asn1String asn1 = obj as Asn1String;
             if (asn1 == null)
             {
                 return false;
@@ -638,9 +642,9 @@ namespace OpenSSL
             Native.ASN1_STRING_free(this.ptr);
         }
 
-        #region IComparable<ASN1OctectString> Members
+        #region IComparable<Asn1String> Members
 
-        public int CompareTo(ASN1OctectString other)
+        public int CompareTo(Asn1String other)
         {
             return Native.ASN1_STRING_cmp(this.ptr, other.Handle);
         }
@@ -716,7 +720,7 @@ namespace OpenSSL
         {
             get
             {
-                ASN1OctectString str_data = new ASN1OctectString(Native.X509_EXTENSION_get_data(this.ptr), false);
+                Asn1String str_data = new Asn1String(Native.X509_EXTENSION_get_data(this.ptr), false);
                 return str_data.Data;
             }
         }

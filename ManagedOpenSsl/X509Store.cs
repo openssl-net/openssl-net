@@ -185,20 +185,12 @@ namespace OpenSSL
         public const int X509_LU_CRL		= 2;
         public const int X509_LU_PKEY		= 3;
 
-        [StructLayout(LayoutKind.Explicit)]
+        [StructLayout(LayoutKind.Sequential)]
         internal struct X509_OBJECT
 	    {
 	        /* one of the above types */
-            [FieldOffset(0)]
             public int type;
-	        [FieldOffset(4)]
-		    public IntPtr ptr;     //char *ptr;
-		    [FieldOffset(4)]
-            public IntPtr x509;    //X509 *x509;
-		    [FieldOffset(4)]
-		    public IntPtr crl;     //X509_CRL *crl;
-		    [FieldOffset(4)]
-            public IntPtr pkey;    //EVP_PKEY *pkey;
+		    public IntPtr ptr;
 	    }
 
         private X509_OBJECT raw;
@@ -229,7 +221,7 @@ namespace OpenSSL
                 X509Certificate cert = null;
                 if (raw.type == X509_LU_X509)
                 {
-                    cert = new X509Certificate(raw.x509, false);
+                    cert = new X509Certificate(raw.ptr, false);
                 }
                 return cert;
             }
@@ -242,7 +234,7 @@ namespace OpenSSL
                 CryptoKey key = null;
                 if (raw.type == X509_LU_PKEY)
                 {
-                    key = new CryptoKey(raw.pkey, false);
+                    key = new CryptoKey(raw.ptr, false);
                 }
                 return key;
             }

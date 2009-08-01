@@ -112,45 +112,21 @@ namespace OpenSSL
 	/// </summary>
 	public class CryptoKey : Base, IDisposable
 	{
-        public const int EVP_PKEY_RSA   = 6;
-        public const int EVP_PKEY_DSA   = 116;
-        public const int EVP_PKEY_DH    = 28;
-        public const int EVP_PKEY_EC    = 408;
+		public const int EVP_PKEY_RSA   = 6;
+		public const int EVP_PKEY_DSA   = 116;
+		public const int EVP_PKEY_DH    = 28;
+		public const int EVP_PKEY_EC    = 408;
 
-        [StructLayout(LayoutKind.Explicit)]
-        struct EVP_PKEY
-        {
-	        [FieldOffset(0)]
-            int type;
-	        [FieldOffset(4)]
-            int save_type;
-	        [FieldOffset(8)]
-            int references;
-	        //union	{
-		    [FieldOffset(12)]
-            IntPtr ptr;     //char *ptr;
-        #if !OPENSSL_NO_RSA
-		    [FieldOffset(12)]
-            IntPtr rsa;     //struct rsa_st *rsa;	/* RSA */
-        #endif
-        #if !OPENSSL_NO_DSA
-		    [FieldOffset(12)]
-            IntPtr dsa;     //struct dsa_st *dsa;	/* DSA */
-        #endif
-        #if !OPENSSL_NO_DH
-		    [FieldOffset(12)]
-            IntPtr dh;      //struct dh_st *dh;	/* DH */
-        #endif
-        #if !OPENSSL_NO_EC
-		    [FieldOffset(12)]
-            IntPtr ec;      //struct ec_key_st *ec;	/* ECC */
-        #endif
-		    //} pkey;
-	        [FieldOffset(16)]
-            int save_parameters;
-	        [FieldOffset(20)]
-            IntPtr attributes;   //STACK_OF(X509_ATTRIBUTE) *attributes; /* [ 0 ] */
-        }
+		[StructLayout(LayoutKind.Sequential)]
+		struct EVP_PKEY
+		{
+			int type;
+			int save_type;
+			int references;
+			IntPtr ptr; 
+			int save_parameters;
+			IntPtr attributes;
+		}
 
         #region Initialization
 		internal CryptoKey(IntPtr ptr, bool owner) : base(ptr, owner) { }

@@ -16,49 +16,20 @@ namespace OpenSSL
         public const int PKCS7_S_BODY	= 1;
         public const int PKCS7_S_TAIL	= 2;
 
-        [StructLayout(LayoutKind.Explicit)]
+        [StructLayout(LayoutKind.Sequential)]
         private struct _PKCS7
         {
 	    /* The following is non NULL if it contains ASN1 encoding of
 	     * this structure */
-            [FieldOffset(0)]
 	        public IntPtr asn1;    //unsigned char *asn1;
-	        [FieldOffset(4)]
             public int length;     //long length;
-            [FieldOffset(8)]
             public int state;      /* used during processing */
-            [FieldOffset(12)]
             public int detached;
-            [FieldOffset(16)]
             public IntPtr type;    //ASN1_OBJECT *type;
 	    /* content as defined by the type */
 	    /* all encryption/message digests are applied to the 'contents',
 	     * leaving out the 'type' field. */
-	    //union	{
-		    [FieldOffset(20)]
             public IntPtr ptr;     //char *ptr;
-            [FieldOffset(20)]
-		    /* NID_pkcs7_data */
-            public IntPtr data;    //ASN1_OCTET_STRING *data;
-            [FieldOffset(20)]
-		    /* NID_pkcs7_signed */
-            public IntPtr sign;    //PKCS7_SIGNED *sign;
-            [FieldOffset(20)]
-		    /* NID_pkcs7_enveloped */
-            public IntPtr enveloped;   //PKCS7_ENVELOPE *enveloped;
-            [FieldOffset(20)]
-		    /* NID_pkcs7_signedAndEnveloped */
-            public IntPtr signed_and_enveloped;    //PKCS7_SIGN_ENVELOPE *signed_and_enveloped;
-            [FieldOffset(20)]
-		    /* NID_pkcs7_digest */
-            public IntPtr digest;      //PKCS7_DIGEST *digest;
-            [FieldOffset(20)]
-		    /* NID_pkcs7_encrypted */
-            public IntPtr encrypted;   //PKCS7_ENCRYPT *encrypted;
-            [FieldOffset(20)]
-		    /* Anything else */
-            public IntPtr other;       //ASN1_TYPE *other;
-		    //} d;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -117,13 +88,13 @@ namespace OpenSSL
                 {
                     case NID_pkcs7_signed:
                         {
-                            PKCS7_SIGNED signed = (PKCS7_SIGNED)Marshal.PtrToStructure(raw.sign, typeof(PKCS7_SIGNED));
+                            PKCS7_SIGNED signed = (PKCS7_SIGNED)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGNED));
                             cert_stack = new Stack<X509Certificate>(signed.cert, false);
                         }
                         break;
                     case NID_pkcs7_signedAndEnveloped:
                         {
-                            PKCS7_SIGN_ENVELOPE envelope = (PKCS7_SIGN_ENVELOPE)Marshal.PtrToStructure(raw.signed_and_enveloped, typeof(PKCS7_SIGN_ENVELOPE));
+                            PKCS7_SIGN_ENVELOPE envelope = (PKCS7_SIGN_ENVELOPE)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGN_ENVELOPE));
                             cert_stack = new Stack<X509Certificate>(envelope.cert, false);
                         }
                         break;
