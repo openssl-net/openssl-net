@@ -142,6 +142,11 @@ namespace test
 				return;
 			}
 
+			if (args[0] == "all") {
+				TestAll();
+				return;
+			}
+
 			ICommand cmd;
 			if(!this.tests.TryGetValue(args[0], out cmd))
 			{
@@ -164,6 +169,16 @@ namespace test
 			MemoryTracker.Start();
 			cmd.Execute(args);
 			MemoryTracker.Finish();
+		}
+
+		void TestAll() {
+			foreach (var item in tests) {
+				MemoryTracker.Start();
+				string[] args = new string[1];
+				args[0] = item.Key;
+				item.Value.Execute(args);
+				MemoryTracker.Finish();
+			}
 		}
 	}
 
