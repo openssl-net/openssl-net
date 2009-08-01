@@ -36,8 +36,8 @@ namespace test
 		#region ICommand Members
 
 		public void Execute(string[] args) {
-//			TestDefaultDSA();
-//			TestRsaSha1();
+			TestDefaultDSA();
+			TestRsaSha1();
 			TestWithoutCfg();
 		}
 
@@ -106,7 +106,6 @@ namespace test
 				using (OpenSSL.Stack<X509Extension> ext_stack = root.Certificate.Extensions) {
 					foreach (X509Extension ext in ext_stack) {
 						Console.WriteLine("Name:{0}, IsCritical:{1}, Value:{2}", ext.Name, ext.IsCritical, ext);
-						//ext.Dispose();
 					}
 				}
 			}
