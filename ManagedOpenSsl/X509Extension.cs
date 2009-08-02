@@ -8,13 +8,18 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps the X509_EXTENSION object
 	/// </summary>
-	public class X509Extension : Base, IDisposable, IStackable
+	public class X509Extension : BaseValueType, IStackable
 	{
 		/// <summary>
 		/// Calls X509_EXTENSION_new()
 		/// </summary>
 		public X509Extension()
-			: base(Native.ExpectNonNull(Native.X509_EXTENSION_new()), true) { }
+			: base(Native.ExpectNonNull(Native.X509_EXTENSION_new()), true) 
+		{ }
+
+		internal X509Extension(IStack stack, IntPtr ptr)
+			: base(ptr, true)
+		{ }
 
 		public X509Extension(X509Certificate issuer, X509Certificate subject, string name, bool critical, string value)
 			: base(IntPtr.Zero, false) {
@@ -66,13 +71,6 @@ namespace OpenSSL
 			}
 		}
 
-		public override void Addref() {
-			// No reference counting availabe, do dupe the object
-			IntPtr new_ptr = Native.ExpectNonNull(Native.X509_EXTENSION_dup(this.ptr));
-			this.ptr = new_ptr;
-			this.owner = true;
-		}
-
 		#region IDisposable Members
 
 		/// <summary>
@@ -88,6 +86,10 @@ namespace OpenSSL
 			Native.X509V3_EXT_print(bio.Handle, this.ptr, 0, 0);
 		}
 
+		protected override IntPtr DuplicateHandle()
+		{
+			return Native.X509_EXTENSION_dup(this.ptr);
+		}
 	}
 
 }

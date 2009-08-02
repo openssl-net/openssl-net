@@ -27,60 +27,61 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
 
 namespace OpenSSL
 {
 	/// <summary>
-	/// Simple interface used for the internal implementation of the generic OpenSSL.Stack
+	/// The Stack class can only contain objects marked with this interface.
 	/// </summary>
 	public interface IStackable
 	{
-		/// <summary>
-		/// Underlying native pointer
-		/// </summary>
-		IntPtr Handle { get; set; }
-        /// <summary>
-        /// Owership property for the stackable item
-        /// </summary>
-        bool IsOwner { get; set; }
-        /// <summary>
-        /// Adds to the reference count of the native object
-        /// </summary>
-        void Addref();
+	}
+
+	internal interface IStack
+	{
 	}
 
 	/// <summary>
 	/// Encapsultes the sk_* functions
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class Stack<T> : Base, IDisposable, IList<T> where T : IStackable, IDisposable, new()
+	public class Stack<T> : BaseValueType, IStack, IList<T> where T : Base, IStackable
 	{
-        #region Initialization
-		internal Stack(IntPtr ptr, bool owner) : base(ptr, owner)
-        {
-        }
+		#region Initialization
+		internal Stack(IntPtr ptr, bool owner)
+			: base(ptr, owner)
+		{
+		}
 
 		/// <summary>
 		/// Calls sk_new_null()
 		/// </summary>
-		public Stack() : base(Native.ExpectNonNull(Native.sk_new_null()), true)
-        {
-        }
+		public Stack()
+			: base(Native.ExpectNonNull(Native.sk_new_null()), true)
+		{
+		}
 
-        /// <summary>
+		#endregion
+
+		/// <summary>
+		/// Calls sk_dup()
+		/// </summary>
+		/// <returns></returns>
+		protected override IntPtr DuplicateHandle()
+		{
+			return Native.sk_dup(this.ptr);
+		}
+
+		/// <summary>
 		/// Calls sk_shift()
 		/// </summary>
 		/// <returns></returns>
 		public T Shift()
 		{
-            IntPtr ptr = Native.sk_shift(this.ptr);
-            T item = new T();
-            item.Handle = ptr;
-            item.IsOwner = true; // We have removed it from the stack, so the returned item owns the pointer
-            // return the item
-            return item;
+			IntPtr ptr = Native.sk_shift(this.ptr);
+			return CreateInstance(ptr);
 		}
-		#endregion
 
 		#region Enumerator
 		class Enumerator : IEnumerator<T>
@@ -101,17 +102,13 @@ namespace OpenSSL
 					if (this.index < 0 || this.index >= this.parent.Count)
 						throw new InvalidOperationException();
 
-                    IntPtr ptr = Native.ExpectNonNull(Native.sk_value(this.parent.Handle, index));
-                    // Create a new item
-                    T item = new T();
-                    // Set the internal pointer
-                    item.Handle = ptr;
-                    // Set the ownership
-                    item.IsOwner = true;
-                    // Addref the item
-                    item.Addref();
-                    // return it
-                    return item;
+					IntPtr ptr = Native.ExpectNonNull(Native.sk_value(this.parent.Handle, index));
+					// Create a new item
+					T item = parent.CreateInstance(ptr);
+					// Addref the item
+					item.AddRef();
+					// return it
+					return item;
 				}
 			}
 
@@ -151,12 +148,13 @@ namespace OpenSSL
 		/// <summary>
 		/// Calls sk_free()
 		/// </summary>
-		protected override void OnDispose() {
-            // Free the items
-            Clear();
+		protected override void OnDispose()
+		{
+			// Free the items
+			Clear();
 
-            Native.sk_free(this.ptr);
-        }
+			Native.sk_free(this.ptr);
+		}
 		#endregion
 
 		#region IList<T> Members
@@ -178,10 +176,10 @@ namespace OpenSSL
 		/// <param name="item"></param>
 		public void Insert(int index, T item)
 		{
-            // Insert the item into the stack
-            Native.ExpectSuccess(Native.sk_insert(this.ptr, item.Handle, index));
-            // Addref the item
-            item.Addref();
+			// Insert the item into the stack
+			Native.ExpectSuccess(Native.sk_insert(this.ptr, item.Handle, index));
+			// Addref the item
+			item.AddRef();
 		}
 
 		/// <summary>
@@ -202,27 +200,23 @@ namespace OpenSSL
 		{
 			get
 			{
-                // Get the native pointer from the stack
-                IntPtr ptr = Native.ExpectNonNull(Native.sk_value(this.ptr, index));
-                // Create a new object
-                T item = new T();
-                // Set the pointer into the object
-                item.Handle = ptr;
-                // Set the object ownership
-                item.IsOwner = true;
-                // Addref the object
-                item.Addref();
-                // Return the managed object
-                return item;
+				// Get the native pointer from the stack
+				IntPtr ptr = Native.ExpectNonNull(Native.sk_value(this.ptr, index));
+				// Create a new object
+				T item = CreateInstance(ptr);
+				// Addref the object
+				item.AddRef();
+				// Return the managed object
+				return item;
 			}
 			set
 			{
-                // Insert the item in the stack
-                int ret = Native.sk_insert(this.ptr, value.Handle, index);
+				// Insert the item in the stack
+				int ret = Native.sk_insert(this.ptr, value.Handle, index);
 				if (ret < 0)
 					throw new OpenSslException();
-                // Addref the native pointer
-                value.Addref();
+				// Addref the native pointer
+				value.AddRef();
 			}
 		}
 
@@ -237,10 +231,10 @@ namespace OpenSSL
 		public void Add(T item)
 		{
 			// Add the item to the stack
-            if (Native.sk_push(this.ptr, item.Handle) <= 0)
+			if (Native.sk_push(this.ptr, item.Handle) <= 0)
 				throw new OpenSslException();
-            // Addref the native pointer
-            item.Addref();
+			// Addref the native pointer
+			item.AddRef();
 		}
 
 		/// <summary>
@@ -248,15 +242,13 @@ namespace OpenSSL
 		/// </summary>
 		public void Clear()
 		{
-            IntPtr value_ptr = Native.sk_shift(this.ptr);
-            while (value_ptr != IntPtr.Zero)
-            {
-                T item = new T();
-                item.Handle = value_ptr;
-                item.IsOwner = true;
-                item.Dispose();
-                value_ptr = Native.sk_shift(this.ptr);
-            }
+			IntPtr value_ptr = Native.sk_shift(this.ptr);
+			while (value_ptr != IntPtr.Zero)
+			{
+				T item = CreateInstance(value_ptr);
+				item.Dispose();
+				value_ptr = Native.sk_shift(this.ptr);
+			}
 		}
 
 		/// <summary>
@@ -318,10 +310,10 @@ namespace OpenSSL
 		public bool Remove(T item)
 		{
 			IntPtr ptr = Native.sk_delete_ptr(this.ptr, item.Handle);
-            if (ptr != IntPtr.Zero)
-            {
-                return true;
-            }
+			if (ptr != IntPtr.Zero)
+			{
+				return true;
+			}
 			return false;
 		}
 
@@ -348,5 +340,19 @@ namespace OpenSSL
 		}
 
 		#endregion
+
+		private T CreateInstance(IntPtr ptr)
+		{
+			object[] args = new object[] {
+				(IStack)this,
+				ptr
+			};
+			BindingFlags flags =
+				BindingFlags.NonPublic |
+				BindingFlags.Public |
+				BindingFlags.Instance;
+			T item = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
+			return item;
+		}
 	}
 }

@@ -33,29 +33,20 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps the X509 object
 	/// </summary>
-	public class X509Certificate : Base, IDisposable, IStackable, IComparable<X509Certificate>
+	public class X509Certificate : BaseReferenceType, IComparable<X509Certificate>, IStackable
 	{
         #region Members
         private CryptoKey privateKey;
         #endregion
 
-        public override void Addref()
-        {
-            long offset = (long)Marshal.OffsetOf(typeof(X509), "references");
-            IntPtr offset_ptr = new IntPtr((long)ptr + offset);
-            Native.CRYPTO_add_lock(offset_ptr, 1, CryptoLockTypes.CRYPTO_LOCK_X509, "X509Certificate.cs", 0);
-        }
-
-        private void PrintRefCount(string method)
-        {
-            int offset = (int)Marshal.OffsetOf(typeof(X509), "references");
-            IntPtr offset_ptr = new IntPtr((int)ptr + offset);
-            int ref_count = Marshal.ReadInt32(offset_ptr);
-            Console.WriteLine("X509Certificate:method={0}:ptr={1}:refcount={2}", method, this.ptr, ref_count);
-        }
-
         #region Initialization
-		internal X509Certificate(IntPtr ptr, bool owner) : base(ptr, owner)
+		internal X509Certificate(IStack stack, IntPtr ptr)
+			: base(ptr, true)
+		{
+		}
+
+		internal X509Certificate(IntPtr ptr, bool owner) 
+			: base(ptr, owner)
         {
         }
 
@@ -115,19 +106,10 @@ namespace OpenSSL
 
         public static X509Certificate FromPKCS12(BIO bio, string password)
         {
-            X509Certificate ret = null;
-
-            PKCS12 p12 = new PKCS12(bio, password);
-            if (p12 != null)
-            {
-                X509Certificate p12Cert = p12.Certificate;
-                if (p12Cert != null)
-                {
-                    ret = p12Cert;
-                }
-                p12.Dispose();
-            }
-            return ret;
+			using (PKCS12 p12 = new PKCS12(bio, password))
+			{
+				return p12.Certificate;
+			}
         }
 
 		/// <summary>
@@ -516,9 +498,7 @@ namespace OpenSSL
 		/// Calls X509_free()
 		/// </summary>
 		protected override void OnDispose() {
-            //!!PrintRefCount("OnDispose");
-
-            Native.X509_free(this.ptr);
+			Native.X509_free(this.ptr);
             if (privateKey != null)
             {
                 privateKey.Dispose();
@@ -563,5 +543,15 @@ namespace OpenSSL
 		}
 
 		#endregion
+
+		protected override CryptoLockTypes LockType
+		{
+			get { return CryptoLockTypes.CRYPTO_LOCK_X509; }
+		}
+
+		protected override Type RawReferenceType
+		{
+			get { return typeof(X509); }
+		}
 	}
 }

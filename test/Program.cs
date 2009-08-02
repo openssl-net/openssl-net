@@ -188,6 +188,7 @@ namespace test
 
 		public static void Start()
 		{
+			leaked = 0;
 			Crypto.MallocDebugInit();
 			Crypto.SetDebugOptions(DebugOptions.All);
 			Crypto.SetMemoryCheck(MemoryCheck.On);
@@ -205,11 +206,13 @@ namespace test
             Crypto.CheckMemoryLeaks(OnMemoryLeak);
 			if (leaked > 0)
 				Console.WriteLine("Leaked total bytes: {0}", leaked);
+
+			Crypto.SetMemoryCheck(MemoryCheck.Off);
 		}
 
 		private static void OnMemoryLeak(uint order, string file, int line, int num_bytes, IntPtr addr)
 		{
-			Console.WriteLine("file: {1} line: {2} bytes: {3}", order, file, line, num_bytes);
+			Console.WriteLine("[{0}] file: {1} line: {2} bytes: {3}", order, file, line, num_bytes);
 			leaked += num_bytes;
 		}
 	}

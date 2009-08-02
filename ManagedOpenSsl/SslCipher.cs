@@ -30,26 +30,26 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-	#region SSL_CIPHER
-	[StructLayout(LayoutKind.Sequential)]
-    struct SSL_CIPHER
+    class SslCipher : Base, IStackable
     {
-        public int valid;
-        public IntPtr name; // text name
-        public uint id; // id, 4 bytes, first is version
-        public uint algorithms; // what ciphers are used
-        public uint algo_strength; // strength and export flags
-        public uint algorithm2; // extra flags
-        public int strength_bits; // number of bits really used
-        public int alg_bits; // number of bits for algorithm
-        public uint mask; // used for matching
-        public uint mask_strength; // also used for matching
-    }
-    #endregion
+		#region SSL_CIPHER
+		[StructLayout(LayoutKind.Sequential)]
+		struct SSL_CIPHER
+		{
+			public int valid;
+			public IntPtr name; // text name
+			public uint id; // id, 4 bytes, first is version
+			public uint algorithms; // what ciphers are used
+			public uint algo_strength; // strength and export flags
+			public uint algorithm2; // extra flags
+			public int strength_bits; // number of bits really used
+			public int alg_bits; // number of bits for algorithm
+			public uint mask; // used for matching
+			public uint mask_strength; // also used for matching
+		}
+		#endregion
 
-    public class SslCipher : Base, IDisposable
-    {
-        bool isInitialized = false;
+		bool isInitialized = false;
         private SSL_CIPHER raw;
         private CipherAlgorithmType cipherAlgorithm = CipherAlgorithmType.None;
         private int cipherStrength = 0;
@@ -70,7 +70,13 @@ namespace OpenSSL
             Initialize();
         }
 
-        public string Name
+		internal SslCipher(IStack stack, IntPtr ptr) :
+			base(ptr, true)
+		{
+			Initialize();
+		}
+		
+		public string Name
         {
             get
             {

@@ -63,20 +63,6 @@ namespace OpenSSL
             ssl.SetAcceptState();
         }
 
-        /*
-        public RemoteCertificateValidationCallback RemoteCertValidationCallback
-        {
-            get
-            {
-                return remoteCertValidationCallback;
-            }
-            set
-            {
-                remoteCertValidationCallback = value;
-            }
-        }
-        */
-
         internal protected override bool ProcessHandshake()
         {
             bool bRet = false;

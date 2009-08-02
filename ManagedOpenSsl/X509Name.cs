@@ -32,15 +32,19 @@ namespace OpenSSL
 	/// <summary>
 	/// Encapsulates the X509_NAME_* functions
 	/// </summary>
-	public class X509Name : Base, IDisposable, IComparable<X509Name>
+	public class X509Name : BaseValueType, IComparable<X509Name>, IStackable
 	{
 		#region Initialization
-		internal X509Name(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		internal X509Name(IntPtr ptr, bool owner) 
+			: base(ptr, owner) 
+		{ }
 
 		/// <summary>
 		/// Calls X509_NAME_new()
 		/// </summary>
-		public X509Name() : base(Native.ExpectNonNull(Native.X509_NAME_new()), true) { }
+		public X509Name() 
+			: base(Native.ExpectNonNull(Native.X509_NAME_new()), true) 
+		{ }
 
 		/// <summary>
 		/// Calls X509_NAME_dup()
@@ -50,6 +54,10 @@ namespace OpenSSL
 			: base(Native.ExpectNonNull(Native.X509_NAME_dup(rhs.ptr)), true)
 		{
 		}
+
+		internal X509Name(IStack stack, IntPtr ptr)
+			: base(ptr, true)
+		{ }
 
 		/// <summary>
 		/// Calls X509_NAME_new()
@@ -89,16 +97,7 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
-        
-        public override void Addref()
-        {
-            // X509_NAME doesn't support reference counting, so let's just
-            // duplicate the X509_NAME object instead
-            IntPtr new_ptr = Native.X509_NAME_dup(this.ptr);
-            this.ptr = new_ptr;
-            this.owner = true;
-        }
-        
+
         /// <summary>
 		/// Returns X509_NAME_oneline()
 		/// </summary>
@@ -429,5 +428,10 @@ namespace OpenSSL
 		}
 
 		#endregion
+	
+		protected override IntPtr DuplicateHandle()
+		{
+			return Native.X509_NAME_dup(this.ptr);
+		}
 	}
 }

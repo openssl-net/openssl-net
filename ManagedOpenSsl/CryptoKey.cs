@@ -5,7 +5,7 @@
 // modification, are permitted provided that the following conditions
 // are met:
 // 1. Redistributions of source code must retain the above copyright
-//    notice, this list of conditions and the following disclaimer.
+//    notice, this list of conditions an7d the following disclaimer.
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
@@ -110,12 +110,12 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps the native OpenSSL EVP_PKEY object
 	/// </summary>
-	public class CryptoKey : Base, IDisposable
+	public class CryptoKey : BaseReferenceType, IDisposable
 	{
-		public const int EVP_PKEY_RSA   = 6;
-		public const int EVP_PKEY_DSA   = 116;
-		public const int EVP_PKEY_DH    = 28;
-		public const int EVP_PKEY_EC    = 408;
+		public const int EVP_PKEY_RSA = 6;
+		public const int EVP_PKEY_DSA = 116;
+		public const int EVP_PKEY_DH = 28;
+		public const int EVP_PKEY_EC = 408;
 
 		[StructLayout(LayoutKind.Sequential)]
 		struct EVP_PKEY
@@ -123,18 +123,18 @@ namespace OpenSSL
 			int type;
 			int save_type;
 			int references;
-			IntPtr ptr; 
+			IntPtr ptr;
 			int save_parameters;
 			IntPtr attributes;
 		}
 
-        #region Initialization
+		#region Initialization
 		internal CryptoKey(IntPtr ptr, bool owner) : base(ptr, owner) { }
 		/// <summary>
 		/// Calls EVP_PKEY_new()
 		/// </summary>
-		public CryptoKey() : base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) {}
-		
+		public CryptoKey() : base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) { }
+
 		/// <summary>
 		/// Calls PEM_read_bio_PUBKEY()
 		/// </summary>
@@ -144,10 +144,10 @@ namespace OpenSSL
 		public static CryptoKey FromPublicKey(string pem, string password)
 		{
 			//!!return FromPublicKey(new BIO(pem), password);
-            using (BIO bio = new BIO(pem))
-            {
-                return FromPublicKey(bio, password);
-            }
+			using (BIO bio = new BIO(pem))
+			{
+				return FromPublicKey(bio, password);
+			}
 		}
 
 		/// <summary>
@@ -191,10 +191,10 @@ namespace OpenSSL
 		public static CryptoKey FromPrivateKey(string pem, string password)
 		{
 			//!!return FromPrivateKey(new BIO(pem), password);
-            using (BIO bio = new BIO(pem))
-            {
-                return FromPrivateKey(bio, password);
-            }
+			using (BIO bio = new BIO(pem))
+			{
+				return FromPrivateKey(bio, password);
+			}
 		}
 
 		/// <summary>
@@ -220,9 +220,9 @@ namespace OpenSSL
 		{
 			PasswordThunk thunk = new PasswordThunk(handler, arg);
 			IntPtr ptr = Native.ExpectNonNull(Native.PEM_read_bio_PrivateKey(
-				bio.Handle, 
+				bio.Handle,
 				IntPtr.Zero,
-				thunk.Callback, 
+				thunk.Callback,
 				IntPtr.Zero
 			));
 
@@ -280,23 +280,7 @@ namespace OpenSSL
 
 		#region Methods
 
-        public override void Addref()
-        {
-            int offset = (int)Marshal.OffsetOf(typeof(EVP_PKEY), "references");
-            IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
-            Native.CRYPTO_add_lock(offset_ptr, 1, CryptoLockTypes.CRYPTO_LOCK_X509_PKEY, "CryptoKey.cs", 0);
-            //!!PrintRefCount();
-        }
-
-        private void PrintRefCount()
-        {
-            int offset = (int)Marshal.OffsetOf(typeof(EVP_PKEY), "references");
-            IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
-            int count = Marshal.ReadInt32(offset_ptr);
-            Console.WriteLine("CryptoKey:ptr:{0}-ref_count:{1}", this.ptr, count);
-        }
-
-        /// <summary>
+		/// <summary>
 		/// Calls EVP_PKEY_assign()
 		/// </summary>
 		/// <param name="type"></param>
@@ -314,7 +298,7 @@ namespace OpenSSL
 		{
 			return new DSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_DSA(this.ptr)), false);
 		}
-		
+
 		/// <summary>
 		/// Returns EVP_PKEY_get1_DH()
 		/// </summary>
@@ -333,30 +317,30 @@ namespace OpenSSL
 			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(this.ptr)), false);
 		}
 
-        /// <summary>
-        /// Calls PEM_write_bio_PKCS8PrivateKey
-        /// </summary>
-        /// <param name="bp"></param>
-        /// <param name="cipher"></param>
-        /// <param name="password"></param>
-                public void WritePrivateKey(BIO bp, Cipher cipher, string password)
-        {
-            PasswordCallback callback = new PasswordCallback(password);
-            WritePrivateKey(bp, cipher, callback.OnPassword, null);
-        }
+		/// <summary>
+		/// Calls PEM_write_bio_PKCS8PrivateKey
+		/// </summary>
+		/// <param name="bp"></param>
+		/// <param name="cipher"></param>
+		/// <param name="password"></param>
+		public void WritePrivateKey(BIO bp, Cipher cipher, string password)
+		{
+			PasswordCallback callback = new PasswordCallback(password);
+			WritePrivateKey(bp, cipher, callback.OnPassword, null);
+		}
 
-        /// <summary>
-        /// Calls PEM_write_bio_PKCS8PrivateKey
-        /// </summary>
-        /// <param name="bp"></param>
-        /// <param name="cipher"></param>
-        /// <param name="handler"></param>
-        /// <param name="arg"></param>
-        public void WritePrivateKey(BIO bp, Cipher cipher, PasswordHandler handler, object arg)
-        {
-            PasswordThunk thunk = new PasswordThunk(handler, null);
-            Native.ExpectSuccess(Native.PEM_write_bio_PKCS8PrivateKey(bp.Handle, this.ptr, cipher.Handle, IntPtr.Zero, 0, thunk.Callback, IntPtr.Zero));
-        }
+		/// <summary>
+		/// Calls PEM_write_bio_PKCS8PrivateKey
+		/// </summary>
+		/// <param name="bp"></param>
+		/// <param name="cipher"></param>
+		/// <param name="handler"></param>
+		/// <param name="arg"></param>
+		public void WritePrivateKey(BIO bp, Cipher cipher, PasswordHandler handler, object arg)
+		{
+			PasswordThunk thunk = new PasswordThunk(handler, null);
+			Native.ExpectSuccess(Native.PEM_write_bio_PKCS8PrivateKey(bp.Handle, this.ptr, cipher.Handle, IntPtr.Zero, 0, thunk.Callback, IntPtr.Zero));
+		}
 
 		#endregion
 
@@ -367,10 +351,19 @@ namespace OpenSSL
 		/// </summary>
 		protected override void OnDispose()
 		{
-            //!!PrintRefCount();
-            Native.EVP_PKEY_free(this.ptr);
+			Native.EVP_PKEY_free(this.ptr);
 		}
 
 		#endregion
+
+		protected override CryptoLockTypes LockType
+		{
+			get { return CryptoLockTypes.CRYPTO_LOCK_X509_PKEY; }
+		}
+
+		protected override Type RawReferenceType
+		{
+			get { return typeof(EVP_PKEY); }
+		}
 	}
 }

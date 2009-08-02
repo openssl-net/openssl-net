@@ -30,52 +30,49 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-    #region X509v3Context
-    #region X509V3_CTX
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct X509V3_CTX
-    {
-        public int flags;
-        public IntPtr issuer_cert;
-        public IntPtr subject_cert;
-        public IntPtr subject_req;
-        public IntPtr crl;
-        public IntPtr db_meth;
-        public IntPtr db;
-    }
-    #endregion
+	#region X509v3Context
 
-    public class X509v3Context : Base, IDisposable
-    {
-        public X509v3Context()
-            : base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))), true)
-        { }
+	public class X509v3Context : Base
+	{
+		#region X509V3_CTX
+		[StructLayout(LayoutKind.Sequential)]
+		struct X509V3_CTX
+		{
+			public int flags;
+			public IntPtr issuer_cert;
+			public IntPtr subject_cert;
+			public IntPtr subject_req;
+			public IntPtr crl;
+			public IntPtr db_meth;
+			public IntPtr db;
+		}
+		#endregion
 
-        /// <summary>
-        /// X509V3_set_ctx_nodb - sets the db pointer to NULL
-        /// </summary>
-        public void SetNoDB()
-        {
-            int db_offset = (int)Marshal.OffsetOf(typeof(X509V3_CTX), "db");
-            IntPtr db_param = new IntPtr((int)this.ptr + db_offset);
-            Marshal.WriteIntPtr(db_param, IntPtr.Zero);
-        }
+		public X509v3Context()
+			: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))), true)
+		{ }
 
-        #region IDisposable Members
+		/// <summary>
+		/// X509V3_set_ctx_nodb - sets the db pointer to NULL
+		/// </summary>
+		public void SetNoDB()
+		{
+			int db_offset = (int)Marshal.OffsetOf(typeof(X509V3_CTX), "db");
+			IntPtr db_param = new IntPtr((int)this.ptr + db_offset);
+			Marshal.WriteIntPtr(db_param, IntPtr.Zero);
+		}
 
-        protected override void OnDispose()
-        {
-            Native.OPENSSL_free(this.ptr);
-        }
+		protected override void OnDispose()
+		{
+			Native.OPENSSL_free(this.ptr);
+		}
+	}
+	#endregion
 
-        #endregion
-    }
-    #endregion
-
-    /// <summary>
+	/// <summary>
 	/// Wraps the NCONF_* functions
 	/// </summary>
-	public class Configuration : Base, IDisposable
+	public class Configuration : Base
 	{
 		private Configuration()
 			: base(Native.NCONF_new(IntPtr.Zero), true)
@@ -97,10 +94,8 @@ namespace OpenSSL
 		/// <param name="filename"></param>
 		public void Load(string filename)
 		{
-			//!!byte[] bytes = Encoding.ASCII.GetBytes(filename);
 			int eline = 0;
-            //!!Native.ExpectSuccess(Native.NCONF_load(this.ptr, bytes, ref eline));
-            Native.ExpectSuccess(Native.NCONF_load(this.ptr, filename, ref eline));
+			Native.ExpectSuccess(Native.NCONF_load(this.ptr, filename, ref eline));
 		}
 
 		/// <summary>

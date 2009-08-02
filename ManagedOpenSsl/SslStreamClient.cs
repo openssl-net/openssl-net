@@ -189,8 +189,8 @@ namespace OpenSSL
                     x509_cert = cert;
                     key = cert.PrivateKey;
                     // Addref the cert and private key
-                    x509_cert.Addref();
-                    key.Addref();
+                    x509_cert.AddRef();
+                    key.AddRef();
                     // return success
                     nRet = 1;
                 }

@@ -93,13 +93,13 @@ namespace OpenSSL
         X509_V_ERR_APPLICATION_VERIFICATION             = 50
     }
 
-    public class Ssl : Base, IDisposable
+    class Ssl : Base, IDisposable
     {
-        public const int SSL_ST_CONNECT = 0x1000;
-        public const int SSL_ST_ACCEPT  = 0x2000;
+        internal const int SSL_ST_CONNECT = 0x1000;
+		internal const int SSL_ST_ACCEPT = 0x2000;
         
         [StructLayout(LayoutKind.Sequential)]
-        internal struct ssl_st
+        struct ssl_st
 	    {
 	        /* protocol version
 	         * (one of SSL2_VERSION, SSL3_VERSION, TLS1_VERSION, DTLS1_VERSION)

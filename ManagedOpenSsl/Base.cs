@@ -30,82 +30,35 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-	#region Base
 	/// <summary>
 	/// Base class for all openssl wrapped objects. 
 	/// Contains the raw unmanaged pointer and has a Handle property to get access to it. 
 	/// Also overloads the ToString() method with a BIO print.
 	/// </summary>
-	public abstract class Base : IStackable, IDisposable
+	public abstract class Base : IDisposable
 	{
-		/// <summary>
-		/// Raw unmanaged pointer
-		/// </summary>
-		protected IntPtr ptr;
-
-		/// <summary>
-		/// If this object is the owner, then call the appropriate native free function.
-		/// </summary>
-		protected bool owner = false;
-
-		/// <summary>
-		/// This is to prevent double-deletion issues.
-		/// </summary>
-		protected bool isDisposed = false;
-
-		/// <summary>
-		/// This destructor just calls Dispose().
-		/// </summary>
-		~Base() {
-			Dispose();
-		}
-
-		/// <summary>
-		/// gets/sets whether the object owns the Native pointer
-		/// </summary>
-		public virtual bool IsOwner {
-			get { return owner; }
-			set { owner = value; }
-		}
-
-		/// <summary>
-		/// Access to the raw unmanaged pointer. Implements the IStackable interface.
-		/// </summary>
-		public virtual IntPtr Handle {
-			get { return this.ptr; }
-			set {
-				if (this.owner && this.ptr != IntPtr.Zero) {
-					this.OnDispose();
-					DoAfterDispose();
-				}
-				this.owner = false;
-				this.ptr = value;
-				if (this.ptr != IntPtr.Zero) {
-					GC.ReRegisterForFinalize(this);
-					this.OnNewHandle(this.ptr);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Do nothing in the base class.
-		/// </summary>
-		/// <param name="ptr"></param>
-		protected virtual void OnNewHandle(IntPtr ptr) {
-		}
-
-		public virtual void Addref() {
-		}
-
 		/// <summary>
 		/// Constructor which takes the raw unmanged pointer. 
 		/// This is the only way to construct this object and all dervied types.
 		/// </summary>
 		/// <param name="ptr"></param>
 		/// <param name="takeOwnership"></param>
-		public Base(IntPtr ptr, bool takeOwnership) {
+		public Base(IntPtr ptr, bool takeOwnership)
+		{
 			this.ptr = ptr;
 			this.owner = takeOwnership;
+			if (this.ptr != IntPtr.Zero)
+			{
+				this.OnNewHandle(this.ptr);
+			}
+		}
+
+		/// <summary>
+		/// This finalizer just calls Dispose().
+		/// </summary>
+		~Base()
+		{
+			Dispose();
 		}
 
 		/// <summary>
@@ -136,9 +89,17 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Default base implementation does nothing.
+		/// This method must be implemented in derived classes.
 		/// </summary>
 		protected abstract void OnDispose();
+
+		/// <summary>
+		/// Do nothing in the base class.
+		/// </summary>
+		/// <param name="ptr"></param>
+		protected virtual void OnNewHandle(IntPtr ptr)
+		{
+		}
 
 		#region IDisposable Members
 
@@ -157,23 +118,120 @@ namespace OpenSSL
 
 		#endregion
 
-		private void DoAfterDispose() {
+		/// <summary>
+		/// gets/sets whether the object owns the Native pointer
+		/// </summary>
+		public virtual bool IsOwner
+		{
+			get { return owner; }
+			internal set { owner = value; }
+		}
+
+		/// <summary>
+		/// Access to the raw unmanaged pointer.
+		/// </summary>
+		public virtual IntPtr Handle
+		{
+			get { return this.ptr; }
+		}
+
+		//internal void SetNewHandle(IntPtr ptr)
+		//{
+		//    if (this.owner && this.ptr != IntPtr.Zero)
+		//    {
+		//        this.OnDispose();
+		//        this.DoAfterDispose();
+		//        this.owner = false;
+		//    }
+		//    this.ptr = ptr;
+		//    if (this.ptr != IntPtr.Zero)
+		//    {
+		//        this.owner = true;
+		//        GC.ReRegisterForFinalize(this);
+		//        this.OnNewHandle(this.ptr);
+		//    }
+		//}
+
+		/// <summary>
+		/// Throws NotImplementedException
+		/// </summary>
+		internal virtual void AddRef()
+		{
+			throw new NotImplementedException();
+		}
+
+		private void DoAfterDispose()
+		{
 			this.ptr = IntPtr.Zero;
 			GC.SuppressFinalize(this);
 		}
 
 		/// <summary>
-		/// Calls CRYPTO_add_lock()
+		/// Raw unmanaged pointer
 		/// </summary>
-		/// <param name="type"></param>
-		/// <param name="lockType"></param>
-		/// <param name="file"></param>
-		protected object DoAddRef(Type type, CryptoLockTypes lockType, string file) {
-			IntPtr offset = Marshal.OffsetOf(type, "references");
-			IntPtr offset_ptr = new IntPtr((long)this.ptr + (long)offset);
-			Native.CRYPTO_add_lock(offset_ptr, 1, lockType, file, 0);
-			return this;
-		}
+		protected IntPtr ptr;
+
+		/// <summary>
+		/// If this object is the owner, then call the appropriate native free function.
+		/// </summary>
+		protected bool owner = false;
+
+		/// <summary>
+		/// This is to prevent double-deletion issues.
+		/// </summary>
+		protected bool isDisposed = false;
+
 	}
-	#endregion
+
+	public abstract class BaseReferenceType : Base
+	{
+		public BaseReferenceType(IntPtr ptr, bool takeOwnership)
+			: base(ptr, takeOwnership)
+		{
+			this.baseOffset = Marshal.OffsetOf(RawReferenceType, "references");
+		}
+
+		internal override void AddRef()
+		{
+			IntPtr offset = GetReferencesOffset();
+			Native.CRYPTO_add_lock(offset, 1, LockType, "Base.cs", 0);
+		}
+
+		public void PrintRefCount()
+		{
+			IntPtr offset = GetReferencesOffset();
+			int count = Marshal.ReadInt32(offset);
+			Console.WriteLine("{0} ptr: {1}, ref_count: {2}", this.GetType().Name, this.ptr, count);
+		}
+
+		private IntPtr GetReferencesOffset()
+		{
+			return new IntPtr((long)this.ptr + (long)this.baseOffset);
+		}
+
+		protected abstract CryptoLockTypes LockType { get; }
+		protected abstract Type RawReferenceType { get; }
+
+		private IntPtr baseOffset;
+	}
+
+	public abstract class BaseValueType : Base
+	{
+		public BaseValueType(IntPtr ptr, bool takeOwnership)
+			: base(ptr, takeOwnership)
+		{
+		}
+
+		internal override void AddRef()
+		{
+			this.ptr = DuplicateHandle();
+			this.owner = true;
+			if (this.ptr != IntPtr.Zero)
+			{
+				this.OnNewHandle(this.ptr);
+			}
+		}
+
+		protected abstract IntPtr DuplicateHandle();
+	}
 }

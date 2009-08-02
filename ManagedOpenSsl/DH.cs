@@ -209,6 +209,7 @@ namespace OpenSSL
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr DH_new_delegate();
+
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr d2i_DHparams_delegate(out IntPtr a, IntPtr pp, int length);
 

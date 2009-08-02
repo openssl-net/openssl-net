@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-    public delegate int ClientCertCallbackHandler(Ssl ssl, out X509Certificate cert, out CryptoKey key);
+    delegate int ClientCertCallbackHandler(Ssl ssl, out X509Certificate cert, out CryptoKey key);
 
     public enum SslFileType
     {
@@ -120,7 +120,7 @@ namespace OpenSSL
     /// <summary>
     /// Wraps the SST_CTX structure and methods
     /// </summary>
-    public class SslContext : Base, IDisposable
+    internal class SslContext : Base, IDisposable
     {
 		#region EVP_CIPHER_CTX
 		[StructLayout(LayoutKind.Sequential)]
@@ -355,7 +355,7 @@ namespace OpenSSL
 
             internal int OnVerifyCertThunk(int ok, IntPtr store_ctx)
             {
-                X509StoreContext ctx = new X509StoreContext(store_ctx);
+                X509StoreContext ctx = new X509StoreContext(store_ctx, false);
                 X509Certificate cert = ctx.CurrentCert;
                 int depth = ctx.ErrorDepth;
                 VerifyResult result = (VerifyResult)ctx.Error;
@@ -365,9 +365,10 @@ namespace OpenSSL
                 X509Chain chain = new X509Chain();
                 foreach (X509Object obj in objStack)
                 {
-                    if (obj.Type == X509Object.X509_LU_X509)
+					X509Certificate objCert = obj.Certificate;
+					if (objCert != null)
                     {
-                        chain.Add(obj.Certificate);
+						chain.Add(objCert);
                     }
                 }
                 // Call the managed delegate

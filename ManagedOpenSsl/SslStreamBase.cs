@@ -86,7 +86,7 @@ namespace OpenSSL
         Complete
     }
 
-    public abstract class SslStreamBase : Stream, IDisposable
+    internal abstract class SslStreamBase : Stream, IDisposable
     {
         internal Stream innerStream;
         internal bool ownStream;

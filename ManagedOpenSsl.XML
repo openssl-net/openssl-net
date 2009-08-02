@@ -234,46 +234,6 @@
             Also overloads the ToString() method with a BIO print.
             </summary>
         </member>
-        <member name="T:OpenSSL.IStackable">
-            <summary>
-            Simple interface used for the internal implementation of the generic OpenSSL.Stack
-            </summary>
-        </member>
-        <member name="M:OpenSSL.IStackable.Addref">
-            <summary>
-            Adds to the reference count of the native object
-            </summary>
-        </member>
-        <member name="P:OpenSSL.IStackable.Handle">
-            <summary>
-            Underlying native pointer
-            </summary>
-        </member>
-        <member name="P:OpenSSL.IStackable.IsOwner">
-            <summary>
-            Owership property for the stackable item
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Base.ptr">
-            <summary>
-            Raw unmanaged pointer
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Base.owner">
-            <summary>
-            If this object is the owner, then call the appropriate native free function.
-            </summary>
-        </member>
-        <member name="F:OpenSSL.Base.isDisposed">
-            <summary>
-            This is to prevent double-deletion issues.
-            </summary>
-        </member>
-        <member name="M:OpenSSL.Base.Finalize">
-            <summary>
-            This destructor just calls Dispose().
-            </summary>
-        </member>
         <member name="M:OpenSSL.Base.#ctor(System.IntPtr,System.Boolean)">
             <summary>
             Constructor which takes the raw unmanged pointer. 
@@ -281,6 +241,11 @@
             </summary>
             <param name="ptr"></param>
             <param name="takeOwnership"></param>
+        </member>
+        <member name="M:OpenSSL.Base.Finalize">
+            <summary>
+            This finalizer just calls Dispose().
+            </summary>
         </member>
         <member name="M:OpenSSL.Base.Print(OpenSSL.BIO)">
             <summary>
@@ -298,14 +263,40 @@
         </member>
         <member name="M:OpenSSL.Base.OnDispose">
             <summary>
-            Default base implementation does nothing.
+            This method must be implemented in derived classes.
             </summary>
+        </member>
+        <member name="M:OpenSSL.Base.OnNewHandle(System.IntPtr)">
+            <summary>
+            Do nothing in the base class.
+            </summary>
+            <param name="ptr"></param>
         </member>
         <member name="M:OpenSSL.Base.Dispose">
             <summary>
             Implementation of the IDisposable interface.
             If the native pointer is not null, we haven't been disposed, and we are the owner,
             then call the virtual OnDispose() method.
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Base.AddRef">
+            <summary>
+            Throws NotImplementedException
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.ptr">
+            <summary>
+            Raw unmanaged pointer
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.owner">
+            <summary>
+            If this object is the owner, then call the appropriate native free function.
+            </summary>
+        </member>
+        <member name="F:OpenSSL.Base.isDisposed">
+            <summary>
+            This is to prevent double-deletion issues.
             </summary>
         </member>
         <member name="P:OpenSSL.Base.IsOwner">
@@ -315,7 +306,7 @@
         </member>
         <member name="P:OpenSSL.Base.Handle">
             <summary>
-            Access to the raw unmanaged pointer. Implements the IStackable interface.
+            Access to the raw unmanaged pointer.
             </summary>
         </member>
         <member name="F:OpenSSL.SslMethod.SSLv2_method">
@@ -396,6 +387,11 @@
         <member name="T:OpenSSL.X509Name">
             <summary>
             Encapsulates the X509_NAME_* functions
+            </summary>
+        </member>
+        <member name="T:OpenSSL.IStackable">
+            <summary>
+            The Stack class can only contain objects marked with this interface.
             </summary>
         </member>
         <member name="M:OpenSSL.X509Name.#ctor">
@@ -1281,6 +1277,58 @@
             <param name="arg"></param>
             <returns></returns>
         </member>
+        <member name="T:OpenSSL.Asn1String">
+            <summary>
+            Wraps ASN1_STRING_*
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Asn1String.#ctor">
+            <summary>
+            Calls ASN1_STRING_type_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Asn1String.#ctor(System.IntPtr,System.Boolean)">
+            <summary>
+            Wrap existing native pointer
+            </summary>
+            <param name="ptr"></param>
+            <param name="takeOwnership"></param>
+        </member>
+        <member name="M:OpenSSL.Asn1String.#ctor(System.Byte[])">
+            <summary>
+            Calls ASN1_STRING_set()
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:OpenSSL.Asn1String.Equals(System.Object)">
+            <summary>
+            Calls CompareTo()
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OpenSSL.Asn1String.OnDispose">
+            <summary>
+            Calls ASN1_STRING_free()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.Asn1String.CompareTo(OpenSSL.Asn1String)">
+            <summary>
+            Returns ASN1_STRING_cmp()
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OpenSSL.Asn1String.Length">
+            <summary>
+            Returns ASN1_STRING_length()
+            </summary>
+        </member>
+        <member name="P:OpenSSL.Asn1String.Data">
+            <summary>
+            Returns ASN1_STRING_data()
+            </summary>
+        </member>
         <member name="T:OpenSSL.ThreadInitialization">
             <summary>
             static class for initialize OpenSSL/Crypto libraries for threading
@@ -1498,11 +1546,6 @@
             <param name="bio"></param>
             <returns></returns>
         </member>
-        <member name="M:OpenSSL.X509Certificate.Finalize">
-            <summary>
-            Calls Dispose()
-            </summary>
-        </member>
         <member name="M:OpenSSL.X509Certificate.#ctor(System.Int32,OpenSSL.X509Name,OpenSSL.X509Name,OpenSSL.CryptoKey,System.DateTime,System.DateTime)">
             <summary>
             Creates a new X509 certificate
@@ -1657,21 +1700,6 @@
         <member name="P:OpenSSL.X509Certificate.PEM">
             <summary>
             Returns the PEM formatted string of this object
-            </summary>
-        </member>
-        <member name="T:OpenSSL.X509Extension">
-            <summary>
-            Wraps the X509_EXTENSION object
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Extension.#ctor">
-            <summary>
-            Calls X509_EXTENSION_new()
-            </summary>
-        </member>
-        <member name="M:OpenSSL.X509Extension.OnDispose">
-            <summary>
-            Calls X509_EXTENSION_free()
             </summary>
         </member>
         <member name="T:OpenSSL.DSA">
@@ -3226,6 +3254,12 @@
             Calls sk_new_null()
             </summary>
         </member>
+        <member name="M:OpenSSL.Stack`1.DuplicateHandle">
+            <summary>
+            Calls sk_dup()
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:OpenSSL.Stack`1.Shift">
             <summary>
             Calls sk_shift()
@@ -3427,6 +3461,21 @@
         <member name="P:OpenSSL.OpenSslException.Errors">
             <summary>
             Returns the list of errors associated with this exception.
+            </summary>
+        </member>
+        <member name="T:OpenSSL.X509Extension">
+            <summary>
+            Wraps the X509_EXTENSION object
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Extension.#ctor">
+            <summary>
+            Calls X509_EXTENSION_new()
+            </summary>
+        </member>
+        <member name="M:OpenSSL.X509Extension.OnDispose">
+            <summary>
+            Calls X509_EXTENSION_free()
             </summary>
         </member>
     </members>
