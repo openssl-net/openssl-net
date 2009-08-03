@@ -403,7 +403,7 @@ namespace OpenSSL
 
 		#endregion 
 
-		#region IDisposable Members
+		#region Overrides
 
 		/// <summary>
 		/// Calls X509_NAME_free()
@@ -411,6 +411,11 @@ namespace OpenSSL
 		protected override void OnDispose()
 		{
 			Native.X509_NAME_free(this.ptr);
+		}
+
+		internal override IntPtr DuplicateHandle()
+		{
+			return Native.X509_NAME_dup(this.ptr);
 		}
 
 		#endregion
@@ -428,10 +433,5 @@ namespace OpenSSL
 		}
 
 		#endregion
-	
-		protected override IntPtr DuplicateHandle()
-		{
-			return Native.X509_NAME_dup(this.ptr);
-		}
 	}
 }

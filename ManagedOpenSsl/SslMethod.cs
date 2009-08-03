@@ -34,11 +34,14 @@ namespace OpenSSL
     /// </summary>
     public class SslMethod : Base
     {
-        public SslMethod(IntPtr ptr, bool owner) :
+        private SslMethod(IntPtr ptr, bool owner) :
             base(ptr, owner)
         {
         }
 
+		/// <summary>
+		/// Throws NotImplementedException()
+		/// </summary>
 		protected override void OnDispose() {
 			throw new NotImplementedException();
 		}

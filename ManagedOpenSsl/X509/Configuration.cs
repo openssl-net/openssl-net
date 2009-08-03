@@ -32,7 +32,10 @@ namespace OpenSSL
 {
 	#region X509v3Context
 
-	public class X509v3Context : Base
+	/// <summary>
+	/// Wraps X509V3_CTX
+	/// </summary>
+	class X509V3Context : Base
 	{
 		#region X509V3_CTX
 		[StructLayout(LayoutKind.Sequential)]
@@ -48,9 +51,36 @@ namespace OpenSSL
 		}
 		#endregion
 
-		public X509v3Context()
+		#region Initialization
+
+		/// <summary>
+		/// Calls OPENSSL_malloc()
+		/// </summary>
+		private X509V3Context()
 			: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(X509V3_CTX))), true)
 		{ }
+
+		/// <summary>
+		/// Calls X509V3_set_ctx()
+		/// </summary>
+		/// <param name="issuer"></param>
+		/// <param name="subject"></param>
+		/// <param name="request"></param>
+		public X509V3Context(X509Certificate issuer, X509Certificate subject, X509Request request)
+			: this()
+		{
+			Native.X509V3_set_ctx(
+				this.ptr,
+				issuer != null ? issuer.Handle : IntPtr.Zero,
+				subject != null ? subject.Handle : IntPtr.Zero,
+				request != null ? request.Handle : IntPtr.Zero,
+				IntPtr.Zero,
+				0);
+		}
+
+		#endregion
+
+		#region Methods
 
 		/// <summary>
 		/// X509V3_set_ctx_nodb - sets the db pointer to NULL
@@ -62,10 +92,28 @@ namespace OpenSSL
 			Marshal.WriteIntPtr(db_param, IntPtr.Zero);
 		}
 
+		/// <summary>
+		/// Calls X509V3_set_nconf()
+		/// </summary>
+		/// <param name="cfg"></param>
+		public void SetConfiguration(Configuration cfg)
+		{
+			Native.X509V3_set_nconf(this.ptr, cfg.Handle);
+		}
+
+		#endregion
+
+		#region Overrides
+
+		/// <summary>
+		/// Calls OPENSSL_free()
+		/// </summary>
 		protected override void OnDispose()
 		{
 			Native.OPENSSL_free(this.ptr);
 		}
+
+		#endregion
 	}
 	#endregion
 
@@ -74,6 +122,11 @@ namespace OpenSSL
 	/// </summary>
 	public class Configuration : Base
 	{
+		#region Initialization
+
+		/// <summary>
+		/// Calls NCONF_new()
+		/// </summary>
 		private Configuration()
 			: base(Native.NCONF_new(IntPtr.Zero), true)
 		{ }
@@ -87,6 +140,10 @@ namespace OpenSSL
 		{
 			this.Load(filename);
 		}
+
+		#endregion
+
+		#region Methods
 
 		/// <summary>
 		/// Calls NCONF_load()
@@ -112,23 +169,20 @@ namespace OpenSSL
 			X509Certificate subject,
 			X509Request request)
 		{
-			X509v3Context ctx = new X509v3Context();
-			Native.X509V3_set_ctx(
-				ctx.Handle,
-				issuer != null ? issuer.Handle : IntPtr.Zero,
-				subject.Handle,
-				request != null ? request.Handle : IntPtr.Zero,
-				IntPtr.Zero,
-				0);
-			Native.X509V3_set_nconf(ctx.Handle, this.ptr);
-			Native.ExpectSuccess(Native.X509V3_EXT_add_nconf(
-				this.ptr,
-				ctx.Handle,
-				Encoding.ASCII.GetBytes(section),
-				subject.Handle));
+			using (X509V3Context ctx = new X509V3Context(issuer, subject, request))
+			{
+				ctx.SetConfiguration(this);
+				Native.ExpectSuccess(Native.X509V3_EXT_add_nconf(
+					this.ptr,
+					ctx.Handle,
+					Encoding.ASCII.GetBytes(section),
+					subject.Handle));
+			}
 		}
 
-		#region IDisposable Members
+		#endregion
+
+		#region Overrides
 
 		/// <summary>
 		/// Calls NCONF_free()

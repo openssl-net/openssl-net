@@ -33,30 +33,23 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps the X509 object
 	/// </summary>
-	public class X509Certificate : BaseReferenceType, IComparable<X509Certificate>, IStackable
+	public class X509Certificate : BaseCopyableRef<X509Certificate>, IComparable<X509Certificate>, IStackable
 	{
-        #region Members
-        private CryptoKey privateKey;
-        #endregion
-
-        #region Initialization
+		#region Initialization
 		internal X509Certificate(IStack stack, IntPtr ptr)
 			: base(ptr, true)
-		{
-		}
+		{ }
 
-		internal X509Certificate(IntPtr ptr, bool owner) 
+		internal X509Certificate(IntPtr ptr, bool owner)
 			: base(ptr, owner)
-        {
-        }
+		{ }
 
 		/// <summary>
-		/// 
+		/// Calls X509_new()
 		/// </summary>
 		public X509Certificate()
 			: base(Native.ExpectNonNull(Native.X509_new()), true)
-		{
-		}
+		{ }
 
 		/// <summary>
 		/// Calls PEM_read_bio_X509()
@@ -64,8 +57,7 @@ namespace OpenSSL
 		/// <param name="bio"></param>
 		public X509Certificate(BIO bio)
 			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
-		{
-		}
+		{ }
 
 		/// <summary>
 		/// Factory method that returns a X509 using d2i_X509_bio()
@@ -79,38 +71,54 @@ namespace OpenSSL
 			return new X509Certificate(ptr, true);
 		}
 
-        public static X509Certificate FromPKCS7_PEM(BIO bio)
-        {
-            PKCS7 pkcs7 = PKCS7.FromPEM(bio);
-            X509Chain chain = pkcs7.Certificates;
-            if (chain != null && chain.Count > 0)
-            {
-                return new X509Certificate(chain[0].Handle, false);
-            }
-            else
-            {
-                throw new OpenSslException();
-            }
-        }
+		/// <summary>
+		/// Factory method to create a X509Certificate from a PKCS7 encoded in PEM
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <returns></returns>
+		public static X509Certificate FromPKCS7_PEM(BIO bio)
+		{
+			PKCS7 pkcs7 = PKCS7.FromPEM(bio);
+			X509Chain chain = pkcs7.Certificates;
+			if (chain != null && chain.Count > 0)
+			{
+				return new X509Certificate(chain[0].Handle, false);
+			}
+			else
+			{
+				throw new OpenSslException();
+			}
+		}
 
-        public static X509Certificate FromPKCS7_ASN1(BIO bio)
-        {
-            PKCS7 pkcs7 = PKCS7.FromASN1(bio);
-            X509Chain chain = pkcs7.Certificates;
-            if (chain != null && chain.Count > 0)
-            {
-                return new X509Certificate(chain[0].Handle, false);
-            }
-            return null;
-        }
+		/// <summary>
+		/// Factory method to create a X509Certificate from a PKCS7 encoded in DER
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <returns></returns>
+		public static X509Certificate FromPKCS7_DER(BIO bio)
+		{
+			PKCS7 pkcs7 = PKCS7.FromDER(bio);
+			X509Chain chain = pkcs7.Certificates;
+			if (chain != null && chain.Count > 0)
+			{
+				return new X509Certificate(chain[0].Handle, false);
+			}
+			return null;
+		}
 
-        public static X509Certificate FromPKCS12(BIO bio, string password)
-        {
+		/// <summary>
+		/// Factory method to create a X509Certificate from a PKCS12
+		/// </summary>
+		/// <param name="bio"></param>
+		/// <param name="password"></param>
+		/// <returns></returns>
+		public static X509Certificate FromPKCS12(BIO bio, string password)
+		{
 			using (PKCS12 p12 = new PKCS12(bio, password))
 			{
 				return p12.Certificate;
 			}
-        }
+		}
 
 		/// <summary>
 		/// Creates a new X509 certificate
@@ -123,10 +131,10 @@ namespace OpenSSL
 		/// <param name="end"></param>
 		public X509Certificate(
 			int serial,
-			X509Name subject, 
-			X509Name issuer, 
+			X509Name subject,
+			X509Name issuer,
 			CryptoKey pubkey,
-            DateTime start,
+			DateTime start,
 			DateTime end)
 			: this()
 		{
@@ -134,7 +142,7 @@ namespace OpenSSL
 			this.SerialNumber = serial;
 			this.Subject = subject;
 			this.Issuer = issuer;
-            this.PublicKey = pubkey;
+			this.PublicKey = pubkey;
 			this.NotBefore = start;
 			this.NotAfter = end;
 		}
@@ -199,7 +207,7 @@ namespace OpenSSL
 			public IntPtr aux;
 		}
 		#endregion
-		
+
 		#endregion
 
 		#region Properties
@@ -223,17 +231,17 @@ namespace OpenSSL
 		/// </summary>
 		public X509Name Subject
 		{
-            get
-            {
-                // Get the native pointer for the subject name
-                IntPtr name_ptr = Native.ExpectNonNull(Native.X509_get_subject_name(this.ptr));
-                // Duplicate the native pointer, as the X509_get_subject_name returns a pointer
-                // that is owned by the X509 object
-                IntPtr dupe_name_ptr = Native.ExpectNonNull(Native.X509_NAME_dup(name_ptr));
-                // Create the X509Name object, and set the duplicated native pointer with ownership
-                return new X509Name(dupe_name_ptr, true);
-            }
-            set { Native.ExpectSuccess(Native.X509_set_subject_name(this.ptr, value.Handle)); }
+			get
+			{
+				// Get the native pointer for the subject name
+				IntPtr name_ptr = Native.ExpectNonNull(Native.X509_get_subject_name(this.ptr));
+				X509Name ret = new X509Name(name_ptr, true);
+				// Duplicate the native pointer, as the X509_get_subject_name returns a pointer
+				// that is owned by the X509 object
+				ret.AddRef();
+				return ret;
+			}
+			set { Native.ExpectSuccess(Native.X509_set_subject_name(this.ptr, value.Handle)); }
 		}
 
 		/// <summary>
@@ -251,13 +259,12 @@ namespace OpenSSL
 		public int SerialNumber
 		{
 			get { return Native.ASN1_INTEGER_get(Native.X509_get_serialNumber(this.ptr)); }
-			set 
-            {
-                IntPtr serASN = Native.IntegerToAsnInteger(value);
-                //!!Native.ExpectSuccess(Native.X509_set_serialNumber(this.ptr, Native.IntegerToAsnInteger(value)));
-                Native.ExpectSuccess(Native.X509_set_serialNumber(this.ptr, serASN));
-                Native.ASN1_INTEGER_free(serASN);
-            }
+			set
+			{
+				IntPtr serASN = Native.IntegerToAsnInteger(value);
+				Native.ExpectSuccess(Native.X509_set_serialNumber(this.ptr, serASN));
+				Native.ASN1_INTEGER_free(serASN);
+			}
 		}
 
 		/// <summary>
@@ -265,15 +272,13 @@ namespace OpenSSL
 		/// </summary>
 		public DateTime NotBefore
 		{
-//!!			get { return Native.AsnTimeToDateTime(this.RawValidity.notBefore); }
 			get { return Native.AsnTimeToDateTime(this.RawValidity.notBefore).ToLocalTime(); }
-			set 
-            { 
-//!!                Native.ExpectSuccess(Native.X509_set_notBefore(this.ptr, Native.DateTimeToAsnTime(value))); 
-                IntPtr datetimeASN = Native.DateTimeToAsnTime(value.ToUniversalTime());
-                Native.ExpectSuccess(Native.X509_set_notBefore(this.ptr, datetimeASN));
-                Native.ASN1_TIME_free(datetimeASN);
-            }
+			set
+			{
+				IntPtr datetimeASN = Native.DateTimeToAsnTime(value.ToUniversalTime());
+				Native.ExpectSuccess(Native.X509_set_notBefore(this.ptr, datetimeASN));
+				Native.ASN1_TIME_free(datetimeASN);
+			}
 		}
 
 		/// <summary>
@@ -281,15 +286,13 @@ namespace OpenSSL
 		/// </summary>
 		public DateTime NotAfter
 		{
-//!!			get { return Native.AsnTimeToDateTime(this.RawValidity.notAfter); }
 			get { return Native.AsnTimeToDateTime(this.RawValidity.notAfter).ToLocalTime(); }
-			set 
-            {
-                //!!Native.ExpectSuccess(Native.X509_set_notAfter(this.ptr, Native.DateTimeToAsnTime(value)));
-                IntPtr datetimeASN = Native.DateTimeToAsnTime(value.ToUniversalTime());
-                Native.ExpectSuccess(Native.X509_set_notAfter(this.ptr, datetimeASN));
-                Native.ASN1_TIME_free(datetimeASN);
-            }
+			set
+			{
+				IntPtr datetimeASN = Native.DateTimeToAsnTime(value.ToUniversalTime());
+				Native.ExpectSuccess(Native.X509_set_notAfter(this.ptr, datetimeASN));
+				Native.ASN1_TIME_free(datetimeASN);
+			}
 		}
 
 		/// <summary>
@@ -310,29 +313,33 @@ namespace OpenSSL
 			set { Native.ExpectSuccess(Native.X509_set_pubkey(this.ptr, value.Handle)); }
 		}
 
-        public bool HasPrivateKey
-        {
-            get
-            {
-                return privateKey != null;
-            }
-        }
+		/// <summary>
+		/// Returns whether or not a Private Key is attached to this Certificate
+		/// </summary>
+		public bool HasPrivateKey
+		{
+			get { return privateKey != null; }
+		}
 
-        public CryptoKey PrivateKey
-        {
-            get { return privateKey; }
-            set
-            {
-                if (CheckPrivateKey(value))
-                {
-                    privateKey = value;
-                }
-                else
-                {
-                    throw new ArgumentException("Private key doesn't correspond to the this certificate");
-                }
-            }
-        }
+		/// <summary>
+		/// Gets and Sets the Private Key for this Certificate.
+		/// The Private Key MUST match the Public Key.
+		/// </summary>
+		public CryptoKey PrivateKey
+		{
+			get { return privateKey; }
+			set
+			{
+				if (CheckPrivateKey(value))
+				{
+					privateKey = value;
+				}
+				else
+				{
+					throw new ArgumentException("Private key doesn't correspond to the this certificate");
+				}
+			}
+		}
 
 		/// <summary>
 		/// Returns the PEM formatted string of this object
@@ -472,41 +479,49 @@ namespace OpenSSL
 			Native.ExpectSuccess(Native.X509_add1_ext_i2d(this.ptr, Native.TextToNID(name), value, crit, flags));
 		}
 
-        public Stack<X509Extension> Extensions
-        {
-            get
-            {
-                if (RawCertInfo.extensions != IntPtr.Zero)
-                {
-                    return new Stack<X509Extension>(RawCertInfo.extensions, false);
-                }
-                return null;
-            }
-        }
+		/// <summary>
+		/// 
+		/// </summary>
+		public Stack<X509Extension> Extensions
+		{
+			get
+			{
+				if (RawCertInfo.extensions != IntPtr.Zero)
+				{
+					return new Stack<X509Extension>(RawCertInfo.extensions, false);
+				}
+				return null;
+			}
+		}
 
-        public void AddExtensions(Stack<X509Extension> sk_ext)
-        {
-            foreach (X509Extension ext in sk_ext)
-            {
-                AddExtension(ext);
-            }
-        }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sk_ext"></param>
+		public void AddExtensions(Stack<X509Extension> sk_ext)
+		{
+			foreach (X509Extension ext in sk_ext)
+			{
+				AddExtension(ext);
+			}
+		}
 
 		#endregion
 
+		#region Overrides
 		/// <summary>
 		/// Calls X509_free()
 		/// </summary>
-		protected override void OnDispose() {
+		protected override void OnDispose()
+		{
 			Native.X509_free(this.ptr);
-            if (privateKey != null)
-            {
-                privateKey.Dispose();
-                privateKey = null;
-            }
+			if (privateKey != null)
+			{
+				privateKey.Dispose();
+				privateKey = null;
+			}
 		}
 
-		#region Overrides
 		/// <summary>
 		/// Compares X509Certificate
 		/// </summary>
@@ -528,6 +543,17 @@ namespace OpenSSL
 		{
 			return this.Issuer.OneLine.GetHashCode() ^ this.SerialNumber;
 		}
+
+		internal override CryptoLockTypes LockType
+		{
+			get { return CryptoLockTypes.CRYPTO_LOCK_X509; }
+		}
+
+		internal override Type RawReferenceType
+		{
+			get { return typeof(X509); }
+		}
+
 		#endregion
 
 		#region IComparable Members
@@ -544,14 +570,8 @@ namespace OpenSSL
 
 		#endregion
 
-		protected override CryptoLockTypes LockType
-		{
-			get { return CryptoLockTypes.CRYPTO_LOCK_X509; }
-		}
-
-		protected override Type RawReferenceType
-		{
-			get { return typeof(X509); }
-		}
+		#region Fields
+		private CryptoKey privateKey;
+		#endregion
 	}
 }

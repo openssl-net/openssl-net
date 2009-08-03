@@ -70,6 +70,7 @@ namespace OpenSSL
 		}
 		#endregion
 
+		#region Enums
 		/// <summary>
 		/// RSA padding scheme
 		/// </summary>
@@ -97,15 +98,18 @@ namespace OpenSSL
 			/// </summary>
 			X931 = 5,
 		}
+		#endregion
 
+		#region Constants
 		private const int FlagCacheMont_P = 0x01;
 		private const int FlagNoExpConstTime = 0x02;
 		private const int FlagNoConstTime = 0x100;
-
-		private BigNumber.GeneratorThunk thunk = null;
+		#endregion
 
 		#region Initialization
-		internal RSA(IntPtr ptr, bool owner) : base(ptr, owner) {}
+		internal RSA(IntPtr ptr, bool owner) 
+			: base(ptr, owner) 
+		{ }
 
 		/// <summary>
 		/// Calls RSA_new()
@@ -485,6 +489,10 @@ namespace OpenSSL
 			Native.RSA_free(this.ptr);
 		}
 
+		#endregion
+
+		#region Fields
+		private BigNumber.GeneratorThunk thunk = null;
 		#endregion
 	}
 }

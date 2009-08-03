@@ -64,14 +64,7 @@ namespace OpenSSL
 
 		#endregion
 
-		/// <summary>
-		/// Calls sk_dup()
-		/// </summary>
-		/// <returns></returns>
-		protected override IntPtr DuplicateHandle()
-		{
-			return Native.sk_dup(this.ptr);
-		}
+		#region Methods
 
 		/// <summary>
 		/// Calls sk_shift()
@@ -82,6 +75,8 @@ namespace OpenSSL
 			IntPtr ptr = Native.sk_shift(this.ptr);
 			return CreateInstance(ptr);
 		}
+
+		#endregion
 
 		#region Enumerator
 		class Enumerator : IEnumerator<T>
@@ -144,7 +139,7 @@ namespace OpenSSL
 		}
 		#endregion
 
-		#region IDisposable Members
+		#region Overrides
 		/// <summary>
 		/// Calls sk_free()
 		/// </summary>
@@ -155,6 +150,16 @@ namespace OpenSSL
 
 			Native.sk_free(this.ptr);
 		}
+
+		/// <summary>
+		/// Calls sk_dup()
+		/// </summary>
+		/// <returns></returns>
+		internal override IntPtr DuplicateHandle()
+		{
+			return Native.sk_dup(this.ptr);
+		}
+
 		#endregion
 
 		#region IList<T> Members
@@ -341,6 +346,8 @@ namespace OpenSSL
 
 		#endregion
 
+		#region Helpers
+
 		private T CreateInstance(IntPtr ptr)
 		{
 			object[] args = new object[] {
@@ -354,5 +361,7 @@ namespace OpenSSL
 			T item = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
 			return item;
 		}
+
+		#endregion
 	}
 }

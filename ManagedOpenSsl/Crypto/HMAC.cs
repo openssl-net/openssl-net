@@ -30,10 +30,14 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// Wraps HMAC
+	/// </summary>
 	public class HMAC : Base
 	{
+		#region Raw Structures
 		[StructLayout(LayoutKind.Sequential)]
-		public struct EVP_MD_CTX
+		struct EVP_MD_CTX
 		{
 			IntPtr digest;      //const EVP_MD *digest;
 			IntPtr engine;      //ENGINE *engine; /* functional reference if 'digest' is ENGINE-provided */
@@ -64,9 +68,14 @@ namespace OpenSSL
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.HMAC_MAX_MD_CBLOCK)]
 			byte[] key;
 		}
+		#endregion
 
+		#region Initialization
+		/// <summary>
+		/// Calls OPENSSL_malloc() and then HMAC_CTX_init()
+		/// </summary>
 		public HMAC()
-			: base(IntPtr.Zero, false)
+			: base(IntPtr.Zero, true)
 		{
 			// Allocate the context
 			if (FIPS.Enabled)
@@ -77,11 +86,20 @@ namespace OpenSSL
 			{
 				this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(HMAC_CTX)));
 			}
-			this.owner = true;
 			// Initialize the context
 			Native.HMAC_CTX_init(this.ptr);
 		}
+		#endregion
 
+		#region Methods
+
+		/// <summary>
+		/// Calls HMAC()
+		/// </summary>
+		/// <param name="digest"></param>
+		/// <param name="key"></param>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		public static byte[] Digest(MessageDigest digest, byte[] key, byte[] data)
 		{
 			byte[] hash_value = new byte[digest.Size];
@@ -90,6 +108,11 @@ namespace OpenSSL
 			return hash_value;
 		}
 
+		/// <summary>
+		/// Calls HMAC_Init_ex()
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="digest"></param>
 		public void Init(byte[] key, MessageDigest digest)
 		{
 			Native.HMAC_Init_ex(this.ptr, key, key.Length, digest.Handle, IntPtr.Zero);
@@ -97,6 +120,10 @@ namespace OpenSSL
 			this.initialized = true;
 		}
 
+		/// <summary>
+		/// Calls HMAC_Update()
+		/// </summary>
+		/// <param name="data"></param>
 		public void Update(byte[] data)
 		{
 			if (!initialized)
@@ -106,6 +133,12 @@ namespace OpenSSL
 			Native.HMAC_Update(this.ptr, data, data.Length);
 		}
 
+		/// <summary>
+		/// Calls HMAC_Update()
+		/// </summary>
+		/// <param name="data"></param>
+		/// <param name="offset"></param>
+		/// <param name="count"></param>
 		public void Update(byte[] data, int offset, int count)
 		{
 			if (!initialized)
@@ -132,6 +165,10 @@ namespace OpenSSL
 			Native.HMAC_Update(this.ptr, seg.Array, seg.Count);
 		}
 
+		/// <summary>
+		/// Calls HMAC_Final()
+		/// </summary>
+		/// <returns></returns>
 		public byte[] DigestFinal()
 		{
 			if (!initialized)
@@ -145,6 +182,12 @@ namespace OpenSSL
 			return hash_value;
 		}
 
+		#endregion
+
+		#region Overrides
+		/// <summary>
+		/// Calls HMAC_CTX_cleanup() and then OPENSSL_free()
+		/// </summary>
 		protected override void OnDispose()
 		{
 			// Clean up the context
@@ -152,8 +195,11 @@ namespace OpenSSL
 			// Free the structure allocation
 			Native.OPENSSL_free(this.ptr);
 		}
+		#endregion
 
+		#region Fields
 		private bool initialized = false;
 		private int digest_size = 0;
+		#endregion
 	}
 }

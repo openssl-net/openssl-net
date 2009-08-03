@@ -5,7 +5,7 @@
 // modification, are permitted provided that the following conditions
 // are met:
 // 1. Redistributions of source code must retain the above copyright
-//    notice, this list of conditions an7d the following disclaimer.
+//    notice, this list of conditions and the following disclaimer.
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
@@ -31,91 +31,14 @@ using System.Runtime.InteropServices;
 namespace OpenSSL
 {
 	/// <summary>
-	/// Callback prototype. Must return the password or prompt for one.
-	/// </summary>
-	/// <param name="verify"></param>
-	/// <param name="userdata"></param>
-	/// <returns></returns>
-	public delegate string PasswordHandler(bool verify, object userdata);
-
-	/// <summary>
-	/// Simple password callback that returns the contained password.
-	/// </summary>
-	public class PasswordCallback
-	{
-		private string password;
-		/// <summary>
-		/// Constructs a PasswordCallback
-		/// </summary>
-		/// <param name="password"></param>
-		public PasswordCallback(string password)
-		{
-			this.password = password;
-		}
-
-		/// <summary>
-		/// Suitable callback to be used as a PasswordHandler
-		/// </summary>
-		/// <param name="verify"></param>
-		/// <param name="userdata"></param>
-		/// <returns></returns>
-		public string OnPassword(bool verify, object userdata)
-		{
-			return this.password;
-		}
-	}
-
-	internal class PasswordThunk
-	{
-		private PasswordHandler OnPassword;
-		private object arg;
-
-		public Native.pem_password_cb Callback
-		{
-			get
-			{
-				if (this.OnPassword == null)
-					return null;
-				return this.OnPasswordThunk;
-			}
-		}
-
-		public PasswordThunk(PasswordHandler client, object arg)
-		{
-			this.OnPassword = client;
-			this.arg = arg;
-		}
-
-		internal int OnPasswordThunk(IntPtr buf, int size, int rwflag, IntPtr userdata)
-		{
-			try
-			{
-				string ret = OnPassword(rwflag != 0, this.arg);
-				byte[] pass = Encoding.ASCII.GetBytes(ret);
-				int len = pass.Length;
-				if (len > size)
-					len = size;
-
-				Marshal.Copy(pass, 0, buf, len);
-				return len;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-				return -1;
-			}
-		}
-	}
-
-	/// <summary>
 	/// Wraps the native OpenSSL EVP_PKEY object
 	/// </summary>
-	public class CryptoKey : BaseReferenceType, IDisposable
+	public class CryptoKey : BaseCopyableRef<CryptoKey>
 	{
-		public const int EVP_PKEY_RSA = 6;
-		public const int EVP_PKEY_DSA = 116;
-		public const int EVP_PKEY_DH = 28;
-		public const int EVP_PKEY_EC = 408;
+		const int EVP_PKEY_RSA = 6;
+		const int EVP_PKEY_DSA = 116;
+		const int EVP_PKEY_DH = 28;
+		const int EVP_PKEY_EC = 408;
 
 		[StructLayout(LayoutKind.Sequential)]
 		struct EVP_PKEY
@@ -356,12 +279,12 @@ namespace OpenSSL
 
 		#endregion
 
-		protected override CryptoLockTypes LockType
+		internal override CryptoLockTypes LockType
 		{
 			get { return CryptoLockTypes.CRYPTO_LOCK_X509_PKEY; }
 		}
 
-		protected override Type RawReferenceType
+		internal override Type RawReferenceType
 		{
 			get { return typeof(EVP_PKEY); }
 		}

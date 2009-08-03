@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2009 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -30,219 +30,12 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL
 {
-	#region X509StoreContext
 	/// <summary>
-	/// Wraps the X509_STORE_CTX object
-	/// </summary>
-	public class X509StoreContext : IDisposable
-	{
-		#region X509_STORE_CONTEXT
-		[StructLayout(LayoutKind.Sequential)]
-		private struct X509_STORE_CONTEXT
-		{
-			public IntPtr ctx;
-			public int current_method;
-			public IntPtr cert;
-			public IntPtr untrusted;
-			public int purpose;
-			public int trust;
-#if PocketPC
-            public uint check_time;
-#else
-			public long check_time;
-#endif
-			public uint flags;
-			public IntPtr other_ctx;
-			public IntPtr verify;
-			public IntPtr verify_cb;
-			public IntPtr get_issuer;
-			public IntPtr check_issued;
-			public IntPtr check_revocation;
-			public IntPtr get_crl;
-			public IntPtr check_crl;
-			public IntPtr cert_crl;
-			public IntPtr cleanup;
-			public int depth;
-			public int valid;
-			public int last_untrusted;
-			public IntPtr chain;
-			public int error_depth;
-			public int error;
-			public IntPtr current_cert;
-			public IntPtr current_issuer;
-			public IntPtr current_crl;
-			#region CRYPTO_EX_DATA ex_data;
-			public IntPtr ex_data_sk;
-			public int ex_data_dummy;
-			#endregion
-		}
-		#endregion
-
-		private IntPtr ptr;
-		private bool own_ptr;
-
-		public X509StoreContext()
-		{
-			this.ptr = Native.ExpectNonNull(Native.X509_STORE_CTX_new());
-			own_ptr = true;
-		}
-
-		public X509StoreContext(IntPtr x509_store_ctx, bool isOwner)
-		{
-			this.ptr = x509_store_ctx;
-			own_ptr = isOwner;
-		}
-
-		public X509Certificate CurrentCert
-		{
-			get
-			{
-				IntPtr cert = Native.X509_STORE_CTX_get_current_cert(this.ptr);
-				return new X509Certificate(cert, false);
-			}
-		}
-
-		public int ErrorDepth
-		{
-			get { return Native.X509_STORE_CTX_get_error_depth(this.ptr); }
-		}
-
-		public int Error
-		{
-			get { return Native.X509_STORE_CTX_get_error(this.ptr); }
-			set { Native.X509_STORE_CTX_set_error(this.ptr, value); }
-		}
-
-		public X509Store Store
-		{
-			get { return new X509Store(this.Raw.ctx, false); }
-		}
-
-		public void Init(X509Store store, X509Certificate cert, X509Chain uchain)
-		{
-			Native.ExpectSuccess(Native.X509_STORE_CTX_init(
-				this.ptr,
-				store.Handle,
-				cert != null ? cert.Handle : IntPtr.Zero,
-				uchain.Handle));
-		}
-
-		public bool Verify()
-		{
-			int ret = Native.X509_verify_cert(this.ptr);
-			if (ret < 0)
-				throw new OpenSslException();
-			return ret == 1;
-		}
-
-		private X509_STORE_CONTEXT Raw
-		{
-			get { return (X509_STORE_CONTEXT)Marshal.PtrToStructure(this.ptr, typeof(X509_STORE_CONTEXT)); }
-		}
-
-		public string ErrorString
-		{
-			get { return Native.PtrToStringAnsi(Native.X509_verify_cert_error_string(this.Raw.error), false); }
-		}
-
-		#region IDisposable Members
-		public void Dispose()
-		{
-			if (own_ptr)
-			{
-				Native.X509_STORE_CTX_free(this.ptr);
-			}
-		}
-		#endregion
-	}
-	#endregion
-
-	public class X509Object : Base, IStackable
-	{
-		const int X509_LU_RETRY = -1;
-		const int X509_LU_FAIL = 0;
-		const int X509_LU_X509 = 1;
-		const int X509_LU_CRL = 2;
-		const int X509_LU_PKEY = 3;
-
-		[StructLayout(LayoutKind.Sequential)]
-		struct X509_OBJECT
-		{
-			/* one of the above types */
-			public int type;
-			public IntPtr ptr;
-		}
-
-		private X509_OBJECT raw;
-
-		public X509Object()
-			: base(IntPtr.Zero, false)
-		{
-		}
-
-		internal X509Object(IStack stack, IntPtr ptr)
-			: base(ptr, true)
-		{
-		}
-
-		internal X509Object(IntPtr ptr, bool takeOwnership)
-			: base(ptr, takeOwnership)
-		{
-			raw = (X509_OBJECT)Marshal.PtrToStructure(this.ptr, typeof(X509_OBJECT));
-		}
-
-		public int Type
-		{
-			get { return raw.type; }
-		}
-
-		public X509Certificate Certificate
-		{
-			get
-			{
-				if (raw.type == X509_LU_X509)
-				{
-					return new X509Certificate(raw.ptr, false);
-				}
-				return null;
-			}
-		}
-
-		public CryptoKey PrivateKey
-		{
-			get
-			{
-				if (raw.type == X509_LU_PKEY)
-				{
-					return new CryptoKey(raw.ptr, false);
-				}
-				return null;
-			}
-		}
-
-		//!! TODO - Add support for CRL
-
-		internal override void AddRef()
-		{
-			Native.X509_OBJECT_up_ref_count(this.ptr);
-		}
-
-		protected override void OnDispose()
-		{
-			Native.X509_OBJECT_free_contents(this.ptr);
-		}
-
-		protected override void OnNewHandle(IntPtr ptr)
-		{
-			this.raw = (X509_OBJECT)Marshal.PtrToStructure(this.ptr, typeof(X509_OBJECT));
-		}
-	}
-
-	/// <summary>
-	/// Wraps the X509_STORE_CONTEXT object
+	/// Wraps the X509_STORE object
 	/// </summary>
 	public class X509Store : BaseReferenceType
 	{
+		#region X509_STORE
 		[StructLayout(LayoutKind.Sequential)]
 		struct X509_STORE
 		{
@@ -271,10 +64,9 @@ namespace OpenSSL
 			#endregion
 			public int references;
 		}
+		#endregion
 
-		private List<X509Certificate> internalList = new List<X509Certificate>();
-		private X509Chain untrusted = new X509Chain();
-		//private X509Chain trusted = new X509Chain();
+		#region Initialization
 
 		/// <summary>
 		/// Calls X509_STORE_new()
@@ -288,10 +80,9 @@ namespace OpenSSL
 		/// </summary>
 		/// <param name="ptr"></param>
 		/// <param name="takeOwnership"></param>
-		public X509Store(IntPtr ptr, bool takeOwnership) :
+		internal X509Store(IntPtr ptr, bool takeOwnership) :
 			base(ptr, takeOwnership)
-		{
-		}
+		{ }
 
 		/// <summary>
 		/// Calls X509_STORE_new() and then adds the specified chain as trusted.
@@ -299,8 +90,7 @@ namespace OpenSSL
 		/// <param name="chain"></param>
 		public X509Store(X509Chain chain)
 			: this(chain, true)
-		{
-		}
+		{ }
 
 		/// <summary>
 		/// Calls X509_STORE_new() and then adds the specified chaing as trusted.
@@ -316,6 +106,13 @@ namespace OpenSSL
 			}
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Wraps the <code>objs</code> member on the raw X509_STORE structure
+		/// </summary>
 		public Stack<X509Object> Objects
 		{
 			get
@@ -325,6 +122,19 @@ namespace OpenSSL
 				return stack;
 			}
 		}
+
+		/// <summary>
+		/// Accessor to the untrusted list
+		/// </summary>
+		public X509Chain Untrusted
+		{
+			get { return this.untrusted; }
+			set { this.untrusted = value; }
+		}
+
+		#endregion
+
+		#region Methods
 
 		/// <summary>
 		/// Returns the trusted state of the specified certificate
@@ -354,11 +164,13 @@ namespace OpenSSL
 		public void AddTrusted(X509Chain chain)
 		{
 			foreach (X509Certificate cert in chain)
+			{
 				AddTrusted(cert);
+			}
 		}
 
 		/// <summary>
-		/// Adds a certificate to the trusted list.
+		/// Adds a certificate to the trusted list, calls X509_STORE_add_cert()
 		/// </summary>
 		/// <param name="cert"></param>
 		public void AddTrusted(X509Certificate cert)
@@ -376,22 +188,10 @@ namespace OpenSSL
 			this.untrusted.Add(cert);
 		}
 
-		//public X509Chain Trusted
-		//{
-		//    get { return this.trusted; }
-		//    set { this.trusted = value; }
-		//}
+		#endregion
 
-		/// <summary>
-		/// Accessor to the untrusted list
-		/// </summary>
-		public X509Chain Untrusted
-		{
-			get { return this.untrusted; }
-			set { this.untrusted = value; }
-		}
+		#region Overrides
 
-		#region IDisposable Members
 		/// <summary>
 		/// Calls X509_STORE_free()
 		/// </summary>
@@ -404,16 +204,21 @@ namespace OpenSSL
 				this.untrusted = null;
 			}
 		}
-		#endregion
 
-		protected override CryptoLockTypes LockType
+		internal override CryptoLockTypes LockType
 		{
 			get { return CryptoLockTypes.CRYPTO_LOCK_X509_STORE; }
 		}
 
-		protected override Type RawReferenceType
+		internal override Type RawReferenceType
 		{
 			get { return typeof(X509_STORE); }
 		}
+
+		#endregion
+
+		#region Fields
+		private X509Chain untrusted = new X509Chain();
+		#endregion
 	}
 }

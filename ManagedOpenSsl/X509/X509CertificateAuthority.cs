@@ -30,51 +30,6 @@ using System.Threading;
 
 namespace OpenSSL
 {
-    public class X509V3ExtensionValue
-    {
-        private bool critical;
-        private string value;
-        private string name;
-
-        public X509V3ExtensionValue(string name, bool critical, string value)
-        {
-            this.name = name;
-            this.critical = critical;
-            this.value = value;
-        }
-
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-        }
-
-        public bool IsCritical
-        {
-            get
-            {
-                return critical;
-            }
-        }
-
-        public string Value
-        {
-            get
-            {
-                return this.value;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Dictionary for X509 v3 extensions - Name, Value 
-    /// </summary>
-    public class X509V3ExtensionList : List<X509V3ExtensionValue>
-    {
-    }
-
     /// <summary>
 	/// Used for generating sequence numbers by the CertificateAuthority
 	/// </summary>
@@ -182,10 +137,7 @@ namespace OpenSSL
 	/// </summary>
 	public class X509CertificateAuthority : IDisposable
 	{
-		private X509Certificate caCert;
-		private CryptoKey caKey;
-		private ISequenceNumber serial;
-		private Configuration cfg;
+		#region Self-Signed Factory Methods
 
 		/// <summary>
 		/// Factory method which creates a X509CertifiateAuthority where
@@ -204,10 +156,12 @@ namespace OpenSSL
 			DateTime start,
 			TimeSpan validity)
 		{
-            DSA dsa = new DSA(true);
-            CryptoKey key = new CryptoKey(dsa);
-            // Dispose the DSA key, the CryptoKey assignment increments the reference count
-            dsa.Dispose();
+			CryptoKey key;
+			using (DSA dsa = new DSA(true))
+			{
+				key = new CryptoKey(dsa);
+				// Dispose the DSA key, the CryptoKey assignment increments the reference count
+			}
 			X509Certificate cert = new X509Certificate(
 				seq.Next(),
 				subject,
@@ -304,23 +258,11 @@ namespace OpenSSL
             cert.Sign(key, digest);
 
             return new X509CertificateAuthority(cert, key, seq, null);
-        }
-
-        /// <summary>
-		/// Accessor to the CA's X509 Certificate
-		/// </summary>
-		public X509Certificate Certificate
-		{
-			get { return this.caCert; }
 		}
 
-		/// <summary>
-		/// Accessor to the CA's key used for signing.
-		/// </summary>
-		public CryptoKey Key
-		{
-			get { return this.caKey; }
-		}
+		#endregion
+
+		#region Initialization
 
 		/// <summary>
 		/// Constructs a X509CertifcateAuthority with the specified parameters.
@@ -338,6 +280,30 @@ namespace OpenSSL
 			this.serial = serial;
 			this.cfg = cfg;
 		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Accessor to the CA's X509 Certificate
+		/// </summary>
+		public X509Certificate Certificate
+		{
+			get { return this.caCert; }
+		}
+
+		/// <summary>
+		/// Accessor to the CA's key used for signing.
+		/// </summary>
+		public CryptoKey Key
+		{
+			get { return this.caKey; }
+		}
+
+		#endregion
+
+		#region Methods
 
 		/// <summary>
 		/// Process and X509Request. This includes creating a new X509Certificate
@@ -383,7 +349,9 @@ namespace OpenSSL
             cert.Sign(this.caKey, digest);
 
             return cert;
-        }
+		}
+
+		#endregion
 
 		#region IDisposable Members
 
@@ -393,13 +361,31 @@ namespace OpenSSL
 		public void Dispose()
 		{
 			if (this.caKey != null)
+			{
 				this.caKey.Dispose();
+				this.caKey = null;
+			}
+
 			if (this.caCert != null)
+			{
 				this.caCert.Dispose();
+				this.caCert = null;
+			}
+
 			if (this.cfg != null)
+			{
 				this.cfg.Dispose();
+				this.cfg = null;
+			}
 		}
 
+		#endregion
+
+		#region Fields
+		private X509Certificate caCert;
+		private CryptoKey caKey;
+		private ISequenceNumber serial;
+		private Configuration cfg;
 		#endregion
 	}
 }

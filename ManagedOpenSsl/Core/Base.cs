@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace OpenSSL
 {
@@ -43,7 +44,7 @@ namespace OpenSSL
 		/// </summary>
 		/// <param name="ptr"></param>
 		/// <param name="takeOwnership"></param>
-		public Base(IntPtr ptr, bool takeOwnership)
+		protected Base(IntPtr ptr, bool takeOwnership)
 		{
 			this.ptr = ptr;
 			this.owner = takeOwnership;
@@ -97,7 +98,7 @@ namespace OpenSSL
 		/// Do nothing in the base class.
 		/// </summary>
 		/// <param name="ptr"></param>
-		protected virtual void OnNewHandle(IntPtr ptr)
+		internal virtual void OnNewHandle(IntPtr ptr)
 		{
 		}
 
@@ -135,23 +136,6 @@ namespace OpenSSL
 			get { return this.ptr; }
 		}
 
-		//internal void SetNewHandle(IntPtr ptr)
-		//{
-		//    if (this.owner && this.ptr != IntPtr.Zero)
-		//    {
-		//        this.OnDispose();
-		//        this.DoAfterDispose();
-		//        this.owner = false;
-		//    }
-		//    this.ptr = ptr;
-		//    if (this.ptr != IntPtr.Zero)
-		//    {
-		//        this.owner = true;
-		//        GC.ReRegisterForFinalize(this);
-		//        this.OnNewHandle(this.ptr);
-		//    }
-		//}
-
 		/// <summary>
 		/// Throws NotImplementedException
 		/// </summary>
@@ -183,9 +167,13 @@ namespace OpenSSL
 
 	}
 
+	/// <summary>
+	/// Helper type that handles the AddRef() method.
+	/// Derived classes must implement the <code>LockType</code> and <code>RawReferenceType</code> properties
+	/// </summary>
 	public abstract class BaseReferenceType : Base
 	{
-		public BaseReferenceType(IntPtr ptr, bool takeOwnership)
+		internal BaseReferenceType(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
 		{
 			this.baseOffset = Marshal.OffsetOf(RawReferenceType, "references");
@@ -197,6 +185,9 @@ namespace OpenSSL
 			Native.CRYPTO_add_lock(offset, 1, LockType, "Base.cs", 0);
 		}
 
+		/// <summary>
+		/// Prints the current underlying reference count
+		/// </summary>
 		public void PrintRefCount()
 		{
 			IntPtr offset = GetReferencesOffset();
@@ -209,15 +200,52 @@ namespace OpenSSL
 			return new IntPtr((long)this.ptr + (long)this.baseOffset);
 		}
 
-		protected abstract CryptoLockTypes LockType { get; }
-		protected abstract Type RawReferenceType { get; }
+		/// <summary>
+		/// Derived classes must return a <code>CryptoLockTypes</code> for this type
+		/// </summary>
+		internal abstract CryptoLockTypes LockType { get; }
+
+		/// <summary>
+		/// Derived classes must return a <code>Type</code> that matches the underlying type
+		/// </summary>
+		internal abstract Type RawReferenceType { get; }
 
 		private IntPtr baseOffset;
 	}
 
+	/// <summary>
+	/// Implements the CopyRef() method
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public abstract class BaseCopyableRef<T> : BaseReferenceType where T : BaseCopyableRef<T>
+	{
+		internal BaseCopyableRef(IntPtr ptr, bool takeOwnership)
+			: base(ptr, takeOwnership)
+		{
+		}
+
+		internal T CopyRef()
+		{
+			object[] args = new object[] {
+				this.ptr,
+				true
+			};
+			BindingFlags flags =
+				BindingFlags.NonPublic |
+				BindingFlags.Public |
+				BindingFlags.Instance;
+			T ret = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
+			ret.AddRef();
+			return ret;
+		}
+	}
+
+	/// <summary>
+	/// Helper base class that handles the AddRef() method by using a _dup() method.
+	/// </summary>
 	public abstract class BaseValueType : Base
 	{
-		public BaseValueType(IntPtr ptr, bool takeOwnership)
+		internal BaseValueType(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
 		{
 		}
@@ -232,6 +260,10 @@ namespace OpenSSL
 			}
 		}
 
-		protected abstract IntPtr DuplicateHandle();
+		/// <summary>
+		/// Derived classes must use a _dup() method to make a copy of the underlying native data structure.
+		/// </summary>
+		/// <returns></returns>
+		internal abstract IntPtr DuplicateHandle();
 	}
 }

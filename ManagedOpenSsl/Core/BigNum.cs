@@ -34,7 +34,7 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps the BN_* set of functions.
 	/// </summary>
-	public class BigNumber : Base, IDisposable, IComparable<BigNumber>
+	public class BigNumber : Base, IComparable<BigNumber>
 	{
 		#region Predefined Values
 		/// <summary>

@@ -41,7 +41,7 @@ namespace OpenSSL
             SslProtocols enabledSslProtocols,
             SslStrength sslStrength,
             bool checkCertificateRevocation,
-            RemoteCertificateValidationCallback remote_callback)
+            RemoteCertificateValidationHandler remote_callback)
             : base(stream, ownStream)
         {
             this.checkCertificateRevocationStatus = checkCertificateRevocation;
@@ -57,8 +57,8 @@ namespace OpenSSL
             write_bio = BIO.MemoryBuffer(false);
             // Set the read/write bio's into the the Ssl object
             ssl.SetBIO(read_bio, write_bio);
-            read_bio.SetClose(BIO.BioCloseOption.BIO_Close);
-            write_bio.SetClose(BIO.BioCloseOption.BIO_Close);
+            read_bio.SetClose(BIO.CloseOption.Close);
+            write_bio.SetClose(BIO.CloseOption.Close);
             // Set the Ssl object into server mode
             ssl.SetAcceptState();
         }

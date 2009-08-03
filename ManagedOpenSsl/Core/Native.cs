@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 Frank Laub
+// Copyright (c) 2006-2009 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,16 @@ using System.Threading;
 
 namespace OpenSSL
 {
+	/// <summary>
+	/// 
+	/// </summary>
 	public static class FIPS
 	{
 		private static bool enabled = false;
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public static bool Enabled
 		{
 			get { return enabled; }
@@ -45,7 +51,7 @@ namespace OpenSSL
 		}
 	}
 
-	public enum CryptoLockTypes
+	internal enum CryptoLockTypes
 	{
 		CRYPTO_LOCK_ERR = 1,
 		CRYPTO_LOCK_EX_DATA = 2,
@@ -88,11 +94,17 @@ namespace OpenSSL
 	/// </summary>
 	public class ThreadInitialization
 	{
+		/// <summary>
+		/// Calls Native.InitializeThreads()
+		/// </summary>
 		public static void InitializeThreads()
 		{
 			Native.InitializeThreads();
 		}
 
+		/// <summary>
+		/// Calls Native.UninitializeThreads()
+		/// </summary>
 		public static void UninitializeThreads()
 		{
 			Native.UninitializeThreads();

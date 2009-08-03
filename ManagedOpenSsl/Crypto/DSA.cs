@@ -33,7 +33,7 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps the DSA_* functions
 	/// </summary>
-	public class DSA : Base, IDisposable
+	public class DSA : Base
 	{
 		#region dsa_st
 

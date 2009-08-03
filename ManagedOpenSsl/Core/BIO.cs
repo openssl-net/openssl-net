@@ -33,7 +33,7 @@ namespace OpenSSL
 	/// <summary>
 	/// Encapsulates the BIO_* functions.
 	/// </summary>
-	public class BIO : Base, IDisposable
+	public class BIO : Base
 	{
 		#region Initialization
 		internal BIO(IntPtr ptr, bool owner) : base(ptr, owner) { }
@@ -42,7 +42,7 @@ namespace OpenSSL
 		/// Calls BIO_new_mem_buf() from the specified buffer.
 		/// </summary>
 		/// <param name="buf"></param>
-		public BIO(byte[] buf) 
+		public BIO(byte[] buf)
 			: base(Native.ExpectNonNull(Native.BIO_new_mem_buf(buf, buf.Length)), true)
 		{
 		}
@@ -56,21 +56,24 @@ namespace OpenSSL
 		{
 		}
 
-        public static BIO MemoryBuffer(bool takeOwnership)
-        {
-            IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
-            return new BIO(ptr, takeOwnership);
-        }
+		/// <summary>
+		/// Calls BIO_new(BIO_s_mem())
+		/// </summary>
+		/// <param name="takeOwnership"></param>
+		/// <returns></returns>
+		public static BIO MemoryBuffer(bool takeOwnership)
+		{
+			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
+			return new BIO(ptr, takeOwnership);
+		}
 
-        /// <summary>
+		/// <summary>
 		/// Factory method that calls BIO_new() with BIO_s_mem()
 		/// </summary>
 		/// <returns></returns>
 		public static BIO MemoryBuffer()
 		{
-			//!!IntPtr ptr = Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem()));
-			//!!return new BIO(ptr, true);
-            return MemoryBuffer(true);
+			return MemoryBuffer(true);
 		}
 
 		/// <summary>
@@ -81,16 +84,16 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static BIO File(string filename, string mode)
 		{
-            
-            //!!
-            /*
-            byte[] bufFilename = Encoding.ASCII.GetBytes(filename);
+
+			//!!
+			/*
+			byte[] bufFilename = Encoding.ASCII.GetBytes(filename);
 			byte[] bufMode = Encoding.ASCII.GetBytes(mode);
 			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(bufFilename, bufMode));
 			return new BIO(ptr, true);
-            */
-            IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(filename, mode));
-            return new BIO(ptr, true);
+			*/
+			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(filename, mode));
+			return new BIO(ptr, true);
 		}
 
 		private const int FD_STDIN = 0;
@@ -135,34 +138,43 @@ namespace OpenSSL
 			get { return Native.BIO_number_written(this.Handle); }
 		}
 
-        /// <summary>
-        /// Returns number of bytes buffered in the BIO - calls BIO_ctrl_pending
-        /// </summary>
-        public uint BytesPending
-        {
-            get { return Native.BIO_ctrl_pending(this.Handle); }
-        }
+		/// <summary>
+		/// Returns number of bytes buffered in the BIO - calls BIO_ctrl_pending
+		/// </summary>
+		public uint BytesPending
+		{
+			get { return Native.BIO_ctrl_pending(this.Handle); }
+		}
 
 		#endregion
 
 		#region Methods
-        
-        public enum BioCloseOption
-        {
-            BIO_NoClose = 0,    // Don't close on free
-            BIO_Close = 1       // Close on free
-        }
 
-        /// <summary>
-        /// Calls BIO_set_close()
-        /// </summary>
-        /// <param name="opt"></param>
-        public void SetClose(BioCloseOption opt)
-        {
-            Native.BIO_set_close(this.ptr, (int)opt);
-        }
+		/// <summary>
+		/// BIO Close Options
+		/// </summary>
+		public enum CloseOption
+		{
+			/// <summary>
+			/// Don't close on free
+			/// </summary>
+			NoClose = 0,
+			/// <summary>
+			/// Close on freee
+			/// </summary>
+			Close = 1
+		}
 
-        /// <summary>
+		/// <summary>
+		/// Calls BIO_set_close()
+		/// </summary>
+		/// <param name="opt"></param>
+		public void SetClose(CloseOption opt)
+		{
+			Native.BIO_set_close(this.ptr, (int)opt);
+		}
+
+		/// <summary>
 		/// Calls BIO_push()
 		/// </summary>
 		/// <param name="bio"></param>
@@ -265,7 +277,7 @@ namespace OpenSSL
 			const int BLOCK_SIZE = 64;
 			byte[] buf = new byte[BLOCK_SIZE];
 			int ret = 0;
-			while(true)
+			while (true)
 			{
 				ret = Native.BIO_gets(this.ptr, buf, buf.Length);
 				if (ret == 0)
@@ -289,12 +301,13 @@ namespace OpenSSL
 
 		#endregion
 
-		#region IDisposable Members
+		#region Overrides
 
 		/// <summary>
 		/// Calls BIO_free()
 		/// </summary>
-		protected override void OnDispose() {
+		protected override void OnDispose()
+		{
 			Native.BIO_free(this.ptr);
 		}
 

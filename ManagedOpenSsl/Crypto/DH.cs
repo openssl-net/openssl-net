@@ -31,9 +31,9 @@ using System.Runtime.InteropServices;
 namespace OpenSSL
 {
 	/// <summary>
-	/// Encapsulates the natives openssl Diffie-Hellman functions (DH_*)
+	/// Encapsulates the native openssl Diffie-Hellman functions (DH_*)
 	/// </summary>
-	public class DH : Base, IDisposable
+	public class DH : Base
 	{
 		/// <summary>
 		/// Constant generator value of 2.

@@ -52,6 +52,9 @@ namespace OpenSSL
 			bio.Write(this.LongName);
 		}
 
+		/// <summary>
+		/// Not implemented, these objects should never be disposed
+		/// </summary>
 		protected override void OnDispose() {
 			throw new NotImplementedException();
 		}

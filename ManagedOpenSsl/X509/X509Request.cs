@@ -33,17 +33,22 @@ namespace OpenSSL
 	/// <summary>
 	/// Wraps a X509_REQ object.
 	/// </summary>
-	public class X509Request : Base, IDisposable
+	public class X509Request : Base
 	{
 		#region Initialization
 		/// <summary>
 		/// Calls X509_REQ_new()
 		/// </summary>
-		public X509Request() : base(Native.ExpectNonNull(Native.X509_REQ_new()), true) { }
-		internal X509Request(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		public X509Request() 
+			: base(Native.ExpectNonNull(Native.X509_REQ_new()), true)
+		{ }
+		
+		internal X509Request(IntPtr ptr, bool owner) 
+			: base(ptr, owner) 
+		{ }
 
 		/// <summary>
-		/// Calls X509_REQ_new() and then initializes versio, subject, and key.
+		/// Calls X509_REQ_new() and then initializes version, subject, and key.
 		/// </summary>
 		/// <param name="version"></param>
 		/// <param name="subject"></param>
@@ -57,14 +62,12 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// 
+		/// Calls PEM_read_bio_X509_REQ()
 		/// </summary>
 		/// <param name="bio"></param>
 		public X509Request(BIO bio)
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(
-				bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
-		{
-		}
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
+		{ }
 
 		/// <summary>
 		/// Creates a X509_REQ from a PEM formatted string.
@@ -72,8 +75,7 @@ namespace OpenSSL
 		/// <param name="pem"></param>
 		public X509Request(string pem)
 			: this(new BIO(pem))
-		{
-		}
+		{ }
 		#endregion
 
 		#region X509_REQ_INFO
@@ -106,18 +108,12 @@ namespace OpenSSL
 		#region Properties
 		private X509_REQ Raw
 		{
-			get
-			{
-				return (X509_REQ)Marshal.PtrToStructure(this.ptr, typeof(X509_REQ));
-			}
+			get { return (X509_REQ)Marshal.PtrToStructure(this.ptr, typeof(X509_REQ)); }
 		}
 
 		private X509_REQ_INFO RawInfo
 		{
-			get
-			{
-				return (X509_REQ_INFO)Marshal.PtrToStructure(this.Raw.req_info, typeof(X509_REQ_INFO));
-			}
+			get { return (X509_REQ_INFO)Marshal.PtrToStructure(this.Raw.req_info, typeof(X509_REQ_INFO)); }
 		}
 		
 		/// <summary>
@@ -125,14 +121,8 @@ namespace OpenSSL
 		/// </summary>
 		public int Version
 		{
-			get
-			{
-				return Native.ASN1_INTEGER_get(this.RawInfo.version);
-			}
-			set
-			{
-				Native.ExpectSuccess(Native.X509_REQ_set_version(this.ptr, value));
-			}
+			get { return Native.ASN1_INTEGER_get(this.RawInfo.version); }
+			set { Native.ExpectSuccess(Native.X509_REQ_set_version(this.ptr, value)); }
 		}
 
 		/// <summary>
@@ -140,14 +130,8 @@ namespace OpenSSL
 		/// </summary>
 		public CryptoKey PublicKey
 		{
-			get
-			{
-				return new CryptoKey(Native.ExpectNonNull(Native.X509_REQ_get_pubkey(this.ptr)), true);
-			}
-			set
-			{
-				Native.ExpectSuccess(Native.X509_REQ_set_pubkey(this.ptr, value.Handle));
-			}
+			get { return new CryptoKey(Native.ExpectNonNull(Native.X509_REQ_get_pubkey(this.ptr)), true); }
+			set { Native.ExpectSuccess(Native.X509_REQ_set_pubkey(this.ptr, value.Handle)); }
 		}
 
 		/// <summary>
@@ -155,14 +139,8 @@ namespace OpenSSL
 		/// </summary>
 		public X509Name Subject
 		{
-			get
-			{
-				return new X509Name(Native.X509_NAME_dup(this.RawInfo.subject), true);
-			}
-			set
-			{
-				Native.ExpectSuccess(Native.X509_REQ_set_subject_name(this.ptr, value.Handle));
-			}
+			get { return new X509Name(Native.X509_NAME_dup(this.RawInfo.subject), true); }
+			set { Native.ExpectSuccess(Native.X509_REQ_set_subject_name(this.ptr, value.Handle)); }
 		}
 
 		/// <summary>
@@ -243,7 +221,7 @@ namespace OpenSSL
 		}
 		#endregion
 
-		#region IDisposable Members
+		#region Overrides Members
 
 		/// <summary>
 		/// Calls X509_REQ_free()

@@ -71,9 +71,9 @@ namespace test
 			protected TcpClient client = null;
 			protected SslStream sslStream = null;
 			protected string testName = "Not set";
-			protected RemoteCertificateValidationCallback clientRemoteCertificateValidationCallback = null;
-			protected LocalCertificateSelectionCallback clientLocalCertificateSelectionCallback = null;
-			protected RemoteCertificateValidationCallback serverRemoteCertificateValidationCallback = null;
+			protected RemoteCertificateValidationHandler clientRemoteCertificateValidationCallback = null;
+			protected LocalCertificateSelectionHandler clientLocalCertificateSelectionCallback = null;
+			protected RemoteCertificateValidationHandler serverRemoteCertificateValidationCallback = null;
 
 			public SyncServerTests(TestServer testServer) {
 				this.testServer = testServer;
@@ -142,7 +142,7 @@ namespace test
 
 			#region AdvancedServerTest
 			public void AdvancedServerTest() {
-				serverRemoteCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateRemoteCert);
+				serverRemoteCertificateValidationCallback = new RemoteCertificateValidationHandler(ValidateRemoteCert);
 
 				try {
 					testName = "AdvancedServerTest";
@@ -365,8 +365,8 @@ namespace test
 
 			public void AdvancedClientTest() {
 				//Initialize delegates for certificate callbacks
-				clientRemoteCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateRemoteCert);
-				clientLocalCertificateSelectionCallback = new LocalCertificateSelectionCallback(clientCertificateSelectionCallback);
+				clientRemoteCertificateValidationCallback = new RemoteCertificateValidationHandler(ValidateRemoteCert);
+				clientLocalCertificateSelectionCallback = new LocalCertificateSelectionHandler(clientCertificateSelectionCallback);
 
 				try {
 					testName = "AdvancedClientTest";
@@ -445,16 +445,16 @@ namespace test
 			SslStream sslStream = null;
 			ManualResetEvent testComplete = new ManualResetEvent(false);
 			string testName = "Not set";
-			protected RemoteCertificateValidationCallback clientRemoteCertificateValidationCallback = null;
-			protected LocalCertificateSelectionCallback clientLocalCertificateSelectionCallback = null;
-			protected RemoteCertificateValidationCallback serverRemoteCertificateValidationCallback = null;
+			protected RemoteCertificateValidationHandler clientRemoteCertificateValidationCallback = null;
+			protected LocalCertificateSelectionHandler clientLocalCertificateSelectionCallback = null;
+			protected RemoteCertificateValidationHandler serverRemoteCertificateValidationCallback = null;
 
 			public AsyncServerTests(TestServer testServer) {
 				this.testServer = testServer;
 				// Initialize certificate callbacks (only used for Advanced test)
-				clientRemoteCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateRemoteCert);
-				clientLocalCertificateSelectionCallback = new LocalCertificateSelectionCallback(clientCertificateSelectionCallback);
-				serverRemoteCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateRemoteCert);
+				clientRemoteCertificateValidationCallback = new RemoteCertificateValidationHandler(ValidateRemoteCert);
+				clientLocalCertificateSelectionCallback = new LocalCertificateSelectionHandler(clientCertificateSelectionCallback);
+				serverRemoteCertificateValidationCallback = new RemoteCertificateValidationHandler(ValidateRemoteCert);
 			}
 
 			public void Shutdown(bool passed) {
