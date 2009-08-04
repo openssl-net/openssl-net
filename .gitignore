@@ -1,0 +1,16 @@
+
+# /
+/*.suo
+/*.ncb
+
+# /ManagedOpenSsl/
+/ManagedOpenSsl/*.suo
+/ManagedOpenSsl/bin
+/ManagedOpenSsl/obj
+/ManagedOpenSsl/[Bb]in
+/ManagedOpenSsl/[Dd]ebug
+/ManagedOpenSsl/[Rr]elease
+/ManagedOpenSsl/*.user
+/ManagedOpenSsl/*.aps
+/ManagedOpenSsl/*.eto
+/ManagedOpenSsl/ManagedOpenSsl.XML
