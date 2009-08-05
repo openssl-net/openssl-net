@@ -2,6 +2,7 @@
 # /
 /*.suo
 /*.ncb
+/*.user*
 
 # /ManagedOpenSsl/
 /ManagedOpenSsl/*.suo
@@ -13,19 +14,24 @@
 /ManagedOpenSsl/*.user
 /ManagedOpenSsl/*.aps
 /ManagedOpenSsl/*.eto
+/ManagedOpenSsl/*.pidb
 /ManagedOpenSsl/ManagedOpenSsl.XML
 
 /cli/obj/
 /cli/*.user
+/cli/*.pidb
 
 /sandbox/obj/
 /sandbox/*.user
+/sandbox/*.pidb
 
 /test/obj/
 /test/*.user
+/test/*.pidb
 
 /test/UnitTests/obj/
 /test/UnitTests/*.user
+/test/UnitTests/*.pidb
 
 bin/Debug/libeay32.dll
 bin/Debug/libeay32.pdb
@@ -33,6 +39,7 @@ bin/Debug/ssleay32.dll
 bin/Debug/ssleay32.pdb
 
 bin/Debug/*.pdb
+bin/Debug/*.mdb
 bin/Debug/*.xml
 bin/Debug/*.exe
 bin/Debug/*.dll
