@@ -63,12 +63,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Asn1String.cs" />
+    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Core\Base.cs" />
     <Compile Include="Core\BigNum.cs" />
     <Compile Include="Core\BIO.cs" />
     <Compile Include="Crypto\Cipher.cs" />
     <Compile Include="Enums.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VerifyResult.cs" />
     <Compile Include="X509\Configuration.cs" />
     <Compile Include="Crypto\Crypto.cs" />
