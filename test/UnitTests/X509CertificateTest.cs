@@ -14,6 +14,6 @@ namespace UnitTests.OpenSSL
 			{
 				cert.PrintRefCount();				
 			}
-		}
+		}
 	}
 }
