@@ -1,29 +1,57 @@
 .PHONY : all build test clean
 
-SUBDIRS = \
-	ManagedOpenSsl \
-	cli \
-	sandbox \
-	test
+export TOP = $(CURDIR)
+export D_OUT = $(TOP)/bin/Debug
 
-.PHONY : $(SUBDIRS)
+export CSC = gmcs
+export CSFLAGS = -debug -warn:2 -warnaserror
 
-all : build test
+D_NUNIT = $(TOP)/nunit-2.5.1
+export D_NUNIT_LIB = $(D_NUNIT)/framework
 
-build : 
-	echo build
+export LIBPATH = $(D_OUT),$(D_NUNIT_LIB)
 
-test : 
-	echo test
+export MONO = mono
+NUNIT_EXE = $(D_NUNIT)/nunit-console.exe
+export NUNIT = $(MONO) $(NUNIT_EXE) -nologo -noshadow
 
-clean :
-	echo clean
+MAKE_DIR = $(MAKE) -C 
 
-cli : ManagedOpenSsl
+LIB_DIR = ManagedOpenSsl
+TEST_DIR = test/UnitTests
 
-sandbox : ManagedOpenSsl
+all: build
 
-test : ManagedOpenSsl
+lib: 
+	$(MAKE_DIR) $(LIB_DIR)
 
-$(SUBDIRS):
-	$(MAKE) -C $@
+build: lib build_test 
+
+build_test:
+	$(MAKE_DIR) $(TEST_DIR)
+
+test: lib build_test 
+	$(MAKE_DIR) $(TEST_DIR) test
+
+clean: clean_lib clean_test
+
+clean_lib:
+	$(MAKE_DIR) $(LIB_DIR) clean
+
+clean_test:
+	$(MAKE_DIR) $(TEST_DIR) clean
+
+install:
+	echo install
+
+pkg:
+	echo pkg
+
+dist:
+	echo disto
+
+publish:
+	echo publish
+
+release:
+	echo release
