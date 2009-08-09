@@ -6,6 +6,11 @@ MAKEFILE = Makefile
 OUT_CFG = $(D_OUT)/$(TGT_NAME).dll.config
 OUT_DOC = $(D_OUT)/$(TGT_NAME).XML
 APP_CFG = App.config
+D_OSX = $(TOP)/bin/osx
+SRC_LIBCRYPTO = $(D_OSX)/libcrypto.0.9.8.dylib
+SRC_LIBSSL = $(D_OSX)/libssl.0.9.8.dylib
+LIBCRYPTO = $(D_OUT)/libcrypto.dylib
+LIBSSL = $(D_OUT)/libssl.dylib
 
 DEPS = $(TOP_MAKEFILE) $(MAKEFILE) 
 
@@ -66,11 +71,17 @@ SRCS = \
 
 REFS = 
 
-$(OUT) : $(SRCS) $(DEPS) $(OUT_CFG)
+$(OUT) : $(SRCS) $(DEPS) $(OUT_CFG) $(LIBCRYPTO) $(LIBSSL)
 	$(CSC) $(CSFLAGS) -t:$(TGT_TYPE) -lib:$(LIBPATH) $(REFS) -out:$(OUT) -doc:$(OUT_DOC) $(SRCS)
 
 $(OUT_CFG) : $(APP_CFG)
 	cp $(APP_CFG) $(OUT_CFG)
+
+$(LIBCRYPTO) : $(SRC_LIBCRYPTO)
+	ln -s $(SRC_LIBCRYPTO) $(LIBCRYPTO)
+
+$(LIBSSL) : $(SRC_LIBSSL)
+	ln -s $(SRC_LIBSSL) $(LIBSSL)
 
 .PHONY: clean
 clean:
