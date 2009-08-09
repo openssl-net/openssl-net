@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 Frank Laub
+﻿// Copyright (c) 2006-2007 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OpenSSL.NET")]
-[assembly: AssemblyDescription("A managed wrapper for OpenSSL")]
+[assembly: AssemblyTitle("ManagedOpenSsl")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Blue Tree Labs")]
-[assembly: AssemblyProduct("OpenSSL.NET")]
-[assembly: AssemblyCopyright("Copyright (c) 2006-2009")]
+[assembly: AssemblyCompany("CoCo Communications")]
+[assembly: AssemblyProduct("ManagedOpenSsl")]
+[assembly: AssemblyCopyright("Copyright © 2006")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
