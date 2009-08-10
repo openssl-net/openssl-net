@@ -30,6 +30,7 @@
 /test/*.pidb
 
 /test/UnitTests/obj/
+/test/UnitTests/test-results/
 /test/UnitTests/*.user
 /test/UnitTests/*.pidb
 
@@ -44,3 +45,4 @@ bin/Debug/*.xml
 bin/Debug/*.exe
 bin/Debug/*.dll
 bin/Debug/*.XML
+bin/Debug/%temp%
