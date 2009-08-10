@@ -172,7 +172,7 @@ namespace test
 		}
 
 		void TestAll() {
-			foreach (KeyValuePair<string, ICommand> item in tests) {
+			foreach (var item in tests) {
 				MemoryTracker.Start();
 				string[] args = new string[1];
 				args[0] = item.Key;
