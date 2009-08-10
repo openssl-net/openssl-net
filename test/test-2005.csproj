@@ -38,8 +38,10 @@
     <Compile Include="TestAES.cs" />
     <Compile Include="TestDH.cs" />
     <Compile Include="TestDSA.cs" />
+    <Compile Include="TestHMAC.cs" />
     <Compile Include="TestRandom.cs" />
     <Compile Include="TestRSA.cs" />
+    <Compile Include="TestServer.cs" />
     <Compile Include="TestSHA.cs" />
     <Compile Include="TestSHA1.cs" />
     <Compile Include="TestSHA256.cs" />
