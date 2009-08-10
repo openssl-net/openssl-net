@@ -10,9 +10,10 @@ namespace UnitTests.OpenSSL
 		[Test]
 		public void CanCreateAndDispose()
 		{
-			using (X509Certificate cert = new X509Certificate()) {
+			using (X509Certificate cert = new X509Certificate()) 
+			{
 				cert.PrintRefCount();				
 			}
-		}
+		}
 	}
 }
