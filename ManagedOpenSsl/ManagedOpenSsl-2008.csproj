@@ -23,8 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\bin\Debug\ManagedOpenSsl.XML</DocumentationFile>
-    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>..\ManagedOpenSsl.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,8 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\bin\Release\ManagedOpenSsl.XML</DocumentationFile>
-    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>..\ManagedOpenSsl.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -65,12 +63,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Asn1String.cs" />
+    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Core\Base.cs" />
     <Compile Include="Core\BigNum.cs" />
     <Compile Include="Core\BIO.cs" />
     <Compile Include="Crypto\Cipher.cs" />
     <Compile Include="Enums.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VerifyResult.cs" />
     <Compile Include="X509\Configuration.cs" />
     <Compile Include="Crypto\Crypto.cs" />
@@ -107,28 +105,6 @@
     <Compile Include="X509\X509Request.cs" />
     <Compile Include="X509\X509Store.cs" />
     <Compile Include="X509\X509StoreContext.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="Makefile" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\bin\Debug\2008\libeay32.dll">
-      <Link>libeay32.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\bin\Debug\2008\libeay32.pdb">
-      <Link>libeay32.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\bin\Debug\2008\ssleay32.dll">
-      <Link>ssleay32.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\bin\Debug\2008\ssleay32.pdb">
-      <Link>ssleay32.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

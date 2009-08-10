@@ -59,11 +59,10 @@ namespace test
 			using (Configuration cfg = new Configuration("openssl.cnf")) {
 				// Test RSA/SHA1 with other SelfSigned method
 				BigNumber bn = 0x10001;
-				CryptoKey key;
 				using(RSA rsa = new RSA())
 				{
 					rsa.GenerateKeys(2048, bn, OnGenerator, null);
-					key = new CryptoKey(rsa);
+					CryptoKey key = new CryptoKey(rsa);
 					// rsa is assigned, we no longer need this instance
 				}
 				using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
