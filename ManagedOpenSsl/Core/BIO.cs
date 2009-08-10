@@ -84,14 +84,6 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static BIO File(string filename, string mode)
 		{
-
-			//!!
-			/*
-			byte[] bufFilename = Encoding.ASCII.GetBytes(filename);
-			byte[] bufMode = Encoding.ASCII.GetBytes(mode);
-			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(bufFilename, bufMode));
-			return new BIO(ptr, true);
-			*/
 			IntPtr ptr = Native.ExpectNonNull(Native.BIO_new_file(filename, mode));
 			return new BIO(ptr, true);
 		}
