@@ -6,11 +6,24 @@ MAKEFILE = Makefile
 OUT_CFG = $(D_OUT)/$(TGT_NAME).dll.config
 OUT_DOC = $(D_OUT)/$(TGT_NAME).XML
 APP_CFG = App.config
+
+uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+
+ifeq ($(uname_S),Darwin)
 D_OSX = $(TOP)/bin/osx
+
 SRC_LIBCRYPTO = $(D_OSX)/libcrypto.0.9.8.dylib
 SRC_LIBSSL = $(D_OSX)/libssl.0.9.8.dylib
+
 LIBCRYPTO = $(D_OUT)/libcrypto.dylib
 LIBSSL = $(D_OUT)/libssl.dylib
+endif
+ifeq ($(uname_S),Linux)
+SRC_LIBCRYPTO = /usr/lib/libcrypto.so.0.9.8
+SRC_LIBSSL = /usr/lib/libssl.so.0.9.8
+LIBCRYPTO = $(D_OUT)/libcrypto.so
+LIBSSL = $(D_OUT)/libssl.so
+endif
 
 DEPS = $(TOP_MAKEFILE) $(MAKEFILE) 
 

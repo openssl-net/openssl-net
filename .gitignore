@@ -1,3 +1,4 @@
+.*.swp
 
 # /
 /*.suo
@@ -41,6 +42,7 @@
 /bin/Debug/libcrypto.dylib
 /bin/Debug/libssl.dylib
 
+/bin/Debug/*.so
 /bin/Debug/*.pdb
 /bin/Debug/*.mdb
 /bin/Debug/*.xml
