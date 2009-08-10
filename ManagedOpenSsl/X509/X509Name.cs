@@ -418,6 +418,26 @@ namespace OpenSSL
 			return Native.X509_NAME_dup(this.ptr);
 		}
 
+		/// <summary>
+		/// Returns CompareTo(rhs) == 0
+		/// </summary>
+		public override bool Equals(object rhs)
+		{
+			X509Name other = rhs as X509Name;
+			if(other == null)
+				return false;
+
+			return this.CompareTo(other) == 0;
+		}
+
+		/// <summary>
+		/// Returns ToString().GetHashCode()
+		/// </summary>
+		public override int GetHashCode()
+		{
+			return ToString().GetHashCode();
+		}
+
 		#endregion
 
 		#region IComparable<X509Name> Members
