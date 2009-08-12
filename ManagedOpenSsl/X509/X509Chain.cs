@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
 namespace OpenSSL
 {
@@ -85,13 +86,16 @@ namespace OpenSSL
 		/// <returns></returns>
 		public X509Certificate FindByIssuerAndSerial(X509Name issuer, int serial)
 		{
-			IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, Native.IntegerToAsnInteger(serial));
-			if (ptr == IntPtr.Zero)
-				return null;
-			X509Certificate cert = new X509Certificate(ptr, true);
-			// Increase the reference count for the native pointer
-			cert.AddRef();
-			return cert;
+			using (Asn1Integer asnInt = new Asn1Integer(serial))
+			{
+				IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, asnInt.Handle);
+				if (ptr == IntPtr.Zero)
+					return null;
+				X509Certificate cert = new X509Certificate(ptr, true);
+				// Increase the reference count for the native pointer
+				cert.AddRef();
+				return cert;
+			}
 		}
 
 		/// <summary>

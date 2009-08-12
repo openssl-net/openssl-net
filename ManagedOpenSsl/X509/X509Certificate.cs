@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
 namespace OpenSSL
 {
@@ -249,7 +250,13 @@ namespace OpenSSL
 		/// </summary>
 		public X509Name Issuer
 		{
-			get { return new X509Name(Native.ExpectNonNull(Native.X509_get_issuer_name(this.ptr)), false); }
+			get 
+			{
+				IntPtr name_ptr = Native.ExpectNonNull(Native.X509_get_issuer_name(this.ptr));
+				X509Name name = new X509Name(name_ptr, true);
+				name.AddRef();
+				return name;
+			}
 			set { Native.ExpectSuccess(Native.X509_set_issuer_name(this.ptr, value.Handle)); }
 		}
 
@@ -258,12 +265,13 @@ namespace OpenSSL
 		/// </summary>
 		public int SerialNumber
 		{
-			get { return Native.ASN1_INTEGER_get(Native.X509_get_serialNumber(this.ptr)); }
+			get { return Asn1Integer.ToInt32(Native.X509_get_serialNumber(this.ptr)); }
 			set
 			{
-				IntPtr serASN = Native.IntegerToAsnInteger(value);
-				Native.ExpectSuccess(Native.X509_set_serialNumber(this.ptr, serASN));
-				Native.ASN1_INTEGER_free(serASN);
+				using (Asn1Integer asnInt = new Asn1Integer(value))
+				{
+					Native.ExpectSuccess(Native.X509_set_serialNumber(this.ptr, asnInt.Handle));
+				}
 			}
 		}
 
@@ -272,12 +280,13 @@ namespace OpenSSL
 		/// </summary>
 		public DateTime NotBefore
 		{
-			get { return Native.AsnTimeToDateTime(this.RawValidity.notBefore).ToLocalTime(); }
+			get { return Asn1DateTime.ToDateTime(this.RawValidity.notBefore); }
 			set
 			{
-				IntPtr datetimeASN = Native.DateTimeToAsnTime(value.ToUniversalTime());
-				Native.ExpectSuccess(Native.X509_set_notBefore(this.ptr, datetimeASN));
-				Native.ASN1_TIME_free(datetimeASN);
+				using (Asn1DateTime asnDateTime = new Asn1DateTime(value))
+				{
+					Native.ExpectSuccess(Native.X509_set_notBefore(this.ptr, asnDateTime.Handle));
+				}
 			}
 		}
 
@@ -286,12 +295,13 @@ namespace OpenSSL
 		/// </summary>
 		public DateTime NotAfter
 		{
-			get { return Native.AsnTimeToDateTime(this.RawValidity.notAfter).ToLocalTime(); }
+			get { return Asn1DateTime.ToDateTime(this.RawValidity.notAfter); }
 			set
 			{
-				IntPtr datetimeASN = Native.DateTimeToAsnTime(value.ToUniversalTime());
-				Native.ExpectSuccess(Native.X509_set_notAfter(this.ptr, datetimeASN));
-				Native.ASN1_TIME_free(datetimeASN);
+				using (Asn1DateTime asnDateTime = new Asn1DateTime(value))
+				{
+					Native.ExpectSuccess(Native.X509_set_notAfter(this.ptr, asnDateTime.Handle));
+				}
 			}
 		}
 
@@ -309,7 +319,12 @@ namespace OpenSSL
 		/// </summary>
 		public CryptoKey PublicKey
 		{
-			get { return new CryptoKey(Native.ExpectNonNull(Native.X509_get_pubkey(this.ptr)), true); }
+			get 
+			{
+				// X509_get_pubkey() will increment the refcount internally
+				IntPtr key_ptr = Native.ExpectNonNull(Native.X509_get_pubkey(this.ptr));
+				return new CryptoKey(key_ptr, true);
+			}
 			set { Native.ExpectSuccess(Native.X509_set_pubkey(this.ptr, value.Handle)); }
 		}
 
@@ -327,12 +342,12 @@ namespace OpenSSL
 		/// </summary>
 		public CryptoKey PrivateKey
 		{
-			get { return privateKey; }
+			get { return privateKey.CopyRef(); }
 			set
 			{
 				if (CheckPrivateKey(value))
 				{
-					privateKey = value;
+					privateKey = value.CopyRef();
 				}
 				else
 				{
