@@ -49,7 +49,7 @@ namespace OpenSSL
 		/// </summary>
 		/// <param name="ptr"></param>
 		/// <param name="takeOwnership"></param>
-		public Asn1String(IntPtr ptr, bool takeOwnership)
+		internal Asn1String(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
 		{
 		}
