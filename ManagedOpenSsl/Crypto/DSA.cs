@@ -236,7 +236,13 @@ namespace OpenSSL
 		/// </summary>
 		public BigNumber PrivateKey
 		{
-			get { return new BigNumber(this.Raw.priv_key, false); }
+			get 
+			{
+				IntPtr pKey = this.Raw.priv_key;
+				if (pKey == IntPtr.Zero)
+					return null;
+				return new BigNumber(pKey, false); 
+			}
 			set
 			{
 				dsa_st raw = this.Raw;
@@ -379,6 +385,10 @@ namespace OpenSSL
 				IntPtr.Zero));
 		}
 
+		#endregion
+
+		#region Overrides
+
 		/// <summary>
 		/// Calls DSA_print()
 		/// </summary>
@@ -387,15 +397,64 @@ namespace OpenSSL
 		{
 			Native.ExpectSuccess(Native.DSA_print(bio.Handle, this.ptr, 0));
 		}
-		#endregion
 
-		#region IDisposable Members
 		/// <summary>
 		/// Calls DSA_free()
 		/// </summary>
-		protected override void OnDispose() {
+		protected override void OnDispose() 
+		{
 			Native.DSA_free(this.ptr);
 		}
+
+		/// <summary>
+		/// If both objects have a private key, those are compared. 
+		/// Otherwise just the params and public keys are compared.
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public override bool Equals(object obj)
+		{
+			DSA rhs = obj as DSA;
+			if (rhs == null)
+				return false;
+
+			bool paramsEqual = (
+				this.P == rhs.P &&
+				this.Q == rhs.Q &&
+				this.G == rhs.G
+			);
+
+			if (!paramsEqual)
+				return false;
+
+			if (this.PublicKey != rhs.PublicKey)
+				return false;
+
+			BigNumber lhsPrivateKey = this.PrivateKey;
+			BigNumber rhsPrivateKey = rhs.PrivateKey;
+
+			if (lhsPrivateKey == null || rhsPrivateKey == null)
+				return true;
+
+			return lhsPrivateKey == rhsPrivateKey;
+		}
+
+		/// <summary>
+		/// Xor of the params, public key, and optionally the private key
+		/// </summary>
+		/// <returns></returns>
+		public override int GetHashCode()
+		{
+			int code = 
+				this.P.GetHashCode() ^ 
+				this.Q.GetHashCode() ^ 
+				this.G.GetHashCode() ^ 
+				this.PublicKey.GetHashCode();
+			if (this.PrivateKey != null)
+				code ^= this.PrivateKey.GetHashCode();
+			return code;
+		}
+
 		#endregion
 	}
 }
