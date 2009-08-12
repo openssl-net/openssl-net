@@ -59,7 +59,7 @@ namespace UnitTests.OpenSSL
 					{
 						using (CryptoKey other = new CryptoKey(dsa2))
 						{
-							Assert.AreNotEqual(lhs, other);
+							Assert.IsFalse(lhs == other);
 						}
 					}
 				}
@@ -81,7 +81,7 @@ namespace UnitTests.OpenSSL
 						rsa2.GenerateKeys(1024, BigNumber.One, null, null);
 						using (CryptoKey other = new CryptoKey(rsa2))
 						{
-							Assert.AreNotEqual(lhs, other);
+							Assert.IsFalse(lhs == other);
 						}
 					}
 				}

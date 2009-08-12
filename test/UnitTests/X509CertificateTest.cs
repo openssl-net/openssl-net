@@ -214,18 +214,18 @@ namespace UnitTests.OpenSSL
 
 				using (X509Certificate cert2 = new X509Certificate(101, "CN=other", "CN=Root", key, start, end))
 				{
-					Assert.AreNotEqual(cert, cert2);
+					Assert.IsFalse(cert == cert2);
 				}
 
 				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=other", key, start, end))
 				{
-					Assert.AreNotEqual(cert, cert2);
+					Assert.IsFalse(cert == cert2);
 				}
 
 				CryptoKey otherKey = new CryptoKey(new DSA(true));
 				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", otherKey, start, end))
 				{
-					Assert.AreNotEqual(cert, cert2);
+					Assert.IsFalse(cert == cert2);
 				}
 			}
 		}

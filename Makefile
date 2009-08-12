@@ -5,12 +5,8 @@ export D_OUT = $(TOP)/bin/Debug
 
 export CSC = gmcs
 export CSFLAGS = -debug -warn:2 -warnaserror
-export MONO = mono
-
-NUNIT_FLAGS = -nologo -noshadow
 
 export LIBPATH = $(D_OUT)
-export NUNIT = nunit-console2 $(NUNIT_FLAGS)
 
 MAKE_DIR = $(MAKE) -C 
 
