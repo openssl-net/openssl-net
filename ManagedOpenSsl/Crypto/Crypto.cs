@@ -179,7 +179,7 @@ namespace OpenSSL
 		/// <param name="num_bytes"></param>
 		/// <param name="addr"></param>
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void MemoryLeakHandler(uint order, string file, int line, int num_bytes, IntPtr addr);
+		public delegate void MemoryLeakHandler(uint order, IntPtr file, int line, int num_bytes, IntPtr addr);
 
 		/// <summary>
 		/// Calls CRYPTO_mem_leaks_cb()

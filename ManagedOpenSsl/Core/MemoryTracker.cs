@@ -40,16 +40,26 @@ namespace OpenSSL.Core
 			Crypto.Cleanup();
 			Crypto.RemoveState(0);
 
+			Crypto.SetMemoryCheck(MemoryCheck.Off);
+
 			Crypto.CheckMemoryLeaks(OnMemoryLeak);
 			if (leaked > 0)
 				Console.WriteLine("Leaked total bytes: {0}", leaked);
-
-			Crypto.SetMemoryCheck(MemoryCheck.Off);
 		}
 
-		private static void OnMemoryLeak(uint order, string file, int line, int num_bytes, IntPtr addr)
+		private static void OnMemoryLeak(uint order, IntPtr file, int line, int num_bytes, IntPtr addr)
 		{
-			Console.WriteLine("[{0}] file: {1} line: {2} bytes: {3}", order, file, line, num_bytes);
+			string filename;
+			if(file != IntPtr.Zero)
+			{
+				filename = Native.PtrToStringAnsi(file, false);
+			}
+			else
+			{
+				filename = "<null>";
+			}
+
+			Console.WriteLine("[{0}] file: {1} line: {2} bytes: {3}", order, filename, line, num_bytes);
 			leaked += num_bytes;
 		}
 	}

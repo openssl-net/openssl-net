@@ -7,7 +7,7 @@ export CSC = gmcs
 export CSFLAGS = -debug -warn:2 -warnaserror
 export MONO = mono
 
-NUNIT_FLAGS = -nologo -noshadow
+NUNIT_FLAGS = -nologo 
 
 export LIBPATH = $(D_OUT)
 export NUNIT = nunit-console2 $(NUNIT_FLAGS)
