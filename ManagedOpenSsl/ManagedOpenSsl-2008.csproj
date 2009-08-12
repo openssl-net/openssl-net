@@ -64,10 +64,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Asn1DateTime.cs" />
     <Compile Include="Core\Asn1String.cs" />
     <Compile Include="Core\Base.cs" />
     <Compile Include="Core\BigNum.cs" />
     <Compile Include="Core\BIO.cs" />
+    <Compile Include="Core\Asn1Integer.cs" />
+    <Compile Include="Core\MemoryTracker.cs" />
     <Compile Include="Crypto\Cipher.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
