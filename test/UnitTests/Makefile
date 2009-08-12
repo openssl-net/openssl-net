@@ -11,11 +11,13 @@ build: $(OUT)
 
 SRCS = \
 	Properties/AssemblyInfo.cs \
+	BaseTest.cs \
+	CryptoKeyTest.cs \
 	X509CertificateTest.cs
 
 REFS = \
 	-r:ManagedOpenSsl.dll \
-	-r:nunit.framework.dll
+	-pkg:mono-nunit
 
 $(OUT) : $(SRCS) $(DEPS)
 	$(CSC) $(CSFLAGS) -t:$(TGT_TYPE) -lib:$(LIBPATH) $(REFS) -out:$@ $(SRCS)

@@ -51,8 +51,6 @@ namespace OpenSSL.Core
 		{
 			Console.WriteLine("[{0}] file: {1} line: {2} bytes: {3}", order, file, line, num_bytes);
 			leaked += num_bytes;
-
-			Native.CRYPTO_free(addr);
 		}
 	}
 }

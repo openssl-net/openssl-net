@@ -266,10 +266,10 @@ namespace UnitTests.OpenSSL
 			CryptoKey key = new CryptoKey(new DSA(true));
 			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
 			{
-				Assert.True(cert.CheckPrivateKey(key));
+				Assert.AreEqual(true, cert.CheckPrivateKey(key));
 
 				CryptoKey other = new CryptoKey(new DSA(true));
-				Assert.False(cert.CheckPrivateKey(other));
+				Assert.AreEqual(false, cert.CheckPrivateKey(other));
 			}
 		}
 
@@ -288,10 +288,10 @@ namespace UnitTests.OpenSSL
 			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
 			{
 				cert.Sign(key, MessageDigest.DSS1);
-				Assert.True(cert.Verify(key));
+				Assert.AreEqual(true, cert.Verify(key));
 
 				CryptoKey other = new CryptoKey(new DSA(true));
-				Assert.False(cert.Verify(other));
+				Assert.AreEqual(false, cert.Verify(other));
 			}
 		}
 
@@ -322,7 +322,7 @@ namespace UnitTests.OpenSSL
 			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
 			{
 				X509Request request = cert.CreateRequest(key, MessageDigest.DSS1);
-				Assert.True(request.Verify(key));
+				Assert.AreEqual(true, request.Verify(key));
 			}
 		}
 

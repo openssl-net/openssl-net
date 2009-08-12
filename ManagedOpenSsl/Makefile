@@ -36,10 +36,13 @@ build: $(OUT)
 SRCS = \
 	Properties/AssemblyInfo.cs \
 	\
+	Core/Asn1DateTime.cs \
+	Core/Asn1Integer.cs \
 	Core/Asn1String.cs \
 	Core/Base.cs \
 	Core/BigNum.cs \
 	Core/BIO.cs \
+	Core/MemoryTracker.cs \
 	Core/Native.cs \
 	Core/OpenSslException.cs \
 	Core/Password.cs \
