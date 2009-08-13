@@ -23,9 +23,9 @@ namespace OpenSSL.Core
 		public static void Start()
 		{
 			leaked = 0;
-			Crypto.MallocDebugInit();
-			Crypto.SetDebugOptions(DebugOptions.All);
-			Crypto.SetMemoryCheck(MemoryCheck.On);
+			CryptoUtil.MallocDebugInit();
+			CryptoUtil.SetDebugOptions(DebugOptions.All);
+			CryptoUtil.SetMemoryCheck(MemoryCheck.On);
 		}
 
 		/// <summary>
@@ -37,12 +37,12 @@ namespace OpenSSL.Core
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 
-			Crypto.Cleanup();
-			Crypto.RemoveState(0);
+			CryptoUtil.Cleanup();
+			CryptoUtil.RemoveState(0);
 
-			Crypto.SetMemoryCheck(MemoryCheck.Off);
+			CryptoUtil.SetMemoryCheck(MemoryCheck.Off);
 
-			Crypto.CheckMemoryLeaks(OnMemoryLeak);
+			CryptoUtil.CheckMemoryLeaks(OnMemoryLeak);
 			if (leaked > 0)
 				Console.WriteLine("Leaked total bytes: {0}", leaked);
 		}

@@ -31,6 +31,7 @@ using System.Reflection;
 using System.Security.Permissions;
 using System.IO;
 using OpenSSL.Core;
+using OpenSSL.Crypto;
 
 namespace OpenSSL.CLI
 {
@@ -82,12 +83,12 @@ where options are
 			string infile = this.options.GetString("infile");
 			BIO bin = Program.GetInFile(options.GetString("infile"));
 
-			OpenSSL.DH dh;
+			DH dh;
 			string inform = this.options["inform"] as string;
 			if (inform == "PEM")
-				dh = OpenSSL.DH.FromParametersPEM(bin);
+				dh = DH.FromParametersPEM(bin);
 			else if (inform == "DER")
-				dh = OpenSSL.DH.FromParametersDER(bin);
+				dh = DH.FromParametersDER(bin);
 			else
 			{
 				Usage();

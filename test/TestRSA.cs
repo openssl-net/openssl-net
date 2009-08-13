@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
 using OpenSSL.Core;
+using OpenSSL.Crypto;
 
 namespace test
 {

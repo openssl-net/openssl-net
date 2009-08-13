@@ -347,7 +347,7 @@ namespace OpenSSL.Core
 		public extern static void CRYPTO_mem_leaks(IntPtr bio);
 
 		[DllImport(DLLNAME)]
-		public extern static void CRYPTO_mem_leaks_cb(Crypto.MemoryLeakHandler cb);
+		public extern static void CRYPTO_mem_leaks_cb(CryptoUtil.MemoryLeakHandler cb);
 
 		#endregion
 

@@ -71,11 +71,11 @@ where options are
 			{
 				Console.WriteLine("options:  {0} {1} {2} {3} {4} {5}",
 					BigNumber.Options,
-					Crypto.MD2_Options,
-					Crypto.RC4_Options,
-					Crypto.DES_Options,
-					Crypto.Idea_Options,
-					Crypto.Blowfish_Options);
+					CryptoUtil.MD2_Options,
+					CryptoUtil.RC4_Options,
+					CryptoUtil.DES_Options,
+					CryptoUtil.Idea_Options,
+					CryptoUtil.Blowfish_Options);
 			}
 			if (cflags) Console.WriteLine(Core.Version.GetText(Core.Version.Format.CompilerFlags));
 			if (dir) Console.WriteLine(Core.Version.GetText(Core.Version.Format.BuildDirectory));

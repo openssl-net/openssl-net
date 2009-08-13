@@ -30,6 +30,7 @@ using OpenSSL;
 using System.Runtime.InteropServices;
 using System.IO;
 using OpenSSL.Core;
+using OpenSSL.Crypto;
 
 namespace test
 {

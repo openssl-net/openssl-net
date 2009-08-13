@@ -85,7 +85,7 @@ namespace OpenSSL.Core
 	/// <summary>
 	/// Exposes the CRYPTO_* functions
 	/// </summary>
-	public class Crypto
+	public class CryptoUtil
 	{
 		/// <summary>
 		/// Returns MD2_options()

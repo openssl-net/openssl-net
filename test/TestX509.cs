@@ -29,6 +29,7 @@ using System.Text;
 using System.IO;
 using OpenSSL;
 using OpenSSL.Core;
+using OpenSSL.Crypto;
 
 namespace test
 {
