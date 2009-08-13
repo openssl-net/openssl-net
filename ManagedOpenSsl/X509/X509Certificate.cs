@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Wraps the X509 object

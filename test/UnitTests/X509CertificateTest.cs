@@ -29,6 +29,7 @@ using OpenSSL;
 using NUnit.Framework;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using OpenSSL.X509;
 
 namespace UnitTests.OpenSSL
 {

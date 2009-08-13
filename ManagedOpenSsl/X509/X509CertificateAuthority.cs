@@ -29,7 +29,7 @@ using System.IO;
 using System.Threading;
 using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
     /// <summary>
 	/// Used for generating sequence numbers by the CertificateAuthority

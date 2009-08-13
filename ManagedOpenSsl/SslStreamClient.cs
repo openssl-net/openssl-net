@@ -29,6 +29,7 @@ using System.Text;
 using System.IO;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using OpenSSL.X509;
 
 namespace OpenSSL
 {

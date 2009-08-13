@@ -29,7 +29,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	#region X509v3Context
 

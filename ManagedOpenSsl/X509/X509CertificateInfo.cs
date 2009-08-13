@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	internal class X509CertificateInfo : BaseReferenceType, IStackable
 	{

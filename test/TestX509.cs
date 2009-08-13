@@ -30,6 +30,7 @@ using System.IO;
 using OpenSSL;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using OpenSSL.X509;
 
 namespace test
 {

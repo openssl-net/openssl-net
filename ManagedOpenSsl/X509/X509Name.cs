@@ -29,7 +29,7 @@ using System.Text;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Encapsulates the X509_NAME_* functions
