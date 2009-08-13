@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
+using OpenSSL.Core;
 
 namespace test
 {
@@ -350,7 +351,7 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			OpenSSL.Random.Seed(rnd_seed);
+			OpenSSL.Core.Random.Seed(rnd_seed);
 
 			for (int v = 0; v < 6; v++)
 			{

@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
 namespace OpenSSL
 {
@@ -263,7 +264,7 @@ namespace OpenSSL
 				VerifyResult result = (VerifyResult)ctx.Error;
 				// build the X509Chain from the store
 				X509Store store = ctx.Store;
-				Stack<X509Object> objStack = store.Objects;
+				Core.Stack<X509Object> objStack = store.Objects;
 				X509Chain chain = new X509Chain();
 				foreach (X509Object obj in objStack)
 				{
@@ -323,10 +324,10 @@ namespace OpenSSL
 			Native.SSL_CTX_set_verify_depth(this.ptr, depth);
 		}
 
-		public Stack<X509Name> LoadClientCAFile(string filename)
+		public Core.Stack<X509Name> LoadClientCAFile(string filename)
 		{
 			IntPtr stack = Native.SSL_load_client_CA_file(filename);
-			Stack<X509Name> name_stack = new Stack<X509Name>(stack, true);
+			Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(stack, true);
 			return name_stack;
 		}
 
@@ -337,12 +338,12 @@ namespace OpenSSL
 		/// the Stack and X509Name objects have set IsOwner to false
 		/// before assigning them to the context.
 		/// </summary>
-		public Stack<X509Name> CAList
+		public Core.Stack<X509Name> CAList
 		{
 			get
 			{
 				IntPtr ptr = Native.SSL_CTX_get_client_CA_list(this.ptr);
-				Stack<X509Name> name_stack = new Stack<X509Name>(ptr, false);
+				Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(ptr, false);
 				return name_stack;
 			}
 			set
@@ -408,7 +409,7 @@ namespace OpenSSL
 		{
 			List<string> ret = new List<string>();
 			SSL_CTX raw = (SSL_CTX)Marshal.PtrToStructure(ptr, typeof(SSL_CTX));
-			Stack<SslCipher> stack = new Stack<SslCipher>(raw.cipher_list, false);
+			Core.Stack<SslCipher> stack = new Core.Stack<SslCipher>(raw.cipher_list, false);
 			foreach (SslCipher cipher in stack)
 			{
 				IntPtr cipher_ptr = Native.SSL_CIPHER_description(cipher.Handle, null, 0);

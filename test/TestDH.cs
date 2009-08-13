@@ -29,6 +29,7 @@ using System.Text;
 using OpenSSL;
 using System.Runtime.InteropServices;
 using System.IO;
+using OpenSSL.Core;
 
 namespace test
 {
@@ -40,7 +41,7 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			OpenSSL.Random.Seed(rnd_seed);
+			OpenSSL.Core.Random.Seed(rnd_seed);
 
 			BigNumber.GeneratorHandler cb = new BigNumber.GeneratorHandler(this.OnStatus);
 			DH a = new DH(64, DH.Generator5, cb, Console.Out);

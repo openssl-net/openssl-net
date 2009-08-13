@@ -29,7 +29,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// Base class for all openssl wrapped objects. 

@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using OpenSSL.Core;
 
 namespace OpenSSL
 {
@@ -187,7 +188,7 @@ namespace OpenSSL
                 // SetCertificateStore, the context takes ownership of the store pointer.
                 X509Store cert_store = new X509Store(caCerts, false);
                 sslContext.SetCertificateStore(cert_store);
-                Stack<X509Name> name_stack = new Stack<X509Name>();
+                Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>();
                 foreach (X509Certificate cert in caCerts)
                 {
                     X509Name subject = cert.Subject;

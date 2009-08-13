@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using OpenSSL;
+using OpenSSL.Core;
 
 namespace test
 {
@@ -105,7 +106,7 @@ namespace test
 				Console.WriteLine(root.Certificate);
 				// Iterate the extensions
 				Console.WriteLine("X509v3 Extensions:");
-				using (OpenSSL.Stack<X509Extension> ext_stack = root.Certificate.Extensions) {
+				using (OpenSSL.Core.Stack<X509Extension> ext_stack = root.Certificate.Extensions) {
 					foreach (X509Extension ext in ext_stack) {
 						Console.WriteLine("Name:{0}, IsCritical:{1}, Value:{2}", ext.Name, ext.IsCritical, ext);
 					}

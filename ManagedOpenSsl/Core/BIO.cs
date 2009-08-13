@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// Encapsulates the BIO_* functions.

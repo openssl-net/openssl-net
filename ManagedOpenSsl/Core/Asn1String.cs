@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// Wraps ASN1_STRING_*
@@ -81,10 +81,10 @@ namespace OpenSSL
 		{
 			get
 			{
-				IntPtr ret = Native.ASN1_STRING_data(this.ptr);
-				byte[] byteArray = new byte[this.Length];
-				Marshal.Copy(ret, byteArray, 0, byteArray.Length);
-				return byteArray;
+				IntPtr pData = Native.ASN1_STRING_data(this.ptr);
+				byte[] ret = new byte[this.Length];
+				Marshal.Copy(pData, ret, 0, ret.Length);
+				return ret;
 			}
 		}
 		#endregion

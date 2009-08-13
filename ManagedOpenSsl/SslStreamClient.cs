@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using OpenSSL.Core;
 
 namespace OpenSSL
 {
@@ -172,7 +173,7 @@ namespace OpenSSL
 			x509_cert = null;
 			key = null;
 
-			Stack<X509Name> name_stack = ssl.CAList;
+			Core.Stack<X509Name> name_stack = ssl.CAList;
 			string[] strIssuers = new string[name_stack.Count];
 			int count = 0;
 

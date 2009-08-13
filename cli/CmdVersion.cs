@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
+using OpenSSL.Core;
 
 namespace OpenSSL.CLI
 {
@@ -63,9 +64,9 @@ where options are
 			if (options.IsSet("options")) opts = true;
 			if (options.IsSet("all")) version = date = platform = cflags = dir = opts = true;
 
-			if (version) Console.WriteLine(Version.GetText(Version.Format.Text));
-			if (date) Console.WriteLine(Version.GetText(Version.Format.BuildDate));
-			if (platform) Console.WriteLine(Version.GetText(Version.Format.Platform));
+			if (version) Console.WriteLine(Core.Version.GetText(Core.Version.Format.Text));
+			if (date) Console.WriteLine(Core.Version.GetText(Core.Version.Format.BuildDate));
+			if (platform) Console.WriteLine(Core.Version.GetText(Core.Version.Format.Platform));
 			if (opts)
 			{
 				Console.WriteLine("options:  {0} {1} {2} {3} {4} {5}",
@@ -76,8 +77,8 @@ where options are
 					Crypto.Idea_Options,
 					Crypto.Blowfish_Options);
 			}
-			if (cflags) Console.WriteLine(Version.GetText(Version.Format.CompilerFlags));
-			if (dir) Console.WriteLine(Version.GetText(Version.Format.BuildDirectory));
+			if (cflags) Console.WriteLine(Core.Version.GetText(Core.Version.Format.CompilerFlags));
+			if (dir) Console.WriteLine(Core.Version.GetText(Core.Version.Format.BuildDirectory));
 		}
 
 		#endregion

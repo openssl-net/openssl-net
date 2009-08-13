@@ -30,6 +30,7 @@ using OpenSSL;
 using System.Reflection;
 using System.Security.Permissions;
 using System.IO;
+using OpenSSL.Core;
 
 namespace OpenSSL.CLI
 {

@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
 using System.IO;
+using OpenSSL.Core;
 
 namespace test
 {
@@ -125,7 +126,7 @@ namespace test
 
 		public void Execute(string[] args)
 		{
-			OpenSSL.Random.Seed(rnd_seed);
+			OpenSSL.Core.Random.Seed(rnd_seed);
 		
 			Console.WriteLine("test generation of DSA parameters");
 

@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
 namespace OpenSSL
 {
@@ -76,7 +77,7 @@ namespace OpenSSL
 			}
 			if (cacerts != IntPtr.Zero)
 			{
-				this.caCertificates = new Stack<X509Certificate>(cacerts, true);
+				this.caCertificates = new Core.Stack<X509Certificate>(cacerts, true);
 			}
 		}
 
@@ -118,7 +119,7 @@ namespace OpenSSL
 		/// <summary>
 		/// Returns a stack of CA Certificates
 		/// </summary>
-		public Stack<X509Certificate> CACertificates
+		public Core.Stack<X509Certificate> CACertificates
 		{
 			get { return caCertificates; }
 		}
@@ -155,7 +156,7 @@ namespace OpenSSL
 		#region Fields
 		private CryptoKey privateKey;
 		private X509Certificate certificate;
-		private Stack<X509Certificate> caCertificates;
+		private Core.Stack<X509Certificate> caCertificates;
 		#endregion
 	}
 }

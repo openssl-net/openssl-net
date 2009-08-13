@@ -32,7 +32,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// 

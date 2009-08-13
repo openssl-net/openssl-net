@@ -497,13 +497,13 @@ namespace OpenSSL
 		/// <summary>
 		/// 
 		/// </summary>
-		public Stack<X509Extension> Extensions
+		public Core.Stack<X509Extension> Extensions
 		{
 			get
 			{
 				if (RawCertInfo.extensions != IntPtr.Zero)
 				{
-					return new Stack<X509Extension>(RawCertInfo.extensions, false);
+					return new Core.Stack<X509Extension>(RawCertInfo.extensions, false);
 				}
 				return null;
 			}
@@ -513,7 +513,7 @@ namespace OpenSSL
 		/// 
 		/// </summary>
 		/// <param name="sk_ext"></param>
-		public void AddExtensions(Stack<X509Extension> sk_ext)
+		public void AddExtensions(Core.Stack<X509Extension> sk_ext)
 		{
 			foreach (X509Extension ext in sk_ext)
 			{

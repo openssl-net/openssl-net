@@ -34,7 +34,7 @@ namespace OpenSSL
 	/// <summary>
 	/// Contains a chain X509_INFO objects.
 	/// </summary>
-	public class X509Chain : Stack<X509Certificate>
+	public class X509Chain : Core.Stack<X509Certificate>
 	{
 		#region Initialization
 		/// <summary>
@@ -51,7 +51,7 @@ namespace OpenSSL
 		public X509Chain(BIO bio)
 		{
 			IntPtr sk = Native.ExpectNonNull(Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
-			using (Stack<X509CertificateInfo> stack = new Stack<X509CertificateInfo>(sk, true))
+			using (Core.Stack<X509CertificateInfo> stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
 				while (stack.Count > 0)
 				{
@@ -135,7 +135,7 @@ namespace OpenSSL
 		{
 			IntPtr sk = Native.ExpectNonNull(
 				Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
-			using (Stack<X509CertificateInfo> stack = new Stack<X509CertificateInfo>(sk, true))
+			using (Core.Stack<X509CertificateInfo> stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
 				while (stack.Count > 0)
 				{
