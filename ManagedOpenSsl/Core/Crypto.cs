@@ -27,9 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
-using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// V_CRYPTO_MDEBUG_*
