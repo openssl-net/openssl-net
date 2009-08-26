@@ -39,7 +39,7 @@ namespace test
 			Console.WriteLine("Testing random");
 			int err = 0;
 
-			byte[] buf = OpenSSL.Random.PseudoBytes(2500);
+			byte[] buf = OpenSSL.Core.Random.PseudoBytes(2500);
 
 			uint n1 = 0;
 			uint[] n2 = new uint[16];

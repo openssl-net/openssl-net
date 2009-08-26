@@ -26,8 +26,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenSSL.Core;
+using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Encapsulates the X509_NAME_* functions
@@ -86,7 +88,7 @@ namespace OpenSSL
 		}
 
 		/// <summary>
-		/// Creates a copy using X509_NAME_dup()
+		/// Parses the string and returns an X509Name based on value.
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>

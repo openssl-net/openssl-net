@@ -30,6 +30,8 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using OpenSSL;
+using OpenSSL.Core;
+using OpenSSL.X509;
 
 namespace test
 {

@@ -26,8 +26,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Simple encapsulation of a local identity.

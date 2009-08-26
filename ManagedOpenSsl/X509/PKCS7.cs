@@ -27,8 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Wraps PKCS7
@@ -157,16 +158,16 @@ namespace OpenSSL
 
 		#region Helpers
 
-		private Stack<X509Certificate> GetStackFromSigned()
+		private Core.Stack<X509Certificate> GetStackFromSigned()
 		{
 			PKCS7_SIGNED signed = (PKCS7_SIGNED)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGNED));
-			return new Stack<X509Certificate>(signed.cert, false);
+			return new Core.Stack<X509Certificate>(signed.cert, false);
 		}
 
-		private Stack<X509Certificate> GetStackFromSignedAndEnveloped()
+		private Core.Stack<X509Certificate> GetStackFromSignedAndEnveloped()
 		{
 			PKCS7_SIGN_ENVELOPE envelope = (PKCS7_SIGN_ENVELOPE)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGN_ENVELOPE));
-			return new Stack<X509Certificate>(envelope.cert, false);
+			return new Core.Stack<X509Certificate>(envelope.cert, false);
 		}
 
 		#endregion
@@ -190,7 +191,7 @@ namespace OpenSSL
 
 		#region Fields
 		private _PKCS7 raw;
-		private Stack<X509Certificate> stack;
+		private Core.Stack<X509Certificate> stack;
 		#endregion
 	}
 }

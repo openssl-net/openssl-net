@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
 using System.Threading;
+using OpenSSL.Core;
 
 namespace test
 {
@@ -172,48 +173,13 @@ namespace test
 		}
 
 		void TestAll() {
-			foreach (var item in tests) {
+			foreach (KeyValuePair<string, ICommand> item in tests) {
 				MemoryTracker.Start();
 				string[] args = new string[1];
 				args[0] = item.Key;
 				item.Value.Execute(args);
 				MemoryTracker.Finish();
 			}
-		}
-	}
-
-	public class MemoryTracker
-	{
-		private static int leaked = 0;
-
-		public static void Start()
-		{
-			leaked = 0;
-			Crypto.MallocDebugInit();
-			Crypto.SetDebugOptions(DebugOptions.All);
-			Crypto.SetMemoryCheck(MemoryCheck.On);
-		}
-
-		public static void Finish()
-		{
-			Crypto.Cleanup();
-			Crypto.RemoveState(0);
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            Crypto.CheckMemoryLeaks(OnMemoryLeak);
-			if (leaked > 0)
-				Console.WriteLine("Leaked total bytes: {0}", leaked);
-
-			Crypto.SetMemoryCheck(MemoryCheck.Off);
-		}
-
-		private static void OnMemoryLeak(uint order, string file, int line, int num_bytes, IntPtr addr)
-		{
-			Console.WriteLine("[{0}] file: {1} line: {2} bytes: {3}", order, file, line, num_bytes);
-			leaked += num_bytes;
 		}
 	}
 }

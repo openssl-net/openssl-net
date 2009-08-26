@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// The Stack class can only contain objects marked with this interface.

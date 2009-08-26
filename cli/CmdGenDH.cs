@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using OpenSSL;
+using OpenSSL.Crypto;
 
 namespace OpenSSL.CLI
 {
@@ -86,7 +87,7 @@ namespace OpenSSL.CLI
 			Console.Error.WriteLine("Generating DH parameters, {0} bit long safe prime, generator {1}", bits, g);
 			Console.Error.WriteLine("This is going to take a long time");
 
-			OpenSSL.DH dh = new OpenSSL.DH(bits, g, Program.OnGenerator, null);
+			DH dh = new DH(bits, g, Program.OnGenerator, null);
 
 			string outfile = this.options["out"] as string;
 			if (string.IsNullOrEmpty(outfile))

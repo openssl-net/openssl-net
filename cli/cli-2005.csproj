@@ -32,7 +32,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CmdCipher.cs" />
     <Compile Include="CmdDH.cs" />
+    <Compile Include="CmdDigest.cs" />
     <Compile Include="CmdGenDH.cs" />
     <Compile Include="CmdGenRSA.cs" />
     <Compile Include="CmdRSA.cs" />

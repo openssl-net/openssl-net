@@ -32,7 +32,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// 
@@ -121,8 +121,8 @@ namespace OpenSSL
 		/// This is the name of the DLL that P/Invoke loads and tries to bind all of
 		/// these native functions to.
 		/// </summary>
-		public const string DLLNAME = "libeay32";
-		public const string SSLDLLNAME = "ssleay32";
+		const string DLLNAME = "libeay32";
+		const string SSLDLLNAME = "ssleay32";
 
 		#region Delegates
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -344,13 +344,10 @@ namespace OpenSSL
 		public extern static void CRYPTO_cleanup_all_ex_data();
 
 		[DllImport(DLLNAME)]
-		public extern static void CRYPTO_mem_leaks_fp(IntPtr fp);
-
-		[DllImport(DLLNAME)]
 		public extern static void CRYPTO_mem_leaks(IntPtr bio);
 
 		[DllImport(DLLNAME)]
-		public extern static void CRYPTO_mem_leaks_cb(Crypto.MemoryLeakHandler cb);
+		public extern static void CRYPTO_mem_leaks_cb(CryptoUtil.MemoryLeakHandler cb);
 
 		#endregion
 
@@ -373,7 +370,6 @@ namespace OpenSSL
 		public extern static void OBJ_NAME_do_all_sorted(int type, ObjectNameHandler fn, IntPtr arg);
 
 		[DllImport(DLLNAME)]
-		//!!public extern static int OBJ_txt2nid(byte[] s);
 		public extern static int OBJ_txt2nid(string s);
 
 		[DllImport(DLLNAME)]
@@ -1461,6 +1457,9 @@ namespace OpenSSL
 		public extern static void EVP_PKEY_free(IntPtr pkey);
 
 		[DllImport(DLLNAME)]
+		public extern static int EVP_PKEY_cmp(IntPtr a, IntPtr b);
+
+		[DllImport(DLLNAME)]
 		public extern static int EVP_PKEY_decrypt(byte[] dec_key, byte[] enc_key, int enc_key_len, IntPtr private_key);
 
 		[DllImport(DLLNAME)]
@@ -2150,44 +2149,8 @@ namespace OpenSSL
 			return ret;
 		}
 
-		public static DateTime AsnTimeToDateTime(IntPtr ptr)
-		{
-			BIO bio = BIO.MemoryBuffer();
-			Native.ExpectSuccess(Native.ASN1_UTCTIME_print(bio.Handle, ptr));
-			string str = bio.ReadString();
-			string[] fmts = 
-			{ 
-				"MMM  d HH:mm:ss yyyy G\\MT",
-				"MMM dd HH:mm:ss yyyy G\\MT"
-			};
-			return DateTime.ParseExact(str, fmts, new DateTimeFormatInfo(), DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-		}
-
-		public static IntPtr DateTimeToAsnTime(DateTime value)
-		{
-			IntPtr pDate = Native.ExpectNonNull(Native.ASN1_TIME_new());
-			long time_t = DateTimeToTimeT(value);
-			return Native.ExpectNonNull(Native.ASN1_TIME_set(pDate, time_t));
-		}
-
-		public static long DateTimeToTimeT(DateTime value)
-		{
-			DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-			// # of 100 nanoseconds since 1970
-			long ticks = (value.Ticks - dt1970.Ticks) / 10000000L;
-			return ticks;
-		}
-
-		public static IntPtr IntegerToAsnInteger(int value)
-		{
-			IntPtr pSerial = Native.ExpectNonNull(Native.ASN1_INTEGER_new());
-			Native.ExpectSuccess(Native.ASN1_INTEGER_set(pSerial, value));
-			return pSerial;
-		}
-
 		public static int TextToNID(string text)
 		{
-			//!!int nid = Native.OBJ_txt2nid(Encoding.ASCII.GetBytes(text));
 			int nid = Native.OBJ_txt2nid(text);
 			if (nid == Native.NID_undef)
 				throw new OpenSslException();

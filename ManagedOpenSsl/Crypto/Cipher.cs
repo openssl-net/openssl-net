@@ -28,8 +28,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.Crypto
 {
 	#region Cipher
 	/// <summary>

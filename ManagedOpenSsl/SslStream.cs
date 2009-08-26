@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net.Security;
 using System.IO;
+using OpenSSL.X509;
 
 namespace OpenSSL
 {

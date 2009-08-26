@@ -27,6 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
+using OpenSSL.X509;
 
 namespace OpenSSL
 {
@@ -279,12 +281,12 @@ namespace OpenSSL
 			get { return new SslCipher(Native.SSL_get_current_cipher(this.Handle), false); }
 		}
 
-		public Stack<X509Name> CAList
+		public Core.Stack<X509Name> CAList
 		{
 			get
 			{
 				IntPtr ptr = Native.SSL_get_client_CA_list(this.ptr);
-				Stack<X509Name> name_stack = new Stack<X509Name>(ptr, false);
+				Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(ptr, false);
 				return name_stack;
 			}
 			set

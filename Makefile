@@ -6,14 +6,7 @@ export D_OUT = $(TOP)/bin/Debug
 export CSC = gmcs
 export CSFLAGS = -debug -warn:2 -warnaserror
 
-D_NUNIT = $(TOP)/nunit-2.5.1
-export D_NUNIT_LIB = $(D_NUNIT)/framework
-
-export LIBPATH = $(D_OUT),$(D_NUNIT_LIB)
-
-export MONO = mono
-NUNIT_EXE = $(D_NUNIT)/nunit-console.exe
-export NUNIT = $(MONO) $(NUNIT_EXE) -nologo -noshadow
+export LIBPATH = $(D_OUT)
 
 MAKE_DIR = $(MAKE) -C 
 

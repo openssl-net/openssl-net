@@ -29,7 +29,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// Wraps the BN_* set of functions.

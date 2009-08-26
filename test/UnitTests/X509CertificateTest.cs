@@ -27,11 +27,14 @@ using System;
 using System.IO;
 using OpenSSL;
 using NUnit.Framework;
+using OpenSSL.Core;
+using OpenSSL.Crypto;
+using OpenSSL.X509;
 
 namespace UnitTests.OpenSSL
 {
 	[TestFixture]
-	public class X509CertificateTest
+	public class X509CertificateTest : BaseTest
 	{
 		[Test]
 		public void CanCreateAndDispose()
@@ -109,12 +112,7 @@ namespace UnitTests.OpenSSL
 			X509Name subject = new X509Name("CN=localhost");
 			X509Name issuer = new X509Name("CN=Root");
 
-			CryptoKey key;
-			using (DSA dsa = new DSA(true))
-			{
-				key = new CryptoKey(dsa);
-			}
-
+			CryptoKey key = new CryptoKey(new DSA(true));
 			DateTime start = DateTime.Now;
 			DateTime end = start + TimeSpan.FromMinutes(10);
 
@@ -127,7 +125,7 @@ namespace UnitTests.OpenSSL
 				// We compare short date/time strings here because the wrapper can't handle milliseconds
 				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
 				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
-			}	
+			}
 		}
 
 		[Test]
@@ -136,50 +134,145 @@ namespace UnitTests.OpenSSL
 			int serial = 101;
 			X509Name subject = new X509Name("CN=localhost");
 			X509Name issuer = new X509Name("CN=Root");
-
-			CryptoKey key;
-			using (DSA dsa = new DSA(true))
-			{
-				key = new CryptoKey(dsa);
-			}
-
 			DateTime start = DateTime.Now;
 			DateTime end = start + TimeSpan.FromMinutes(10);
 
-			using(X509Certificate cert = new X509Certificate())
+			CryptoKey key = new CryptoKey(new DSA(true));
+			int bits = key.Bits;
+
+			X509Name saveIssuer = null;
+			X509Name saveSubject = null;
+			CryptoKey savePublicKey = null;
+			CryptoKey savePrivateKey = null;
+			using (X509Certificate cert = new X509Certificate())
 			{
 				cert.Subject = subject;
 				cert.Issuer = issuer;
 				cert.SerialNumber = serial;
 				cert.NotBefore = start;
 				cert.NotAfter = end;
+				cert.PublicKey = key;
+				cert.PrivateKey = key;
 
 				Assert.AreEqual(subject, cert.Subject);
 				Assert.AreEqual(issuer, cert.Issuer);
 				Assert.AreEqual(serial, cert.SerialNumber);
 
+				Assert.AreEqual(key, cert.PublicKey);
+				Assert.AreEqual(key, cert.PrivateKey);
+
+				// If the original key gets disposed before the internal private key,
+				// make sure that memory is correctly managed
+				key.Dispose();
+
+				// If the internal private key has already been disposed, this will blowup
+				Assert.AreEqual(bits, cert.PublicKey.Bits);
+				Assert.AreEqual(bits, cert.PrivateKey.Bits);
+
 				// We compare short date/time strings here because the wrapper can't handle milliseconds
 				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
 				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
+
+				saveSubject = cert.Subject;
+				saveIssuer = cert.Issuer;
+				savePublicKey = cert.PublicKey;
+				savePrivateKey = cert.PrivateKey;
+			}
+
+			// make sure that a property torn-off from the cert is still valid
+			Assert.AreEqual(subject, saveSubject);
+			Assert.AreEqual(issuer, saveIssuer);
+			Assert.AreEqual(bits, savePublicKey.Bits);
+			Assert.AreEqual(bits, savePrivateKey.Bits);
+		}
+
+		[Test]
+		[ExpectedException(typeof(ArgumentException))]
+		public void CannotSetUnmatchedPrivateKey()
+		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				CryptoKey other = new CryptoKey(new DSA(true));
+				cert.PrivateKey = other;
 			}
 		}
 
 		[Test]
-		[Ignore("Not implemented yet")]
+		public void CanCompare()
+		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				Assert.AreEqual(cert, cert);
+				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+				{
+					Assert.AreEqual(cert, cert2);
+				}
+
+				using (X509Certificate cert2 = new X509Certificate(101, "CN=other", "CN=Root", key, start, end))
+				{
+					Assert.IsFalse(cert == cert2);
+				}
+
+				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=other", key, start, end))
+				{
+					Assert.IsFalse(cert == cert2);
+				}
+
+				CryptoKey otherKey = new CryptoKey(new DSA(true));
+				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", otherKey, start, end))
+				{
+					Assert.IsFalse(cert == cert2);
+				}
+			}
+		}
+
+		[Test]
 		public void CanGetAsPEM()
 		{
+			using (BIO bio = BIO.File(Paths.CaCrt, "r"))
+			{
+				string expected = File.ReadAllText(Paths.CaCrt).Replace("\r\n", "\n");
+				using (X509Certificate cert = new X509Certificate(bio))
+				{
+					string pem = cert.PEM;
+					string text = cert.ToString();
+
+					Assert.AreEqual(expected, text + pem);
+				}
+			}
 		}
 
 		[Test]
-		[Ignore("Not implemented yet")]
 		public void CanSign()
 		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				cert.Sign(key, MessageDigest.DSS1);
+			}
 		}
 
 		[Test]
-		[Ignore("Not implemented yet")]
 		public void CanCheckPrivateKey()
 		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				Assert.AreEqual(true, cert.CheckPrivateKey(key));
+
+				CryptoKey other = new CryptoKey(new DSA(true));
+				Assert.AreEqual(false, cert.CheckPrivateKey(other));
+			}
 		}
 
 		[Test]
@@ -189,9 +282,19 @@ namespace UnitTests.OpenSSL
 		}
 
 		[Test]
-		[Ignore("Not implemented yet")]
 		public void CanVerify()
 		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				cert.Sign(key, MessageDigest.DSS1);
+				Assert.AreEqual(true, cert.Verify(key));
+
+				CryptoKey other = new CryptoKey(new DSA(true));
+				Assert.AreEqual(false, cert.Verify(other));
+			}
 		}
 
 		[Test]
@@ -213,27 +316,47 @@ namespace UnitTests.OpenSSL
 		}
 
 		[Test]
-		[Ignore("Not implemented yet")]
-		public void CanPrint()
-		{
-		}
-
-		[Test]
-		[Ignore("Not implemented yet")]
 		public void CanCreateRequest()
 		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				X509Request request = cert.CreateRequest(key, MessageDigest.DSS1);
+				Assert.AreEqual(true, request.Verify(key));
+			}
 		}
 
 		[Test]
-		[Ignore("Not implemented yet")]
 		public void CanAddExtensions()
 		{
-		}
+			X509V3ExtensionList extList = new X509V3ExtensionList();
+			extList.Add(new X509V3ExtensionValue("subjectKeyIdentifier", false, "hash"));
+			extList.Add(new X509V3ExtensionValue("authorityKeyIdentifier", false, "keyid:always,issuer:always"));
+			extList.Add(new X509V3ExtensionValue("basicConstraints", true, "critical,CA:true"));
+			extList.Add(new X509V3ExtensionValue("keyUsage", false, "cRLSign,keyCertSign"));
 
-		[Test]
-		[Ignore("Not implemented yet")]
-		public void VerifyEquality()
-		{
+			DateTime start = DateTime.Now;
+			DateTime end = start + TimeSpan.FromMinutes(10);
+			CryptoKey key = new CryptoKey(new DSA(true));
+			using (X509Certificate cert = new X509Certificate(101, "CN=Root", "CN=Root", key, start, end))
+			{
+				foreach (X509V3ExtensionValue extValue in extList)
+				{
+					using (X509Extension ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value))
+					{
+						cert.AddExtension(ext);
+					}
+				}
+
+				foreach (X509Extension ext in cert.Extensions)
+				{
+					Console.WriteLine(ext);
+				}
+
+				Assert.AreEqual(extList.Count, cert.Extensions.Count);
+			}
 		}
 
 		private void TestCert(X509Certificate cert, string subject, string issuer, int serial)

@@ -27,8 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Wraps the X509_STORE object
@@ -113,12 +114,12 @@ namespace OpenSSL
 		/// <summary>
 		/// Wraps the <code>objs</code> member on the raw X509_STORE structure
 		/// </summary>
-		public Stack<X509Object> Objects
+		public Core.Stack<X509Object> Objects
 		{
 			get
 			{
 				X509_STORE raw = (X509_STORE)Marshal.PtrToStructure(this.ptr, typeof(X509_STORE));
-				Stack<X509Object> stack = new Stack<X509Object>(raw.objs, false);
+				Core.Stack<X509Object> stack = new Core.Stack<X509Object>(raw.objs, false);
 				return stack;
 			}
 		}

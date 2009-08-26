@@ -27,13 +27,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Contains a chain X509_INFO objects.
 	/// </summary>
-	public class X509Chain : Stack<X509Certificate>
+	public class X509Chain : Core.Stack<X509Certificate>
 	{
 		#region Initialization
 		/// <summary>
@@ -50,7 +51,7 @@ namespace OpenSSL
 		public X509Chain(BIO bio)
 		{
 			IntPtr sk = Native.ExpectNonNull(Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
-			using (Stack<X509CertificateInfo> stack = new Stack<X509CertificateInfo>(sk, true))
+			using (Core.Stack<X509CertificateInfo> stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
 				while (stack.Count > 0)
 				{
@@ -85,13 +86,16 @@ namespace OpenSSL
 		/// <returns></returns>
 		public X509Certificate FindByIssuerAndSerial(X509Name issuer, int serial)
 		{
-			IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, Native.IntegerToAsnInteger(serial));
-			if (ptr == IntPtr.Zero)
-				return null;
-			X509Certificate cert = new X509Certificate(ptr, true);
-			// Increase the reference count for the native pointer
-			cert.AddRef();
-			return cert;
+			using (Asn1Integer asnInt = new Asn1Integer(serial))
+			{
+				IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, asnInt.Handle);
+				if (ptr == IntPtr.Zero)
+					return null;
+				X509Certificate cert = new X509Certificate(ptr, true);
+				// Increase the reference count for the native pointer
+				cert.AddRef();
+				return cert;
+			}
 		}
 
 		/// <summary>
@@ -131,7 +135,7 @@ namespace OpenSSL
 		{
 			IntPtr sk = Native.ExpectNonNull(
 				Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
-			using (Stack<X509CertificateInfo> stack = new Stack<X509CertificateInfo>(sk, true))
+			using (Core.Stack<X509CertificateInfo> stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
 				while (stack.Count > 0)
 				{

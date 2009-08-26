@@ -27,8 +27,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
+using OpenSSL.Crypto;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Wraps a X509_REQ object.

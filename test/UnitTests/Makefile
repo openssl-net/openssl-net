@@ -9,13 +9,26 @@ DEPS = $(TOP_MAKEFILE) $(MAKEFILE)
 all: build
 build: $(OUT)
 
+NUNIT_FLAGS = -nologo -noshadow
+
+uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+
+ifeq ($(uname_S),Darwin)
+NUNIT = nunit-console2 $(NUNIT_FLAGS)
+endif
+ifeq ($(uname_S),Linux)
+NUNIT = LD_LIBRARY_PATH=$(D_OUT) nunit-console $(NUNIT_FLAGS)
+endif
+
 SRCS = \
 	Properties/AssemblyInfo.cs \
+	BaseTest.cs \
+	CryptoKeyTest.cs \
 	X509CertificateTest.cs
 
 REFS = \
 	-r:ManagedOpenSsl.dll \
-	-r:nunit.framework.dll
+	-pkg:mono-nunit
 
 $(OUT) : $(SRCS) $(DEPS)
 	$(CSC) $(CSFLAGS) -t:$(TGT_TYPE) -lib:$(LIBPATH) $(REFS) -out:$@ $(SRCS)

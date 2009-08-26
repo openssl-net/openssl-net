@@ -27,7 +27,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 
-namespace OpenSSL
+namespace OpenSSL.Core
 {
 	/// <summary>
 	/// This is a struct that contains a uint for the native openssl error code.

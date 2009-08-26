@@ -27,8 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.Crypto
 {
 	/// <summary>
 	/// Encapsulates the native openssl Diffie-Hellman functions (DH_*)
@@ -237,18 +238,6 @@ namespace OpenSSL
             IntPtr ptr = Native.ExpectNonNull(Native.ASN1_d2i_bio(dh_new_ptr, d2i_DHparams_ptr, bio.Handle, IntPtr.Zero));
             DH dh = new DH(ptr, true);
             return dh;
-            //!!
-            /*
-            IntPtr hModule = Native.LoadLibrary(Native.DLLNAME);
-			IntPtr d2i = Native.GetProcAddress(hModule, "d2i_DHparams");
-			IntPtr xnew = Native.GetProcAddress(hModule, "DH_new");
-			Native.FreeLibrary(hModule);
-
-			IntPtr ptr = Native.ExpectNonNull(Native.ASN1_d2i_bio(xnew, d2i, bio.Handle, IntPtr.Zero));
-			DH dh = new DH(ptr, true);
-			return dh;
-            */
-
 		}
 		#endregion
 

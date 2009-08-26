@@ -29,6 +29,8 @@ using System.Text;
 using OpenSSL;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
+using OpenSSL.Crypto;
 
 namespace OpenSSL.CLI
 {

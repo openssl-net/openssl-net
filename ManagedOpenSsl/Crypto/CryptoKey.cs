@@ -27,14 +27,38 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.Crypto
 {
 	/// <summary>
 	/// Wraps the native OpenSSL EVP_PKEY object
 	/// </summary>
 	public class CryptoKey : BaseCopyableRef<CryptoKey>
 	{
+		/// <summary>
+		/// Set of types that this CryptoKey can be.
+		/// </summary>
+		public enum KeyType
+		{
+			/// <summary>
+			/// 
+			/// </summary>
+			RSA,
+			/// <summary>
+			/// 
+			/// </summary>
+			DSA,
+			/// <summary>
+			/// 
+			/// </summary>
+			DH,
+			/// <summary>
+			/// 
+			/// </summary>
+			EC
+		}
+
 		const int EVP_PKEY_RSA = 6;
 		const int EVP_PKEY_DSA = 116;
 		const int EVP_PKEY_DH = 28;
@@ -43,7 +67,7 @@ namespace OpenSSL
 		[StructLayout(LayoutKind.Sequential)]
 		struct EVP_PKEY
 		{
-			int type;
+			public int type;
 			int save_type;
 			int references;
 			IntPtr ptr;
@@ -52,11 +76,16 @@ namespace OpenSSL
 		}
 
 		#region Initialization
-		internal CryptoKey(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		internal CryptoKey(IntPtr ptr, bool owner) 
+			: base(ptr, owner) 
+		{ }
+
 		/// <summary>
 		/// Calls EVP_PKEY_new()
 		/// </summary>
-		public CryptoKey() : base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) { }
+		public CryptoKey() 
+			: base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) 
+		{ }
 
 		/// <summary>
 		/// Calls PEM_read_bio_PUBKEY()
@@ -66,7 +95,6 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static CryptoKey FromPublicKey(string pem, string password)
 		{
-			//!!return FromPublicKey(new BIO(pem), password);
 			using (BIO bio = new BIO(pem))
 			{
 				return FromPublicKey(bio, password);
@@ -113,7 +141,6 @@ namespace OpenSSL
 		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(string pem, string password)
 		{
-			//!!return FromPrivateKey(new BIO(pem), password);
 			using (BIO bio = new BIO(pem))
 			{
 				return FromPrivateKey(bio, password);
@@ -184,6 +211,35 @@ namespace OpenSSL
 		#endregion
 
 		#region Properties
+		private EVP_PKEY Raw
+		{
+			get { return (EVP_PKEY)Marshal.PtrToStructure(this.ptr, typeof(EVP_PKEY)); }
+		}
+
+		/// <summary>
+		/// Returns EVP_PKEY_type()
+		/// </summary>
+		public KeyType Type
+		{
+			get
+			{
+				int ret = Native.EVP_PKEY_type(this.Raw.type);
+				switch (ret)
+				{
+					case EVP_PKEY_EC:
+						return KeyType.EC;
+					case EVP_PKEY_DH:
+						return KeyType.DH;
+					case EVP_PKEY_DSA:
+						return KeyType.DSA;
+					case EVP_PKEY_RSA:
+						return KeyType.RSA;
+					default:
+						throw new NotSupportedException();
+				}
+			}
+		}
+
 		/// <summary>
 		/// Returns EVP_PKEY_bits()
 		/// </summary>
@@ -219,7 +275,9 @@ namespace OpenSSL
 		/// <returns></returns>
 		public DSA GetDSA()
 		{
-			return new DSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_DSA(this.ptr)), false);
+			if (this.Type != KeyType.DSA)
+				throw new InvalidOperationException();
+			return new DSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_DSA(this.ptr)), true);
 		}
 
 		/// <summary>
@@ -228,6 +286,8 @@ namespace OpenSSL
 		/// <returns></returns>
 		public DH GetDH()
 		{
+			if (this.Type != KeyType.DH)
+				throw new InvalidOperationException();
 			return new DH(Native.ExpectNonNull(Native.EVP_PKEY_get1_DH(this.ptr)), false);
 		}
 
@@ -237,6 +297,8 @@ namespace OpenSSL
 		/// <returns></returns>
 		public RSA GetRSA()
 		{
+			if (this.Type != KeyType.RSA)
+				throw new InvalidOperationException();
 			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(this.ptr)), false);
 		}
 
@@ -267,7 +329,7 @@ namespace OpenSSL
 
 		#endregion
 
-		#region IDisposable Members
+		#region Overrides
 
 		/// <summary>
 		/// Calls EVP_PKEY_free()
@@ -277,7 +339,27 @@ namespace OpenSSL
 			Native.EVP_PKEY_free(this.ptr);
 		}
 
-		#endregion
+		/// <summary>
+		/// Returns CompareTo(obj)
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public override bool Equals(object obj)
+		{
+			CryptoKey rhs = obj as CryptoKey;
+			if (rhs == null)
+				return false;
+			return Native.EVP_PKEY_cmp(this.ptr, rhs.Handle) == 1;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
 
 		internal override CryptoLockTypes LockType
 		{
@@ -288,5 +370,29 @@ namespace OpenSSL
 		{
 			get { return typeof(EVP_PKEY); }
 		}
+
+		/// <summary>
+		/// Calls appropriate Print() based on the type.
+		/// </summary>
+		/// <param name="bio"></param>
+		public override void Print(BIO bio)
+		{
+			switch (this.Type)
+			{
+				case KeyType.RSA:
+					GetRSA().Print(bio);
+					break;
+				case KeyType.DSA:
+					GetDSA().Print(bio);
+					break;
+				case KeyType.EC:
+					break;
+				case KeyType.DH:
+					GetDH().Print(bio);
+					break;
+			}
+		}
+
+		#endregion
 	}
 }

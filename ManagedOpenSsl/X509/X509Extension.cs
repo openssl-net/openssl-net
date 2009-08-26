@@ -27,8 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// Wraps the X509_EXTENSION object
@@ -111,8 +112,10 @@ namespace OpenSSL
 		{
 			get
 			{
-				Asn1String str = new Asn1String(Native.X509_EXTENSION_get_data(this.ptr), false);
-				return str.Data;
+				using (Asn1String str = new Asn1String(Native.X509_EXTENSION_get_data(this.ptr), false))
+				{
+					return str.Data;
+				}
 			}
 		}
 
