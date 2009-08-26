@@ -18,7 +18,7 @@ all: build
 lib: 
 	$(MAKE_DIR) $(LIB_DIR)
 
-build: lib build_test 
+build: $(D_OUT) lib build_test 
 
 build_test:
 	$(MAKE_DIR) $(TEST_DIR)
@@ -48,3 +48,6 @@ publish:
 
 release:
 	echo release
+
+$(D_OUT):
+	mkdir -p $(D_OUT)
