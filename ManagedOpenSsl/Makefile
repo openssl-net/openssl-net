@@ -42,6 +42,7 @@ SRCS = \
 	Core/Base.cs \
 	Core/BigNum.cs \
 	Core/BIO.cs \
+	Core/Crypto.cs \
 	Core/MemoryTracker.cs \
 	Core/Native.cs \
 	Core/OpenSslException.cs \
@@ -51,7 +52,6 @@ SRCS = \
 	Core/Version.cs \
 	\
 	Crypto/Cipher.cs \
-	Crypto/Crypto.cs \
 	Crypto/CryptoKey.cs \
 	Crypto/DH.cs \
 	Crypto/DSA.cs \
@@ -94,10 +94,10 @@ $(OUT_CFG) : $(APP_CFG)
 	cp $(APP_CFG) $(OUT_CFG)
 
 $(LIBCRYPTO) : $(SRC_LIBCRYPTO)
-	ln -s $(SRC_LIBCRYPTO) $(LIBCRYPTO)
+	ln -s $(SRC_LIBCRYPTO) $(LIBCRYPTO) 
 
 $(LIBSSL) : $(SRC_LIBSSL)
-	ln -s $(SRC_LIBSSL) $(LIBSSL)
+	ln -s $(SRC_LIBSSL) $(LIBSSL) 
 
 .PHONY: clean
 clean:
