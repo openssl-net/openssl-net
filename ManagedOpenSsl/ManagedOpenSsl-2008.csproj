@@ -116,19 +116,19 @@
     <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\bin\Debug\2008\libeay32.dll">
+    <Content Include="..\native\windows\x86\libeay32.dll">
       <Link>libeay32.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\bin\Debug\2008\libeay32.pdb">
+    <Content Include="..\native\windows\x86\libeay32.pdb">
       <Link>libeay32.pdb</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\bin\Debug\2008\ssleay32.dll">
+    <Content Include="..\native\windows\x86\ssleay32.dll">
       <Link>ssleay32.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\bin\Debug\2008\ssleay32.pdb">
+    <Content Include="..\native\windows\x86\ssleay32.pdb">
       <Link>ssleay32.pdb</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

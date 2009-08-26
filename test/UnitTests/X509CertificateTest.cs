@@ -237,7 +237,7 @@ namespace UnitTests.OpenSSL
 		{
 			using (BIO bio = BIO.File(Paths.CaCrt, "r"))
 			{
-				string expected = File.ReadAllText(Paths.CaCrt);
+				string expected = File.ReadAllText(Paths.CaCrt).Replace("\r\n", "\n");
 				using (X509Certificate cert = new X509Certificate(bio))
 				{
 					string pem = cert.PEM;

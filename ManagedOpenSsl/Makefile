@@ -11,14 +11,14 @@ uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
 
 ifeq ($(uname_S),Darwin)
-D_OSX = $(TOP)/bin/osx
+D_OSX = $(TOP)/native/osx
 SRC_LIBCRYPTO = $(D_OSX)/libcrypto.0.9.8.dylib
 SRC_LIBSSL = $(D_OSX)/libssl.0.9.8.dylib
 LIBCRYPTO = $(D_OUT)/libcrypto.dylib
 LIBSSL = $(D_OUT)/libssl.dylib
 endif
 ifeq ($(uname_S),Linux)
-D_LINUX = $(TOP)/bin/linux/$(uname_M)
+D_LINUX = $(TOP)/native/linux/$(uname_M)
 SRC_LIBCRYPTO = $(D_LINUX)/libcrypto.so.0.9.8
 SRC_LIBSSL = $(D_LINUX)/libssl.so.0.9.8
 LIBCRYPTO = $(D_OUT)/libcrypto.so
