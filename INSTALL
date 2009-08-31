@@ -1,0 +1,6 @@
+OpenSSL.NET - INSTALL
+
+Make sure you have libeay32.dll and ssleay32.dll in the current working
+directory of your application or in your PATH.
+
+In your .NET project, add a reference to the ManagedOpenSsl.dll assembly.

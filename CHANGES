@@ -1,0 +1,43 @@
+OpenSSL.NET - CHANGES
+
+0.4 [Aug 26, 2009]
+
+* Thanks to Ben Henderson for contributing the wrapper for the SSL API!
+* Lots of bug fixes mostly concerning memory management.
+* Refactored the Base class to deal with memory mangement better.
+* Default project build now produces assemblies specifically targetted for
+  the x86 architecture, which works around issues with using the native
+  DLL on 64-bit machines.
+* Lots more XML comments/docs (no more compiler warnings!)
+* Changes to namespace on most classes so it's easier to navigate them.
+* Added unit tests for X509Certificate and CryptoKey (many more to go)
+* Support for CE has been dropped due to lack of testing. Will add again
+  once I have the ability to test it again.
+* Added HMAC wrapper.
+
+0.3.2 [Jun 01, 2008]
+
+* Added wrapper and test for EVP_BytesToKey().
+
+0.3.1 [May 11, 2008]
+
+* Thanks to Christoph Scrauth for helping me find and fix a few bugs.
+
+0.3 [Jan 02, 2008]
+
+* Added RAND wrapper and tests.
+* Added RSA wrapper and tests.
+* Added a couple more commands to openssl+.exe (genrsa, rsa)
+* Added comments to all publicly facing interfaces.
+
+0.2 [Dec 20, 2007]
+
+* Fixed callbacks to use __cdecl instead of the default of __stdcall.
+* Added SHA tests.
+* Added DH tests.
+* Upgraded the DSA wrapper.
+* Upgraded the DH wrapper.
+
+0.1 [Apr 21, 2007]
+
+* Initial public release

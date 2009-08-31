@@ -8,3 +8,4 @@ dist
 *.pidb
 *.aps
 *.eto
+.DS_Store
