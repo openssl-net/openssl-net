@@ -2,6 +2,7 @@ bin
 obj
 dist
 .*.swp
+*.*~
 *.user*
 *.suo
 *.ncb
