@@ -1,5 +1,10 @@
 OpenSSL.NET - CHANGES
 
+0.4.1 [Sep 9, 2009]
+* Including prebuilt binaries to libeay32.dll and ssleay32.dll that are
+  statically linked to the CRT instead of depending on the DLL CRT. 
+  This should resolve the DllNotFoundException at startup.
+
 0.4 [Aug 26, 2009]
 
 * Thanks to Ben Henderson for contributing the wrapper for the SSL API!
