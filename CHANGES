@@ -1,5 +1,11 @@
 OpenSSL.NET - CHANGES
 
+0.4.2 [Oct 23, 2009]
+* Replacing the prebuilt binaries for libeay32.dll and ssleay32.dll with
+  ones that come directly from the openssl source. This should fix
+  problems people are finding in the wild, but it will also require
+  them to install the MSVC 2008 CRT first.
+
 0.4.1 [Sep 9, 2009]
 * Including prebuilt binaries to libeay32.dll and ssleay32.dll that are
   statically linked to the CRT instead of depending on the DLL CRT. 

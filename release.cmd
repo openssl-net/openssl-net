@@ -10,3 +10,8 @@ copy %SRC%\ssleay32.dll %TGT%
 copy %SRC%\test.exe %TGT%
 copy "%SRC%\openssl+.exe" %TGT%
 
+copy "COPYING" %TGT%
+copy "README" %TGT%
+copy "INSTALL" %TGT%
+copy "LICENSE" %TGT%
+copy "CHANGES" %TGT%
