@@ -42,21 +42,21 @@ namespace OpenSSL.Crypto
 		public enum KeyType
 		{
 			/// <summary>
-			/// 
+			/// EVP_PKEY_RSA 
 			/// </summary>
-			RSA,
+			RSA = 6,
 			/// <summary>
-			/// 
+			/// EVP_PKEY_DSA
 			/// </summary>
-			DSA,
+			DSA = 116,
 			/// <summary>
-			/// 
+			/// EVP_PKEY_DH
 			/// </summary>
-			DH,
+			DH = 28,
 			/// <summary>
-			/// 
+			/// EVP_PKEY_EC
 			/// </summary>
-			EC
+			EC = 408
 		}
 
 		const int EVP_PKEY_RSA = 6;

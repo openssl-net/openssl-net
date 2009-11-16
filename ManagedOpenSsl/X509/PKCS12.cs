@@ -24,7 +24,6 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using OpenSSL.Core;
@@ -48,7 +47,116 @@ namespace OpenSSL.X509
 		}
 		#endregion
 
+		/// <summary>
+		/// Password-Based Encryption (from PKCS #5)
+		/// </summary>
+		public enum PBE
+		{
+			/// <summary>
+			/// 
+			/// </summary>
+			Default = 0,
+			/// <summary>
+			/// NID_pbeWithMD2AndDES_CBC
+			/// </summary>
+			MD2_DES = 9,
+			/// <summary>
+			/// NID_pbeWithMD5AndDES_CBC
+			/// </summary>
+			MD5_DES = 10,
+			/// <summary>
+			/// NID_pbeWithMD2AndRC2_CBC
+			/// </summary>
+			MD2_RC2_64 = 168,
+			/// <summary>
+			/// NID_pbeWithMD5AndRC2_CBC
+			/// </summary>
+			MD5_RC2_64 = 169,
+			/// <summary>
+			/// NID_pbeWithSHA1AndDES_CBC
+			/// </summary>
+			SHA1_DES = 170,
+			/// <summary>
+			/// NID_pbeWithSHA1AndRC2_CBC
+			/// </summary>
+			SHA1_RC2_64 = 68,
+			/// <summary>
+			/// NID_pbe_WithSHA1And128BitRC4
+			/// </summary>
+			SHA1_RC4_128 = 144,
+			/// <summary>
+			/// NID_pbe_WithSHA1And40BitRC4
+			/// </summary>
+			SHA1_RC4_40 = 145,
+			/// <summary>
+			/// NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+			/// </summary>
+			SHA1_3DES = 146,
+			/// <summary>
+			/// NID_pbe_WithSHA1And2_Key_TripleDES_CBC
+			/// </summary>
+			SHA1_2DES = 147,
+			/// <summary>
+			/// NID_pbe_WithSHA1And128BitRC2_CBC
+			/// </summary>
+			SHA1_RC2_128 = 148,
+			/// <summary>
+			/// NID_pbe_WithSHA1And40BitRC2_CBC
+			/// </summary>
+			SHA1_RC2_40 = 149
+		}
+
 		#region Initialization
+
+		/// <summary>
+		/// Calls PKCS12_create()
+		/// </summary>
+		/// <param name="password"></param>
+		/// <param name="key"></param>
+		/// <param name="cert"></param>
+		/// <param name="ca"></param>
+		public PKCS12(string password, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca) :
+			base(Create(password, null, key, cert, ca, PBE.Default, PBE.Default, 0), true) {
+			Init(password);
+		}
+
+		/// <summary>
+		/// Calls PKCS12_create() with more options
+		/// </summary>
+		/// <param name="password"></param>
+		/// <param name="name">friendly name</param>
+		/// <param name="key"></param>
+		/// <param name="cert"></param>
+		/// <param name="ca"></param>
+		/// <param name="keyPbe">How to encrypt the key</param>
+		/// <param name="certPbe">How to encrypt the certificate</param>
+		/// <param name="iterations"># of iterations during encryption</param>
+		public PKCS12(string password, string name, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca, PBE keyPbe, PBE certPbe, int iterations) :
+			base(Create(password, name, key, cert, ca, keyPbe, certPbe, iterations), true) {
+			Init(password);
+		}
+
+		private static IntPtr Create(
+			string password, 
+			string name, 
+			CryptoKey key, 
+			X509Certificate cert,
+			Stack<X509Certificate> ca,
+			PBE keyType,
+			PBE certType,
+			int iterations) {
+			return Native.ExpectNonNull(Native.PKCS12_create(
+				password, 
+				name, 
+				key.Handle, 
+				cert.Handle, 
+				ca.Handle, 
+				(int)keyType,
+				(int)certType,
+				iterations, 
+				1, 
+				(int)key.Type));
+		}
 
 		/// <summary>
 		/// Calls d2i_PKCS12_bio() and then PKCS12_parse()
@@ -56,8 +164,11 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		/// <param name="password"></param>
 		public PKCS12(BIO bio, string password)
-			: base(Native.ExpectNonNull(Native.d2i_PKCS12_bio(bio.Handle, IntPtr.Zero)), true)
-		{
+			: base(Native.ExpectNonNull(Native.d2i_PKCS12_bio(bio.Handle, IntPtr.Zero)), true) {
+			Init(password);
+		}
+
+		private void Init(string password) {
 			IntPtr cert;
 			IntPtr pkey;
 			IntPtr cacerts;
@@ -65,24 +176,29 @@ namespace OpenSSL.X509
 			// Parse the PKCS12 object and get privatekey, cert, cacerts if available
 			Native.ExpectSuccess(Native.PKCS12_parse(this.ptr, password, out pkey, out cert, out cacerts));
 
-			if (cert != IntPtr.Zero)
-			{
+			if (cert != IntPtr.Zero) {
 				this.certificate = new X509Certificate(cert, true);
-				if (pkey != IntPtr.Zero)
-				{
+				if (pkey != IntPtr.Zero) {
 					this.privateKey = new CryptoKey(pkey, true);
 
 					// We have a private key, assign it to the cert
 					this.certificate.PrivateKey = this.privateKey.CopyRef();
 				}
 			}
-			if (cacerts != IntPtr.Zero)
-			{
-				this.caCertificates = new Core.Stack<X509Certificate>(cacerts, true);
+			if (cacerts != IntPtr.Zero) {
+				this.caCertificates = new Stack<X509Certificate>(cacerts, true);
 			}
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Calls i2d_PKCS12_bio()
+		/// </summary>
+		/// <param name="bio"></param>
+		public void Write(BIO bio) {
+			Native.ExpectSuccess(Native.i2d_PKCS12_bio(bio.Handle, this.Handle));
+		}
 
 		#region Properties
 
@@ -120,7 +236,7 @@ namespace OpenSSL.X509
 		/// <summary>
 		/// Returns a stack of CA Certificates
 		/// </summary>
-		public Core.Stack<X509Certificate> CACertificates
+		public Stack<X509Certificate> CACertificates
 		{
 			get { return caCertificates; }
 		}
@@ -157,7 +273,7 @@ namespace OpenSSL.X509
 		#region Fields
 		private CryptoKey privateKey;
 		private X509Certificate certificate;
-		private Core.Stack<X509Certificate> caCertificates;
+		private Stack<X509Certificate> caCertificates;
 		#endregion
 	}
 }

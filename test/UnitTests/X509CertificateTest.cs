@@ -106,6 +106,20 @@ namespace UnitTests.OpenSSL
 		}
 
 		[Test]
+		public void CanCreatePKCS12() {
+			using (BIO bio = BIO.File(Paths.ServerPfx, "r")) {
+				using (var pfx = new PKCS12(bio, password)) {
+					using (var new_pfx = new PKCS12(password, pfx.PrivateKey, pfx.Certificate, pfx.CACertificates)) {
+						using (BIO bout = BIO.File(Paths.ServerOutPfx, "w")) {
+							new_pfx.Write(bout);
+						}
+						TestCert(new_pfx.Certificate, "CN=localhost", "CN=Root", 1235);
+					}
+				}
+			}
+		}
+
+		[Test]
 		public void CanCreateWithArgs()
 		{
 			int serial = 101;
@@ -379,6 +393,7 @@ namespace UnitTests.OpenSSL
 			public const string ClientKey = certsDir + "client.key";
 			public const string ServerCrt = certsDir + "server.crt";
 			public const string ServerPfx = certsDir + "server.pfx";
+			public const string ServerOutPfx = certsDir + "server_out.pfx";
 			public const string ServerKey = certsDir + "server.key";
 		}
 
