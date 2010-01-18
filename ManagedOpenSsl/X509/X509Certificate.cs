@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2010 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -371,6 +371,18 @@ namespace OpenSSL.X509
 				}
 			}
 		}
+
+		/// <summary>
+		/// Returns the DER formatted byte array for this object
+		/// </summary>
+		public byte[] DER {
+			get {
+				using (BIO bio = BIO.MemoryBuffer()) {
+					this.Write_DER(bio);
+					return bio.ReadBytes((int)bio.NumberWritten).Array;
+				}
+			}
+		}
 		#endregion
 
 		#region Methods
@@ -452,6 +464,14 @@ namespace OpenSSL.X509
 		public void Write(BIO bio)
 		{
 			Native.ExpectSuccess(Native.PEM_write_bio_X509(bio.Handle, this.ptr));
+		}
+
+		/// <summary>
+		/// Calls i2d_X509_bio()
+		/// </summary>
+		/// <param name="bio"></param>
+		public void Write_DER(BIO bio) {
+			Native.ExpectSuccess(Native.i2d_X509_bio(bio.Handle, this.ptr));
 		}
 
 		/// <summary>

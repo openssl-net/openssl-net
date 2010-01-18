@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2009 Frank Laub
+﻿// Copyright (c) 2009-2010 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -263,6 +263,20 @@ namespace UnitTests.OpenSSL
 		}
 
 		[Test]
+		public void CanSaveAsDER() {
+			using (BIO bio = BIO.File(Paths.CaDer, "r")) {
+				byte[] expected = File.ReadAllBytes(Paths.CaDer);
+				using (var cert = X509Certificate.FromDER(bio)) {
+					byte[] der = cert.DER;
+					Assert.AreEqual(expected.Length, der.Length);
+					for (int i = 0; i < expected.Length; i++) {
+						Assert.AreEqual(expected[i], der[i]);
+					}
+				}
+			}
+		}
+
+		[Test]
 		public void CanSign()
 		{
 			DateTime start = DateTime.Now;
@@ -320,12 +334,6 @@ namespace UnitTests.OpenSSL
 		[Test]
 		[Ignore("Not implemented yet")]
 		public void CanDigestPublicKey()
-		{
-		}
-
-		[Test]
-		[Ignore("Not implemented yet")]
-		public void CanWriteToBIO()
 		{
 		}
 

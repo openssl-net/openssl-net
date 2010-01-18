@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 Frank Laub
+// Copyright (c) 2006-2010 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -632,7 +632,7 @@ namespace OpenSSL.Core
 		public extern static IntPtr d2i_X509_bio(IntPtr bp, ref IntPtr x509);
 
 		[DllImport(DLLNAME)]
-		public extern static int i2d_X509_bio(IntPtr x509, IntPtr bp);
+		public extern static int i2d_X509_bio(IntPtr bp, IntPtr x509);
 
 		[DllImport(DLLNAME)]
 		public extern static void X509_PUBKEY_free(IntPtr pkey);
