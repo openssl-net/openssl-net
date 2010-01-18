@@ -1,5 +1,10 @@
 OpenSSL.NET - CHANGES
 
+0.4.4 [Jan 18, 2010]
+
+* Added support for i2d_X509_bio() which allows for writing X509
+  certificates in DER format.
+
 0.4.3 [Oct 23, 2009]
 
 * Added support for PKCS12_create().
