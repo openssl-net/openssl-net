@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Files", "Project Files", "{0B96FB71-2BB0-48F8-B3E0-E3848A4F9E87}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGES = CHANGES
+		COPYING = COPYING
+		INSTALL = INSTALL
+		LICENSE = LICENSE
+		README = README
+		release.cmd = release.cmd
+		TODO = TODO
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-2010", "test\test-2010.csproj", "{E60945CE-E10D-452B-9631-E34AE55DCED8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-2010", "ManagedOpenSsl\ManagedOpenSsl-2010.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli-2010", "cli\cli-2010.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-2010", "test\UnitTests\UnitTests-2010.csproj", "{779FA0D7-D7CB-4408-A94D-B5718F118894}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E60945CE-E10D-452B-9631-E34AE55DCED8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E60945CE-E10D-452B-9631-E34AE55DCED8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E60945CE-E10D-452B-9631-E34AE55DCED8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E60945CE-E10D-452B-9631-E34AE55DCED8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
