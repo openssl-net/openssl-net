@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 Frank Laub
+// Copyright (c) 2006-2011 Frank Laub
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without
@@ -1349,7 +1349,6 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region HMAC
-		public const int FIPS_HMAC_MAX_MD_CBLOCK = 128;
 		public const int HMAC_MAX_MD_CBLOCK = 128;
 
 		//!!void HMAC_CTX_init(HMAC_CTX *ctx);

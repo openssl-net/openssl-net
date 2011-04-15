@@ -38,18 +38,6 @@ namespace OpenSSL.Crypto
 	{
 		#region Raw Structures
 		[StructLayout(LayoutKind.Sequential)]
-		struct FIPS_HMAC_CTX
-		{
-			IntPtr md;          //const EVP_MD *md;
-			EVP_MD_CTX md_ctx;
-			EVP_MD_CTX i_ctx;
-			EVP_MD_CTX o_ctx;
-			uint key_length;    //unsigned int key_length;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.FIPS_HMAC_MAX_MD_CBLOCK)]
-			byte[] key;
-		}
-
-		[StructLayout(LayoutKind.Sequential)]
 		struct HMAC_CTX
 		{
 			IntPtr md;          //const EVP_MD *md;
@@ -69,12 +57,7 @@ namespace OpenSSL.Crypto
 		public HMAC()
 			: base(IntPtr.Zero, true) {
 			// Allocate the context
-			if (FIPS.Enabled) {
-				this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(FIPS_HMAC_CTX)));
-			}
-			else {
-				this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(HMAC_CTX)));
-			}
+			this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(HMAC_CTX)));
 			// Initialize the context
 			Native.HMAC_CTX_init(this.ptr);
 		}

@@ -38,11 +38,6 @@ namespace test
 		public readonly byte[] small_data = Encoding.ASCII.GetBytes("This is a small data sample");
 
 		// Results
-		public readonly string[] md2_results = 
-        {
-            "87-32-F6-93-42-5B-08-16-F1-B0-C0-64-0E-4F-69-06",
-            "25-F4-60-93-FB-A9-14-2E-B9-7E-A5-AA-15-4B-28-09",
-        };
 		public readonly string[] md4_results = 
         {
             "D9-82-59-44-94-A9-DD-9C-97-92-DD-1D-20-C2-16-D9",
