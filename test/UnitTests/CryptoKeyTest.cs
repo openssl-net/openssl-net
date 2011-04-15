@@ -139,8 +139,7 @@ namespace UnitTests.OpenSSL
 			using (DH dh = new DH())
 			{
 				dh.GenerateKeys();
-				using (CryptoKey key = new CryptoKey(dh))
-				{
+				using (CryptoKey key = new CryptoKey(dh)) {
 					Assert.AreEqual(CryptoKey.KeyType.DH, key.Type);
 				}
 			}

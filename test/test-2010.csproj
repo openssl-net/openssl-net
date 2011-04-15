@@ -99,9 +99,9 @@
     <Compile Include="TestSHA512.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl-2008.csproj">
+    <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl-2010.csproj">
       <Project>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</Project>
-      <Name>ManagedOpenSsl-2008</Name>
+      <Name>ManagedOpenSsl-2010</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +137,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="certs\.gitignore" />
+    <None Include="certs\ca.crt" />
+    <None Include="certs\ca.der" />
+    <None Include="certs\ca.key" />
+    <None Include="certs\ca_chain.p7c" />
+    <None Include="certs\ca_chain.p7c.pem" />
+    <None Include="certs\ca_chain.pem" />
+    <None Include="certs\client.crt" />
+    <None Include="certs\client.key" />
+    <None Include="certs\client.pfx" />
+    <None Include="certs\convertcerts.bat" />
+    <None Include="certs\server.crt" />
+    <None Include="certs\server.key" />
+    <None Include="certs\server.pfx" />
+    <None Include="certs\server_out.pfx" />
     <None Include="openssl.cnf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

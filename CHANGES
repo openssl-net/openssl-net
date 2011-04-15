@@ -1,5 +1,11 @@
 OpenSSL.NET - CHANGES
 
+0.5 [Apr 14, 2011]
+* Updating to OpenSSL native library to version 1.0.0d
+* Using Visual Studio 2010 project files 
+  (I don't have the old versions of VS installed anymore)
+* Removing EVP_md2(), the native library no longer includes this by default
+
 0.4.4 [Jan 18, 2010]
 
 * Added support for i2d_X509_bio() which allows for writing X509

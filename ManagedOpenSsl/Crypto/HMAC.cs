@@ -38,15 +38,6 @@ namespace OpenSSL.Crypto
 	{
 		#region Raw Structures
 		[StructLayout(LayoutKind.Sequential)]
-		struct EVP_MD_CTX
-		{
-			IntPtr digest;      //const EVP_MD *digest;
-			IntPtr engine;      //ENGINE *engine; /* functional reference if 'digest' is ENGINE-provided */
-			uint flags;         //unsigned long flags;
-			IntPtr md_data;     //void *md_data;
-		}
-
-		[StructLayout(LayoutKind.Sequential)]
 		struct FIPS_HMAC_CTX
 		{
 			IntPtr md;          //const EVP_MD *md;
@@ -76,15 +67,12 @@ namespace OpenSSL.Crypto
 		/// Calls OPENSSL_malloc() and then HMAC_CTX_init()
 		/// </summary>
 		public HMAC()
-			: base(IntPtr.Zero, true)
-		{
+			: base(IntPtr.Zero, true) {
 			// Allocate the context
-			if (FIPS.Enabled)
-			{
+			if (FIPS.Enabled) {
 				this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(FIPS_HMAC_CTX)));
 			}
-			else
-			{
+			else {
 				this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(HMAC_CTX)));
 			}
 			// Initialize the context
@@ -101,8 +89,7 @@ namespace OpenSSL.Crypto
 		/// <param name="key"></param>
 		/// <param name="data"></param>
 		/// <returns></returns>
-		public static byte[] Digest(MessageDigest digest, byte[] key, byte[] data)
-		{
+		public static byte[] Digest(MessageDigest digest, byte[] key, byte[] data) {
 			byte[] hash_value = new byte[digest.Size];
 			uint hash_value_length = Native.EVP_MAX_MD_SIZE;
 			Native.HMAC(digest.Handle, key, key.Length, data, data.Length, hash_value, ref hash_value_length);
@@ -114,8 +101,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="digest"></param>
-		public void Init(byte[] key, MessageDigest digest)
-		{
+		public void Init(byte[] key, MessageDigest digest) {
 			Native.HMAC_Init_ex(this.ptr, key, key.Length, digest.Handle, IntPtr.Zero);
 			this.digest_size = digest.Size;
 			this.initialized = true;
@@ -125,10 +111,8 @@ namespace OpenSSL.Crypto
 		/// Calls HMAC_Update()
 		/// </summary>
 		/// <param name="data"></param>
-		public void Update(byte[] data)
-		{
-			if (!initialized)
-			{
+		public void Update(byte[] data) {
+			if (!initialized) {
 				throw new Exception("Failed to call Initialize before calling Update");
 			}
 			Native.HMAC_Update(this.ptr, data, data.Length);
@@ -140,26 +124,20 @@ namespace OpenSSL.Crypto
 		/// <param name="data"></param>
 		/// <param name="offset"></param>
 		/// <param name="count"></param>
-		public void Update(byte[] data, int offset, int count)
-		{
-			if (!initialized)
-			{
+		public void Update(byte[] data, int offset, int count) {
+			if (!initialized) {
 				throw new Exception("Failed to call Initialize before calling Update");
 			}
-			if (data == null)
-			{
+			if (data == null) {
 				throw new ArgumentNullException("data");
 			}
-			if (count <= 0)
-			{
+			if (count <= 0) {
 				throw new ArgumentException("count must be greater than 0");
 			}
-			if (offset < 0)
-			{
+			if (offset < 0) {
 				throw new ArgumentException("offset must be 0 or greater");
 			}
-			if (data.Length < (count - offset))
-			{
+			if (data.Length < (count - offset)) {
 				throw new ArgumentException("invalid length specified.  Count is greater than buffer length.");
 			}
 			ArraySegment<byte> seg = new ArraySegment<byte>(data, offset, count);
@@ -170,10 +148,8 @@ namespace OpenSSL.Crypto
 		/// Calls HMAC_Final()
 		/// </summary>
 		/// <returns></returns>
-		public byte[] DigestFinal()
-		{
-			if (!initialized)
-			{
+		public byte[] DigestFinal() {
+			if (!initialized) {
 				throw new Exception("Failed to call Initialize before calling DigestFinal");
 			}
 			byte[] hash_value = new byte[digest_size];
@@ -189,8 +165,7 @@ namespace OpenSSL.Crypto
 		/// <summary>
 		/// Calls HMAC_CTX_cleanup() and then OPENSSL_free()
 		/// </summary>
-		protected override void OnDispose()
-		{
+		protected override void OnDispose() {
 			// Clean up the context
 			Native.HMAC_CTX_cleanup(this.ptr);
 			// Free the structure allocation

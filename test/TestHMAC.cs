@@ -155,7 +155,6 @@ namespace test
 				VerifyHMAC(MessageDigest.RipeMD160, ripemd_results);
 				VerifyHMAC(MessageDigest.MD5, md5_results);
 				VerifyHMAC(MessageDigest.MD4, md4_results);
-				VerifyHMAC(MessageDigest.MD2, md2_results);
 			}
 		}
 

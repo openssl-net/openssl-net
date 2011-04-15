@@ -122,11 +122,6 @@ namespace OpenSSL.Crypto
 		public static MessageDigest Null = new MessageDigest(Native.EVP_md_null(), false);
 
 		/// <summary>
-		/// EVP_md2()
-		/// </summary>
-		public static MessageDigest MD2 = new MessageDigest(Native.EVP_md2(), false);
-	
-		/// <summary>
 		/// EVP_md4()
 		/// </summary>
 		public static MessageDigest MD4 = new MessageDigest(Native.EVP_md4(), false);
@@ -219,22 +214,24 @@ namespace OpenSSL.Crypto
 	}
 	#endregion
 
+	#region EVP_MD_CTX
+	[StructLayout(LayoutKind.Sequential)]
+	struct EVP_MD_CTX
+	{
+		public IntPtr digest;
+		public IntPtr engine;
+		public uint flags;
+		public IntPtr md_data;
+		public IntPtr pctx;
+		public IntPtr update;
+	}
+	#endregion
+
 	/// <summary>
 	/// Wraps the EVP_MD_CTX object
 	/// </summary>
 	public class MessageDigestContext : Base
 	{
-		#region EVP_MD_CTX
-		[StructLayout(LayoutKind.Sequential)]
-		struct EVP_MD_CTX
-		{
-			public IntPtr digest;
-			public IntPtr engine;
-			public uint flags;
-			public IntPtr md_data;
-		}
-		#endregion
-
 		private MessageDigest md;
 
 		/// <summary>

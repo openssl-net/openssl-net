@@ -39,16 +39,10 @@ namespace OpenSSL.Core
 	/// </summary>
 	public static class FIPS
 	{
-		private static bool enabled = false;
-
 		/// <summary>
 		/// 
 		/// </summary>
-		public static bool Enabled
-		{
-			get { return enabled; }
-			set { enabled = value; }
-		}
+		public static bool Enabled { get; set; }
 	}
 
 	internal enum CryptoLockTypes
@@ -84,9 +78,16 @@ namespace OpenSSL.Core
 		CRYPTO_LOCK_DYNLOCK = 29,
 		CRYPTO_LOCK_ENGINE = 30,
 		CRYPTO_LOCK_UI = 31,
-		CRYPTO_LOCK_HWCRHK = 32, /* This is a HACK which will disappear in 0.9.8 */
-		CRYPTO_LOCK_FIPS = 33,
-		CRYPTO_LOCK_FIPS2 = 34
+		CRYPTO_LOCK_ECDSA = 32,
+		CRYPTO_LOCK_EC = 33,
+		CRYPTO_LOCK_ECDH = 34,
+		CRYPTO_LOCK_BN = 35,
+		CRYPTO_LOCK_EC_PRE_COMP = 36,
+		CRYPTO_LOCK_STORE = 37,
+		CRYPTO_LOCK_COMP = 38,
+		CRYPTO_LOCK_FIPS = 39,
+		CRYPTO_LOCK_FIPS2 = 40,
+		CRYPTO_NUM_LOCKS = 41,
 	}
 
 	/// <summary>
@@ -167,12 +168,13 @@ namespace OpenSSL.Core
 				}
 			}
 
-			// Initialize SSL library
-			SSL_library_init();
-
 			ERR_load_crypto_strings();
 			SSL_load_error_strings();
+
 			OPENSSL_add_all_algorithms_noconf();
+
+			// Initialize SSL library
+			Native.ExpectSuccess(SSL_library_init());
 
 			byte[] seed = new byte[128];
 			RandomNumberGenerator rng = RandomNumberGenerator.Create();
@@ -219,7 +221,7 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region Version
-		public const uint Wrapper = 0x00908000;
+		public const uint Wrapper = 0x10000000;
 
 		[DllImport(DLLNAME)]
 		public extern static string SSLeay_version(int type);
@@ -324,18 +326,65 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME)]
 		public extern static IntPtr CRYPTO_malloc(int num, string file, int line);
 
-		//!!
 		[DllImport(DLLNAME)]
 		public extern static IntPtr CRYPTO_realloc(IntPtr ptr, int num, string file, int line);
+
+		private static MallocFunctionPtr ptr_CRYPTO_dbg_malloc = CRYPTO_dbg_malloc;
+		private static ReallocFunctionPtr ptr_CRYPTO_dbg_realloc = CRYPTO_dbg_realloc;
+		private static FreeFunctionPtr ptr_CRYPTO_dbg_free = CRYPTO_dbg_free;
+		private static SetOptionsFunctionPtr ptr_CRYPTO_dbg_set_options = CRYPTO_dbg_set_options;
+		private static GetOptionsFunctionPtr ptr_CRYPTO_dbg_get_options = CRYPTO_dbg_get_options;
 
 		//!! - Expose the default CRYPTO_malloc_debug_init() - this method hooks up the default 
 		//!! - debug functions in the crypto library, this allows us to utilize the MemoryTracker
 		//!! - on non-Windows systems as well.
+		public static void CRYPTO_malloc_debug_init() {
+			CRYPTO_set_mem_debug_functions(
+				ptr_CRYPTO_dbg_malloc,
+				ptr_CRYPTO_dbg_realloc,
+				ptr_CRYPTO_dbg_free,
+				ptr_CRYPTO_dbg_set_options,
+				ptr_CRYPTO_dbg_get_options);
+		}
+
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void MallocFunctionPtr(IntPtr addr, int num, IntPtr file, int line, int before_p);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void ReallocFunctionPtr(IntPtr addr1, IntPtr addr2, int num, IntPtr file, int line, int before_p);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void FreeFunctionPtr(IntPtr addr, int before_p);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void SetOptionsFunctionPtr(int bits);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate int GetOptionsFunctionPtr();
+
 		[DllImport(DLLNAME)]
-		public extern static void CRYPTO_malloc_debug_init();
+		public extern static void CRYPTO_dbg_malloc(IntPtr addr, int num, IntPtr file, int line, int before_p);
+
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_dbg_realloc(IntPtr addr1, IntPtr addr2, int num, IntPtr file, int line, int before_p);
+
+		[DllImport(DLLNAME)]
+		public extern static void CRYPTO_dbg_free(IntPtr addr, int before_p);
 
 		[DllImport(DLLNAME)]
 		public extern static void CRYPTO_dbg_set_options(int bits);
+
+		[DllImport(DLLNAME)]
+		public extern static int CRYPTO_dbg_get_options();
+
+		[DllImport(DLLNAME)]
+		public extern static int CRYPTO_set_mem_debug_functions(
+			MallocFunctionPtr m, 
+			ReallocFunctionPtr r, 
+			FreeFunctionPtr f, 
+			SetOptionsFunctionPtr so, 
+			GetOptionsFunctionPtr go);
 
 		[DllImport(DLLNAME)]
 		public extern static int CRYPTO_mem_ctrl(int mode);

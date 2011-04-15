@@ -185,8 +185,12 @@ namespace OpenSSL.X509
 					this.certificate.PrivateKey = this.privateKey.CopyRef();
 				}
 			}
+
 			if (cacerts != IntPtr.Zero) {
 				this.caCertificates = new Stack<X509Certificate>(cacerts, true);
+			}
+			else {
+				this.caCertificates = new Stack<X509Certificate>();
 			}
 		}
 
