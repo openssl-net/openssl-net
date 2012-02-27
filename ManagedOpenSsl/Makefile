@@ -19,8 +19,8 @@ LIBSSL = $(D_OUT)/libssl.dylib
 endif
 ifeq ($(uname_S),Linux)
 D_LINUX = $(TOP)/native/linux/$(uname_M)
-SRC_LIBCRYPTO = $(D_LINUX)/libcrypto.so.0.9.8
-SRC_LIBSSL = $(D_LINUX)/libssl.so.0.9.8
+SRC_LIBCRYPTO = $(D_LINUX)/libcrypto.so.1.0.0
+SRC_LIBSSL = $(D_LINUX)/libssl.so.1.0.0
 LIBCRYPTO = $(D_OUT)/libcrypto.so
 LIBSSL = $(D_OUT)/libssl.so
 endif

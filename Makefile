@@ -11,28 +11,35 @@ export LIBPATH = $(D_OUT)
 MAKE_DIR = $(MAKE) -C 
 
 LIB_DIR = ManagedOpenSsl
-TEST_DIR = test/UnitTests
+TEST_DIR = test
+CLI_DIR = cli
 
 all: build
 
 lib: 
 	$(MAKE_DIR) $(LIB_DIR)
 
-build: $(D_OUT) lib build_test 
+build: $(D_OUT) lib build_test build_cli
 
 build_test:
 	$(MAKE_DIR) $(TEST_DIR)
 
+build_cli:
+	$(MAKE_DIR) $(CLI_DIR)
+
 test: lib build_test 
 	$(MAKE_DIR) $(TEST_DIR) test
 
-clean: clean_lib clean_test
+clean: clean_lib clean_test clean_cli
 
 clean_lib:
 	$(MAKE_DIR) $(LIB_DIR) clean
 
 clean_test:
 	$(MAKE_DIR) $(TEST_DIR) clean
+	
+clean_cli:
+	$(MAKE_DIR) $(CLI_DIR) clean
 
 install:
 	echo install
