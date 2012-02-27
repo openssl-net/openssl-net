@@ -42,7 +42,14 @@ namespace OpenSSL.Crypto
 		struct dsa_st
 		{
 			public int pad;
+			// version is declared natively as long
+			// http://stackoverflow.com/questions/384502/what-is-the-bit-size-of-long-on-64-bit-windows
+			// this is an attempt to map it in a portable way:
+#if _WIN64
 			public int version;
+#else
+			public IntPtr version;
+#endif
 			public int write_params;
 			public IntPtr p;
 			public IntPtr q;	
@@ -69,7 +76,7 @@ namespace OpenSSL.Crypto
 		private const int FlagCacheMont_P = 0x01;
 		private const int FlagNoExpConstTime = 0x02;
 		private int counter = 0;
-		private int h = 0;
+		private IntPtr h;
 		private BigNumber.GeneratorThunk thunk = null;
 
 		#region Initialization
@@ -125,6 +132,7 @@ namespace OpenSSL.Crypto
 		public DSA(int bits, byte[] seed, int counter, BigNumber.GeneratorHandler callback, object arg)
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
+			IntPtr h;
 			this.counter = counter;
 			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
@@ -293,7 +301,7 @@ namespace OpenSSL.Crypto
 		/// <summary>
 		/// Returns the h value
 		/// </summary>
-		public int H
+		public IntPtr H
 		{
 			get { return this.h; }
 		}

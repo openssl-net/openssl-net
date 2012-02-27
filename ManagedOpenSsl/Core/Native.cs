@@ -917,7 +917,14 @@ namespace OpenSSL.Core
 		//public extern static IntPtr DSA_generate_parameters(int bits, byte[] seed, int seed_len, IntPtr counter_ret, IntPtr h_ret, IntPtr callback, IntPtr cb_arg);
 
 		[DllImport(DLLNAME)]
-		public extern static int DSA_generate_parameters_ex(IntPtr dsa, int bits, byte[] seed, int seed_len, out int counter_ret, out int h_ret, bn_gencb_st callback);
+		public extern static
+		int DSA_generate_parameters_ex(IntPtr dsa,
+		                               int bits,
+		                               byte[] seed,
+		                               int seed_len,
+		                               out int counter_ret,
+		                               out IntPtr h_ret,
+		                               bn_gencb_st callback);
 
 		[DllImport(DLLNAME)]
 		public extern static int DSA_generate_key(IntPtr dsa);

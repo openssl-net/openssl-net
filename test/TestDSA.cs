@@ -86,7 +86,7 @@ namespace test
 			if (dsa.Counter != 105)
 				throw new Exception("counter should be 105");
 
-			if (dsa.H != 2)
+			if (dsa.H.ToInt32() != 2)
 				throw new Exception("h should be 2");
 
 			using (BigNumber q = BigNumber.FromArray(this.out_q))
