@@ -15,9 +15,12 @@ uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
 ifeq ($(uname_S),Darwin)
 NUNIT = nunit-console2 $(NUNIT_FLAGS)
+NUNIT_PKG = -pkg:mono-nunit
+export PKG_CONFIG_PATH = /Library/Frameworks/Mono.framework/Libraries/pkgconfig/
 endif
 ifeq ($(uname_S),Linux)
 NUNIT = LD_LIBRARY_PATH=. nunit-console $(NUNIT_FLAGS)
+NUNIT_PKG = -pkg:nunit
 endif
 
 SRCS = \
@@ -28,7 +31,7 @@ SRCS = \
 
 REFS = \
 	-r:ManagedOpenSsl.dll \
-	-pkg:nunit
+	$(NUNIT_PKG)
 
 $(OUT) : $(SRCS) $(DEPS)
 	$(CSC) $(CSFLAGS) -t:$(TGT_TYPE) -lib:$(LIBPATH) $(REFS) -out:$@ $(SRCS)
