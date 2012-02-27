@@ -1,7 +1,13 @@
 OpenSSL.NET - CHANGES
 
+0.5-rc2 [Feb 26, 2012]
+
+* Updating linux and osx native libraries to version 1.0.0g
+* Working around a few 64-bit issues found on Linux under Mono.
+
 0.5-rc1 [Apr 14, 2011]
-* Updating to OpenSSL native library to version 1.0.0d
+
+* Updating OpenSSL native library to version 1.0.0d
 * Using Visual Studio 2010 project files 
   (I don't have the old versions of VS installed anymore)
 * Removing EVP_md2(), the native library no longer includes this by default
