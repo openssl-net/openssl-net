@@ -1,3 +1,0 @@
-make
-nunit-console2 bin/Debug/UnitTests.dll -labels -nodots $*
-killall -9 mono
