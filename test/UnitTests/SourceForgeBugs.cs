@@ -25,6 +25,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using NUnit.Framework;
 using OpenSSL;
 using OpenSSL.Core;
@@ -94,6 +95,16 @@ namespace UnitTests.OpenSSL
 			FileSerialNumber fsn2 = new FileSerialNumber(path);
 			Assert.AreEqual(1, fsn2.Next());
 			Assert.AreEqual(2, fsn2.Next());
+		}
+		
+		[Test]
+		public void Bug3066497()
+		{
+			CipherContext cc = new CipherContext(Cipher.Blowfish_CBC);
+			byte[] inputData = Encoding.UTF8.GetBytes("1234567");
+			byte[] key = Encoding.UTF8.GetBytes("secret!!");
+			byte[] iv = Encoding.UTF8.GetBytes("secret!!");
+			byte[] outputData = cc.Encrypt(inputData, key, iv);
 		}
 	}
 }
