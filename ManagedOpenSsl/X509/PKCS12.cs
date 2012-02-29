@@ -105,6 +105,27 @@ namespace OpenSSL.X509
 			/// </summary>
 			SHA1_RC2_40 = 149
 		}
+		
+		/// <summary>
+		/// This is a non standard extension that is only currently interpreted by MSIE
+		/// </summary>
+		public enum KeyType
+		{
+			/// <summary>
+			/// omit the flag from the private key
+			/// </summary>
+			KEY_DEFAULT = 0,
+		
+			/// <summary>
+			/// the key can be used for signing only
+			/// </summary>
+			KEY_SIG = 0x80,
+		
+			/// <summary>
+			/// the key can be used for signing and encryption
+			/// </summary>
+			KEY_EX = 0x10,
+		}
 
 		#region Initialization
 
@@ -116,7 +137,7 @@ namespace OpenSSL.X509
 		/// <param name="cert"></param>
 		/// <param name="ca"></param>
 		public PKCS12(string password, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca) :
-			base(Create(password, null, key, cert, ca, PBE.Default, PBE.Default, 0), true) {
+			base(Create(password, null, key, cert, ca, PBE.Default, PBE.Default, 0, KeyType.KEY_DEFAULT), true) {
 			Init(password);
 		}
 
@@ -131,8 +152,8 @@ namespace OpenSSL.X509
 		/// <param name="keyPbe">How to encrypt the key</param>
 		/// <param name="certPbe">How to encrypt the certificate</param>
 		/// <param name="iterations"># of iterations during encryption</param>
-		public PKCS12(string password, string name, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca, PBE keyPbe, PBE certPbe, int iterations) :
-			base(Create(password, name, key, cert, ca, keyPbe, certPbe, iterations), true) {
+		public PKCS12(string password, string name, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca, PBE keyPbe, PBE certPbe, int iterations, KeyType keyType) :
+			base(Create(password, name, key, cert, ca, keyPbe, certPbe, iterations, keyType), true) {
 			Init(password);
 		}
 
@@ -142,20 +163,21 @@ namespace OpenSSL.X509
 			CryptoKey key, 
 			X509Certificate cert,
 			Stack<X509Certificate> ca,
-			PBE keyType,
-			PBE certType,
-			int iterations) {
+			PBE keyPbe,
+			PBE certPbe,
+			int iterations,
+			KeyType keyType) {
 			return Native.ExpectNonNull(Native.PKCS12_create(
 				password, 
 				name, 
 				key.Handle, 
 				cert.Handle, 
 				ca.Handle, 
-				(int)keyType,
-				(int)certType,
+				(int)keyPbe,
+				(int)certPbe,
 				iterations, 
 				1, 
-				(int)key.Type));
+				(int)keyType));
 		}
 
 		/// <summary>
