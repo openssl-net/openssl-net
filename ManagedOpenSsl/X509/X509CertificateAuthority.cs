@@ -50,7 +50,7 @@ namespace OpenSSL.X509
 	/// </summary>
 	public class FileSerialNumber : ISequenceNumber
 	{
-		private FileInfo serialFile;
+		private string path;
 		/// <summary>
 		/// Constructs a FileSerialNumber. The path specifies where 
 		/// the serial number should be read and written to.
@@ -58,7 +58,7 @@ namespace OpenSSL.X509
 		/// <param name="path"></param>
 		public FileSerialNumber(string path)
 		{
-			this.serialFile = new FileInfo(path);
+			this.path = path;
 		}
 
 		#region ISequenceNumber Members
@@ -70,14 +70,15 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public int Next()
 		{
-			string name = this.serialFile.FullName.Replace('\\', '/');
+			FileInfo serialFile = new FileInfo(this.path);
+			string name = serialFile.FullName.Replace('\\', '/');
 			using (Mutex mutex = new Mutex(true, name))
 			{
 				mutex.WaitOne();
 				int serial = 1;
-				if (this.serialFile.Exists)
+				if (serialFile.Exists)
 				{
-					using (StreamReader sr = new StreamReader(this.serialFile.FullName))
+					using (StreamReader sr = new StreamReader(serialFile.FullName))
 					{
 						string text = sr.ReadToEnd();
 						serial = Convert.ToInt32(text);
@@ -85,7 +86,7 @@ namespace OpenSSL.X509
 					}
 				}
 
-				using(StreamWriter sr = new StreamWriter(this.serialFile.FullName))
+				using(StreamWriter sr = new StreamWriter(serialFile.FullName))
 				{
 					sr.Write(serial.ToString());
 				}

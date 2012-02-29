@@ -24,6 +24,7 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.IO;
 using NUnit.Framework;
 using OpenSSL;
 using OpenSSL.Core;
@@ -44,7 +45,7 @@ namespace UnitTests.OpenSSL
 			BIO mb = BIO.MemoryBuffer();
 			mb.Write("Some junk");
 			ArraySegment<byte> result = mb.ReadBytes(0);
-			Assert.AreEqual(result.Count, 0);
+			Assert.AreEqual(0, result.Count);
 		}
 		
 		/// <summary>
@@ -59,6 +60,40 @@ namespace UnitTests.OpenSSL
 			key.WritePrivateKey(output, Cipher.Null, "password");
 			output.SetClose(BIO.CloseOption.Close);
 			Console.WriteLine(output.ReadString());
+		}
+
+		/// <summary>
+		/// OpenSSL.X509.FileSerialNumber malfunctions
+		/// Check for invalid directory
+		/// </summary>
+		[Test]
+		[ExpectedException(typeof(DirectoryNotFoundException))]
+		public void Bug3018093_1()
+		{
+			FileSerialNumber fsn = new FileSerialNumber("/does/not/exist");
+			int serial = fsn.Next();
+		}
+
+		/// <summary>
+		/// OpenSSL.X509.FileSerialNumber malfunctions
+		/// Check that non-existant file is created and subsequently valid
+		/// </summary>
+		[Test]
+		public void Bug3018093_2()
+		{
+			string tmp = Path.GetTempPath();
+			string path = Path.Combine(tmp, "new_serial");
+			Console.WriteLine(path);
+
+			File.Delete(path);
+			FileSerialNumber fsn1 = new FileSerialNumber(path);
+			Assert.AreEqual(1, fsn1.Next());
+			Assert.AreEqual(2, fsn1.Next());
+
+			File.Delete(path);
+			FileSerialNumber fsn2 = new FileSerialNumber(path);
+			Assert.AreEqual(1, fsn2.Next());
+			Assert.AreEqual(2, fsn2.Next());
 		}
 	}
 }
