@@ -28,6 +28,7 @@ using NUnit.Framework;
 using OpenSSL;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using OpenSSL.X509;
 
 namespace UnitTests.OpenSSL
 {
@@ -44,6 +45,20 @@ namespace UnitTests.OpenSSL
 			mb.Write("Some junk");
 			ArraySegment<byte> result = mb.ReadBytes(0);
 			Assert.AreEqual(result.Count, 0);
+		}
+		
+		/// <summary>
+		/// WritePrivateKey fails with null Cipher type
+		/// </summary>
+		[Test]
+		[ExpectedException(typeof(OpenSslException))]
+		public void Bug3017248()
+		{
+			CryptoKey key = new CryptoKey(new DSA(true));
+			BIO output = BIO.MemoryBuffer();
+			key.WritePrivateKey(output, Cipher.Null, "password");
+			output.SetClose(BIO.CloseOption.Close);
+			Console.WriteLine(output.ReadString());
 		}
 	}
 }
