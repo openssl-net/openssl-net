@@ -87,6 +87,7 @@ namespace OpenSSL.Core
 			get
 			{
 				byte[] buf = new byte[1024];
+				buf.Initialize();
 				Native.ERR_error_string_n(err, buf, buf.Length);
 				int len;
 				for (len = 0; len < buf.Length; len++) 
