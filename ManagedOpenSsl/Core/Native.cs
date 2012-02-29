@@ -1790,7 +1790,7 @@ namespace OpenSSL.Core
 		public extern static uint ERR_get_error();
 
 		[DllImport(DLLNAME)]
-		public extern static uint ERR_error_string_n(uint e, byte[] buf, int len);
+		public extern static void ERR_error_string_n(uint e, byte[] buf, int len);
 
 		[DllImport(DLLNAME)]
 		public extern static IntPtr ERR_lib_error_string(uint e);

@@ -26,6 +26,7 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Core
 {
@@ -86,8 +87,14 @@ namespace OpenSSL.Core
 			get
 			{
 				byte[] buf = new byte[1024];
-				uint len = Native.ERR_error_string_n(err, buf, buf.Length);
-				return Encoding.ASCII.GetString(buf, 0, (int)len);
+				Native.ERR_error_string_n(err, buf, buf.Length);
+				int len;
+				for (len = 0; len < buf.Length; len++) 
+				{
+					if (buf[len] == 0)
+						break;
+				}
+				return Encoding.ASCII.GetString(buf, 0, len);
 			}
 		}
 	}
