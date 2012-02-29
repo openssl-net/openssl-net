@@ -694,7 +694,7 @@ namespace OpenSSL.Crypto
 		{
 			int enc = doEncrypt ? 1 : 0;
 
-			int total = input.Length;
+			int total = Math.Max(input.Length, this.cipher.BlockSize);
 			byte[] real_key = SetupKey(key);
 			byte[] real_iv = SetupIV(iv);
 
@@ -732,7 +732,7 @@ namespace OpenSSL.Crypto
 
 			len = buf.Length;
 			Native.EVP_CipherFinal_ex(this.ptr, buf, ref len);
-
+			
 			memory.Write(buf, 0, len);
 
 			return memory.ToArray();
