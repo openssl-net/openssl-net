@@ -27,7 +27,8 @@ SRCS = \
 	Properties/AssemblyInfo.cs \
 	BaseTest.cs \
 	CryptoKeyTest.cs \
-	X509CertificateTest.cs
+	X509CertificateTest.cs \
+	SourceForgeBugs.cs
 
 REFS = \
 	-r:ManagedOpenSsl.dll \
