@@ -31,7 +31,7 @@ using System.Threading;
 using OpenSSL.Core;
 using OpenSSL.X509;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
 	internal abstract class SslStreamBase : Stream, IDisposable
 	{

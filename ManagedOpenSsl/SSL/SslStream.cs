@@ -30,7 +30,7 @@ using System.Net.Security;
 using System.IO;
 using OpenSSL.X509;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
 	/// <summary>
 	/// 

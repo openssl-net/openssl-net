@@ -32,6 +32,7 @@ using System.Net.Sockets;
 using OpenSSL;
 using OpenSSL.Core;
 using OpenSSL.X509;
+using OpenSSL.SSL;
 
 namespace test
 {

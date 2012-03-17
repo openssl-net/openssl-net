@@ -27,7 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 	
-namespace OpenSSL
+namespace OpenSSL.X509
 {
 	/// <summary>
 	/// X509_V_*

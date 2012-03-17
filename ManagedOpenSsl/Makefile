@@ -74,17 +74,17 @@ SRCS = \
 	X509/X509Request.cs \
 	X509/X509Store.cs \
 	X509/X509StoreContext.cs \
+	X509/VerifyResult.cs \
 	\
-	Enums.cs \
-	Ssl.cs \
-	SslCipher.cs \
-	SslContext.cs \
-	SslMethod.cs \
-	SslStream.cs \
-	SslStreamBase.cs \
-	SslStreamClient.cs \
-	SslStreamServer.cs \
-	VerifyResult.cs
+	SSL/Enums.cs \
+	SSL/Ssl.cs \
+	SSL/SslCipher.cs \
+	SSL/SslContext.cs \
+	SSL/SslMethod.cs \
+	SSL/SslStream.cs \
+	SSL/SslStreamBase.cs \
+	SSL/SslStreamClient.cs \
+	SSL/SslStreamServer.cs
 
 REFS = 
 

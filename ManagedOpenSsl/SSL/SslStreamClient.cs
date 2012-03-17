@@ -31,7 +31,7 @@ using OpenSSL.Core;
 using OpenSSL.Crypto;
 using OpenSSL.X509;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
 	class SslStreamClient : SslStreamBase
 	{

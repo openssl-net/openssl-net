@@ -30,7 +30,7 @@ using System.IO;
 using OpenSSL.Core;
 using OpenSSL.X509;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
     class SslStreamServer : SslStreamBase
     {

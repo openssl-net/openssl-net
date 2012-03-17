@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.X509;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
 	enum SslError
 	{

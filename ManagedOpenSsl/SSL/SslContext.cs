@@ -31,7 +31,7 @@ using OpenSSL.Core;
 using OpenSSL.Crypto;
 using OpenSSL.X509;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
 	delegate int ClientCertCallbackHandler(Ssl ssl, out X509Certificate cert, out CryptoKey key);
 

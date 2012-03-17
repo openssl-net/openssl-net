@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenSSL.Core;
 
-namespace OpenSSL
+namespace OpenSSL.SSL
 {
     /// <summary>
     /// Wraps the SSL_METHOD structure and methods
