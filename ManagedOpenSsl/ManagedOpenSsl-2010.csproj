@@ -145,7 +145,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\native\windows\x86\libeay32.dll">

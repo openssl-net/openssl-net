@@ -118,7 +118,6 @@
   </Target>
   -->
   <ItemGroup>
-    <None Include="Makefile" />
     <None Include="openssl.cnf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
