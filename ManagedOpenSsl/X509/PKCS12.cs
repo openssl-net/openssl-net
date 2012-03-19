@@ -152,6 +152,7 @@ namespace OpenSSL.X509
 		/// <param name="keyPbe">How to encrypt the key</param>
 		/// <param name="certPbe">How to encrypt the certificate</param>
 		/// <param name="iterations"># of iterations during encryption</param>
+		/// <param name="keyType"></param>
 		public PKCS12(string password, string name, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca, PBE keyPbe, PBE certPbe, int iterations, KeyType keyType) :
 			base(Create(password, name, key, cert, ca, keyPbe, certPbe, iterations, keyType), true) {
 			Init(password);

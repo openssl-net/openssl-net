@@ -173,6 +173,10 @@ namespace OpenSSL.Core
 			return bytes;
 		}
 		
+		/// <summary>
+		/// Calls BN_bn2bin()
+		/// </summary>
+		/// <param name="bytes"></param>
 		public void ToBytes(byte[] bytes)
 		{
 			Native.ExpectSuccess(Native.BN_bn2bin(this.ptr, bytes));
