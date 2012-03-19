@@ -47,7 +47,7 @@ namespace OpenSSL.X509
 			/* These are external lookup methods */
 			public IntPtr get_cert_methods;    //STACK_OF(X509_LOOKUP) *get_cert_methods;
 
-			IntPtr param;   // X509_VERIFY_PARAM* param;
+			public IntPtr param;   // X509_VERIFY_PARAM* param;
 
 			/* Callbacks for various operations */
 			public IntPtr verify;  //int (*verify)(X509_STORE_CTX *ctx);	/* called to verify a certificate */

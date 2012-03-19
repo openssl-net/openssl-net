@@ -1,6 +1,6 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2012 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -169,8 +169,13 @@ namespace OpenSSL.Core
 		public static implicit operator byte[](BigNumber rhs)
 		{
 			byte[] bytes = new byte[rhs.Bytes];
-			int ret = Native.BN_bn2bin(rhs.ptr, bytes);
+			Native.ExpectSuccess(Native.BN_bn2bin(rhs.ptr, bytes));
 			return bytes;
+		}
+		
+		public void ToBytes(byte[] bytes)
+		{
+			Native.ExpectSuccess(Native.BN_bn2bin(this.ptr, bytes));
 		}
 
 		#endregion
@@ -201,6 +206,46 @@ namespace OpenSSL.Core
 		{
 			Native.BN_clear(this.ptr);
 		}
+
+		/// <summary>
+		/// Calls BN_rand_range()
+		/// </summary>
+		/// <param name="range"></param>
+		/// <returns></returns>
+		public static BigNumber NextRange(BigNumber range)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_rand_range(bn.Handle, range.Handle));
+			return bn;
+		}
+
+		/// <summary>
+		/// Calls BN_pseudo_rand()
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <param name="top"></param>
+		/// <param name="bottom"></param>
+		/// <returns></returns>
+		public static BigNumber PseudoNext(int bits, int top, int bottom)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_pseudo_rand(bn.Handle, bits, top, bottom));
+			return bn;
+		}
+
+		/// <summary>
+		/// Calls BN_pseudo_rand_range()
+		/// </summary>
+		/// <param name="range"></param>
+		/// <returns></returns>
+		public static BigNumber PseudoNextRange(BigNumber range)
+		{
+			BigNumber bn = new BigNumber();
+			Native.ExpectSuccess(Native.BN_pseudo_rand_range(bn.Handle, range.Handle));
+			return bn;
+		}
+		
+		
 		#endregion
 
 		#region Operators

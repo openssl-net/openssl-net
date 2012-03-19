@@ -449,7 +449,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string LongName
 		{
-			get { return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.raw.nid), false); }
+			get { return Native.OBJ_nid2ln(this.raw.nid); }
 		}
 
 		/// <summary>
@@ -457,7 +457,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string Name
 		{
-			get { return Native.PtrToStringAnsi(Native.OBJ_nid2sn(this.raw.nid), false); }
+			get { return Native.OBJ_nid2sn(this.raw.nid); }
 		}
 
 		/// <summary>
@@ -473,7 +473,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string TypeName
 		{
-			get { return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.Type), false); }
+			get { return Native.OBJ_nid2ln(this.Type); }
 		}
 		#endregion
 	}

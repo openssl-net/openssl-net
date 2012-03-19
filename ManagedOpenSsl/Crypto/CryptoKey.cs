@@ -1,6 +1,6 @@
-// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2012 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -68,11 +68,11 @@ namespace OpenSSL.Crypto
 		struct EVP_PKEY
 		{
 			public int type;
-			int save_type;
-			int references;
-			IntPtr ptr;
-			int save_parameters;
-			IntPtr attributes;
+			public int save_type;
+			public int references;
+			public IntPtr ptr;
+			public int save_parameters;
+			public IntPtr attributes;
 		}
 
 		#region Initialization

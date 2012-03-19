@@ -75,7 +75,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Name
 		{
-			get { return Marshal.PtrToStringAnsi(Native.OBJ_nid2ln(this.NID)); }
+			get { return Native.OBJ_nid2ln(this.NID); }
 		}
 
 		/// <summary>

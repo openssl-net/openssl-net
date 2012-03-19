@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2011 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -175,6 +175,11 @@ namespace OpenSSL.Crypto
 		/// EVP_ripemd160()
 		/// </summary>
 		public static MessageDigest RipeMD160 = new MessageDigest(Native.EVP_ripemd160(), false);
+
+		/// <summary>
+		/// EVP_ecdsa()
+		/// </summary>
+		public static MessageDigest ECDSA = new MessageDigest(Native.EVP_ecdsa(), false);
 		#endregion
 
 		#region Properties
@@ -199,7 +204,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string LongName
 		{
-			get { return Native.PtrToStringAnsi(Native.OBJ_nid2ln(this.raw.type), false); }
+			get { return Native.OBJ_nid2ln(this.raw.type); }
 		}
 
 		/// <summary>
@@ -207,7 +212,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string Name
 		{
-			get { return Native.PtrToStringAnsi(Native.OBJ_nid2sn(this.raw.type), false); }
+			get { return Native.OBJ_nid2sn(this.raw.type); }
 		}
 
 		#endregion
@@ -317,7 +322,6 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] SignFinal(CryptoKey pkey)
 		{
-			byte[] digest = new byte[this.md.Size];
 			byte[] sig = new byte[pkey.Size];
 			uint len = (uint)sig.Length;
 			Native.ExpectSuccess(Native.EVP_SignFinal(this.ptr, sig, ref len, pkey.Handle));

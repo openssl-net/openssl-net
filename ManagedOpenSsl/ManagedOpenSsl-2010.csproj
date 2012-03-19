@@ -134,6 +134,9 @@
     <Compile Include="SSL\Enums.cs" />
     <Compile Include="X509\VerifyResult.cs" />
     <Compile Include="SSL\SslMethod.cs" />
+    <Compile Include="Core\Objects.cs" />
+    <Compile Include="Core\Asn1Object.cs" />
+    <Compile Include="Crypto\ECKey.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

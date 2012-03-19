@@ -520,7 +520,7 @@ namespace OpenSSL.SSL
 			int offset,
 			int count,
 			AsyncCallback asyncCallback,
-			Object asyncState)
+			object asyncState)
 		{
 			if (buffer == null)
 			{
@@ -778,7 +778,7 @@ namespace OpenSSL.SSL
 			int offset,
 			int count,
 			AsyncCallback asyncCallback,
-			Object asyncState)
+			object asyncState)
 		{
 			if (buffer == null)
 			{

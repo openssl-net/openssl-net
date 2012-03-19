@@ -48,7 +48,7 @@ namespace OpenSSL.SSL
 			X509Chain caCertificates,
 			SslProtocols enabledSslProtocols,
 			SslStrength sslStrength,
-			bool checkCertificateRevocation,
+			bool checkCertificateRevocationStatus,
 			RemoteCertificateValidationHandler remoteCallback,
 			LocalCertificateSelectionHandler localCallback)
 			: base(stream, ownStream)
@@ -60,7 +60,7 @@ namespace OpenSSL.SSL
 			this.remoteCertificateSelectionCallback = remoteCallback;
 			this.localCertificateSelectionCallback = localCallback;
 			this.internalCertificateSelectionCallback = new ClientCertCallbackHandler(InternalClientCertificateSelectionCallback);
-			InitializeClientContext(clientCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation);
+			InitializeClientContext(clientCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocationStatus);
 		}
 
 		protected void InitializeClientContext(X509List certificates, SslProtocols enabledSslProtocols, SslStrength sslStrength, bool checkCertificateRevocation)

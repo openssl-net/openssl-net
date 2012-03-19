@@ -41,9 +41,9 @@ namespace OpenSSL.X509
 		[StructLayout(LayoutKind.Sequential)]
 		struct _PKCS12
 		{
-			IntPtr version;     //ASN1_INTEGER *version;
-			IntPtr mac;         //PKCS12_MAC_DATA *mac;
-			IntPtr authsafes;   //PKCS7 *authsafes;
+			public IntPtr version;     //ASN1_INTEGER *version;
+			public IntPtr mac;         //PKCS12_MAC_DATA *mac;
+			public IntPtr authsafes;   //PKCS7 *authsafes;
 		}
 		#endregion
 

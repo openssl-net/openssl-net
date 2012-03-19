@@ -262,7 +262,8 @@ namespace OpenSSL.X509
 		{
 			get 
 			{
-				IntPtr pEntry = Native.X509_NAME_get_entry(this.ptr, index);
+				// TODO: finish this
+//				IntPtr pEntry = Native.X509_NAME_get_entry(this.ptr, index);
 				return null;
 			}
 		}

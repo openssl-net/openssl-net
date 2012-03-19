@@ -1,6 +1,6 @@
-﻿// Copyright (c) 2006-2007 Frank Laub
+﻿// Copyright (c) 2006-2012 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -22,10 +22,10 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Core
 {
@@ -127,8 +127,7 @@ namespace OpenSSL.Core
 		/// <summary>
 		/// Returns RAND_status()
 		/// </summary>
-		public static int Status
-		{
+		public static int Status {
 			get { return Native.RAND_status(); }
 		}
 
@@ -184,42 +183,115 @@ namespace OpenSSL.Core
 			return bn;
 		}
 
-		/// <summary>
-		/// Calls BN_rand_range()
-		/// </summary>
-		/// <param name="range"></param>
-		/// <returns></returns>
-		public static BigNumber NextRange(BigNumber range)
+		public class Delegates
 		{
-			BigNumber bn = new BigNumber();
-			Native.ExpectSuccess(Native.BN_rand_range(bn.Handle, range.Handle));
-			return bn;
-		}
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			public delegate int Seed(IntPtr buf, int num);
+	
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			public delegate int Bytes([MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] buf, int num);
+	
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			public delegate void Cleanup();
+	
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			public delegate void Add(IntPtr buf, int num, double entropy);
+	
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			public delegate int Status();
+		};
 
-		/// <summary>
-		/// Calls BN_pseudo_rand()
-		/// </summary>
-		/// <param name="bits"></param>
-		/// <param name="top"></param>
-		/// <param name="bottom"></param>
-		/// <returns></returns>
-		public static BigNumber PseudoNext(int bits, int top, int bottom)
+		[StructLayout(LayoutKind.Sequential)]
+		struct rand_meth_st
 		{
-			BigNumber bn = new BigNumber();
-			Native.ExpectSuccess(Native.BN_pseudo_rand(bn.Handle, bits, top, bottom));
-			return bn;
-		}
+			public Delegates.Seed seed;
+			public Delegates.Bytes bytes;
+			public Delegates.Cleanup cleanup;
+			public Delegates.Add add;
+			public Delegates.Bytes pseudorand;
+			public Delegates.Status status;
+		};
 
-		/// <summary>
-		/// Calls BN_pseudo_rand_range()
-		/// </summary>
-		/// <param name="range"></param>
-		/// <returns></returns>
-		public static BigNumber PseudoNextRange(BigNumber range)
+		#region Random Method
+		public class Method : Base
 		{
-			BigNumber bn = new BigNumber();
-			Native.ExpectSuccess(Native.BN_pseudo_rand_range(bn.Handle, range.Handle));
-			return bn;
-		}
+			#region Data Structures and Variables
+			private static IntPtr original;
+			private rand_meth_st raw = new rand_meth_st();
+			#endregion
+			
+			#region Initialization			
+			static Method() {
+				original = Native.ExpectNonNull(Native.RAND_get_rand_method());
+			}
+			
+			public Method() 
+				: base(Marshal.AllocHGlobal(Marshal.SizeOf(typeof(rand_meth_st))), true) {
+				rand_meth_st raw = (rand_meth_st)Marshal.PtrToStructure(original, typeof(rand_meth_st));
+				this.raw.add = raw.add;
+				this.raw.bytes = raw.bytes;
+				this.raw.seed = raw.seed;
+				this.raw.cleanup = raw.cleanup;
+				this.raw.pseudorand = raw.pseudorand;
+				this.raw.status = raw.status;
+			}
+			
+			~Method() {
+				Dispose();
+			}
+			#endregion
+			
+			#region Properties
+			public Delegates.Seed Seed {
+				get { return this.raw.seed; }
+				set { this.raw.seed = value; }
+			}
+
+			public Delegates.Bytes Bytes {
+				get { return this.raw.bytes; }
+				set { this.raw.bytes = value; }
+			}
+
+			public Delegates.Cleanup Cleanup {
+				get { return this.raw.cleanup; }
+				set { this.raw.cleanup = value; }
+			}
+
+			public Delegates.Add Add {
+				get { return this.raw.add; }
+				set { this.raw.add = value; }
+			}
+
+			public Delegates.Bytes PseudoRand {
+				get { return this.raw.pseudorand; }
+				set { this.raw.pseudorand = value; }
+			}
+
+			public Delegates.Status Status {
+				get { return this.raw.status; }
+				set { this.raw.status = value; }
+			}
+			#endregion
+			
+			#region Methods
+			public void Override() {
+				Marshal.StructureToPtr(this.raw, this.ptr, false);
+				Native.ExpectSuccess(Native.RAND_set_rand_method(this.ptr));
+			}
+						
+			private void Restore() {
+				Native.ExpectSuccess(Native.RAND_set_rand_method(original));
+			}
+			#endregion
+
+			#region IDisposable implementation
+			protected override void OnDispose() {
+				Restore();
+				Marshal.FreeHGlobal(this.ptr);
+			}
+			#endregion
+		};
+
+		#endregion
 	}
 }

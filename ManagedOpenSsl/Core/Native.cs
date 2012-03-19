@@ -189,7 +189,7 @@ namespace OpenSSL.Core
 			lock_objects = new List<object>(nLocks);
 			for (int i = 0; i < nLocks; i++)
 			{
-				Object obj = new Object();
+				object obj = new object();
 				lock_objects.Add(obj);
 			}
 			// Initialize the internal thread id stack
@@ -250,7 +250,7 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region Threading
-		private static List<Object> lock_objects;
+		private static List<object> lock_objects;
 		private static CRYPTO_locking_callback CRYPTO_locking_callback_delegate;
 		private static CRYPTO_id_callback CRYPTO_id_callback_delegate;
 
@@ -425,22 +425,22 @@ namespace OpenSSL.Core
 		public extern static IntPtr OBJ_nid2obj(int n);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static IntPtr OBJ_nid2ln(int n);
+		public extern static string OBJ_nid2ln(int n);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static IntPtr OBJ_nid2sn(int n);
+		public extern static string OBJ_nid2sn(int n);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int OBJ_obj2nid(IntPtr o);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static IntPtr OBJ_txt2obj(byte[] s, int no_name);
+		public extern static IntPtr OBJ_txt2obj(string s, int no_name);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static int OBJ_ln2nid(byte[] s);
+		public extern static int OBJ_ln2nid(string s);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static int OBJ_sn2nid(byte[] s);
+		public extern static int OBJ_sn2nid(string s);
 		#endregion
 
 		#region stack
@@ -859,6 +859,12 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region RAND
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int RAND_set_rand_method(IntPtr meth);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr RAND_get_rand_method();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void RAND_cleanup();
@@ -1353,6 +1359,9 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_ripemd160();
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr EVP_ecdsa();
 		#endregion
 
 		#region HMAC
@@ -1361,27 +1370,31 @@ namespace OpenSSL.Core
 		//!!void HMAC_CTX_init(HMAC_CTX *ctx);
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_CTX_init(IntPtr ctx);
+		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_CTX_set_flags(IntPtr ctx, uint flags);
+		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_CTX_cleanup(IntPtr ctx);
+		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_Init(IntPtr ctx, byte[] key, int len, IntPtr md); /* deprecated */
+		
 		//!!public extern static void HMAC_Init_ex(IntPtr ctx, const void *key, int len, const EVP_MD *md, ENGINE *impl);
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_Init_ex(IntPtr ctx, byte[] key, int len, IntPtr md, IntPtr engine_impl);
+		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_Update(IntPtr ctx, byte[] data, int len);
+		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void HMAC_Final(IntPtr ctx, byte[] md, ref uint len);
+		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr HMAC(IntPtr evp_md, byte[] key, int key_len, byte[] d, int n, byte[] md, ref uint md_len);
-
-
 		#endregion
 
 		#region Ciphers
-
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_get_cipherbyname(byte[] name);
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
@@ -1572,7 +1585,6 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region EVP_CIPHER
-
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void EVP_CIPHER_CTX_init(IntPtr a);
 
@@ -1624,7 +1636,6 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region EVP_MD
-
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_get_digestbyname(byte[] name);
 
@@ -1661,6 +1672,123 @@ namespace OpenSSL.Core
 		#endregion
 
 		#endregion EVP
+		
+		#region EC
+		
+		#region EC_METHOD
+		#endregion
+		
+		#region EC_POINT
+		#endregion
+
+		#region EC_GROUP
+		#endregion
+		
+		#region EC_KEY
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr EC_KEY_new();
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr EC_KEY_new_by_curve_name(int nid);
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void EC_KEY_free(IntPtr key);
+		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static EC_KEY *EC_KEY_copy(EC_KEY *dst, const EC_KEY *src);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static EC_KEY *EC_KEY_dup(const EC_KEY *src);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static int EC_KEY_up_ref(EC_KEY *key);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static const EC_GROUP *EC_KEY_get0_group(const EC_KEY *key);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static int EC_KEY_set_group(EC_KEY *key, const EC_GROUP *group);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static const BIGNUM *EC_KEY_get0_private_key(const EC_KEY *key);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static int EC_KEY_set_private_key(EC_KEY *key, const BIGNUM *prv);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static const EC_POINT *EC_KEY_get0_public_key(const EC_KEY *key);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static int EC_KEY_set_public_key(EC_KEY *key, const EC_POINT *pub);
+//
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static unsigned EC_KEY_get_enc_flags(const EC_KEY *key);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static void EC_KEY_set_enc_flags(EC_KEY *, unsigned int);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static point_conversion_form_t EC_KEY_get_conv_form(const EC_KEY *);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static void EC_KEY_set_conv_form(EC_KEY *, point_conversion_form_t);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static void *EC_KEY_get_key_method_data(EC_KEY *,  void *(*dup_func)(void *), void (*free_func)(void *), void (*clear_free_func)(void *));
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static void EC_KEY_insert_key_method_data(EC_KEY *, void *data, void *(*dup_func)(void *), void (*free_func)(void *), void (*clear_free_func)(void *));
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static void EC_KEY_set_asn1_flag(EC_KEY *, int);
+//		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static int EC_KEY_precompute_mult(EC_KEY *key, BN_CTX *ctx);
+//		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_KEY_generate_key(IntPtr key);
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_KEY_check_key(IntPtr key);
+		#endregion
+		
+		#region ECDSA
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr ECDSA_SIG_new();
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void ECDSA_SIG_free(IntPtr sig);
+		
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static int i2d_ECDSA_SIG(const ECDSA_SIG *sig, unsigned char **pp);
+//
+//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+//		public extern static ECDSA_SIG *d2i_ECDSA_SIG(ECDSA_SIG **sig, const unsigned char **pp, long len);
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr ECDSA_do_sign(byte[] dgst, int dgst_len, IntPtr eckey);
+		
+//		public extern static ECDSA_SIG *ECDSA_do_sign_ex(const unsigned char *dgst, int dgstlen, const BIGNUM *kinv, const BIGNUM *rp, EC_KEY *eckey);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int ECDSA_do_verify(byte[] dgst, int dgst_len, IntPtr sig, IntPtr eckey);
+		
+//		public extern static const ECDSA_METHOD *ECDSA_OpenSSL(void);
+//		public extern static void ECDSA_set_default_method(const ECDSA_METHOD *meth);
+//		public extern static const ECDSA_METHOD *ECDSA_get_default_method(void);		
+//		public extern static int ECDSA_set_method(EC_KEY *eckey, const ECDSA_METHOD *meth);
+//		public extern static int ECDSA_size(const EC_KEY *eckey);
+//		public extern static int ECDSA_sign_setup(EC_KEY *eckey, BN_CTX *ctx, BIGNUM **kinv, BIGNUM **rp);
+//		public extern static int ECDSA_sign(int type, const unsigned char *dgst, int dgstlen, unsigned char *sig, unsigned int *siglen, EC_KEY *eckey);
+//		public extern static int ECDSA_sign_ex(int type, const unsigned char *dgst, int dgstlen, unsigned char *sig, unsigned int *siglen, const BIGNUM *kinv, const BIGNUM *rp, EC_KEY *eckey);
+//		public extern static int ECDSA_verify(int type, const unsigned char *dgst, int dgstlen, const unsigned char *sig, int siglen, EC_KEY *eckey);
+//		public extern static int ECDSA_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
+//		public extern static int ECDSA_set_ex_data(EC_KEY *d, int idx, void *arg);
+//		public extern static void *ECDSA_get_ex_data(EC_KEY *d, int idx);
+//		public extern static void ERR_load_ECDSA_strings(void);
+		#endregion
+
+		#endregion
 
 		#region BIO
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]

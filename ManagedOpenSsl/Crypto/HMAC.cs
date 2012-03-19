@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2009 Ben Henderson
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -40,13 +40,13 @@ namespace OpenSSL.Crypto
 		[StructLayout(LayoutKind.Sequential)]
 		struct HMAC_CTX
 		{
-			IntPtr md;          //const EVP_MD *md;
-			EVP_MD_CTX md_ctx;
-			EVP_MD_CTX i_ctx;
-			EVP_MD_CTX o_ctx;
-			uint key_length;    //unsigned int key_length;
+			public IntPtr md;          //const EVP_MD *md;
+			public EVP_MD_CTX md_ctx;
+			public EVP_MD_CTX i_ctx;
+			public EVP_MD_CTX o_ctx;
+			public uint key_length;    //unsigned int key_length;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.HMAC_MAX_MD_CBLOCK)]
-			byte[] key;
+			public byte[] key;
 		}
 		#endregion
 

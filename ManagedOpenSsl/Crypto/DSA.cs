@@ -132,7 +132,6 @@ namespace OpenSSL.Crypto
 		public DSA(int bits, byte[] seed, int counter, BigNumber.GeneratorHandler callback, object arg)
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
-			IntPtr h;
 			this.counter = counter;
 			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(

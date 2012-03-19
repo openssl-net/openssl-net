@@ -71,6 +71,7 @@
     <Compile Include="X509CertificateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceForgeBugs.cs" />
+    <Compile Include="ECDSATest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ManagedOpenSsl\ManagedOpenSsl-2010.csproj">
