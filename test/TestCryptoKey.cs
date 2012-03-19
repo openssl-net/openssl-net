@@ -30,10 +30,10 @@ using NUnit.Framework;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 
-namespace UnitTests.OpenSSL
+namespace UnitTests
 {
 	[TestFixture]
-	public class CryptoKeyTest : BaseTest
+	public class TestCryptoKey : TestBase
 	{
 		[Test]
 		public void CanCreateAndDispose()

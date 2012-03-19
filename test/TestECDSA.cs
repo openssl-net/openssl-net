@@ -32,10 +32,10 @@ using OpenSSL.Crypto;
 using System.Text;
 using OpenSSL.Crypto.EC;
 
-namespace UnitTests.OpenSSL
+namespace UnitTests
 {
 	[TestFixture]
-	public class ECDSATest : BaseTest
+	public class TestECDSA : TestBase
 	{
 		private void x9_62_test_internal(Asn1Object obj, string r_in, string s_in) {
 			byte[] message = Encoding.ASCII.GetBytes("abc");

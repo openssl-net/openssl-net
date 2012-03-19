@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 namespace UnitTests
 {
 	[TestFixture]
-	public class ECDHTest
+	public class TestECDH : TestBase
 	{
 		private byte[] KDF1_SHA1(byte[] msg) {
 			using (MessageDigestContext mdc = new MessageDigestContext(MessageDigest.SHA1)) {

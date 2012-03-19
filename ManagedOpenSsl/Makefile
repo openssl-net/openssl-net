@@ -37,21 +37,29 @@ build: $(OUT)
 SRCS = \
 	Properties/AssemblyInfo.cs \
 	\
+	Core/Asn1Object.cs \
 	Core/Asn1DateTime.cs \
 	Core/Asn1Integer.cs \
 	Core/Asn1String.cs \
 	Core/Base.cs \
-	Core/BigNum.cs \
+	Core/BigNumber.cs \
 	Core/BIO.cs \
 	Core/Crypto.cs \
 	Core/MemoryTracker.cs \
 	Core/Native.cs \
+	Core/Objects.cs \
 	Core/OpenSslException.cs \
 	Core/Password.cs \
 	Core/Random.cs \
 	Core/Stack.cs \
 	Core/Version.cs \
 	\
+	Crypto/EC/BuiltinCurve.cs \
+	Crypto/EC/DSASignature.cs \
+	Crypto/EC/Group.cs \
+	Crypto/EC/Key.cs \
+	Crypto/EC/Method.cs \
+	Crypto/EC/Point.cs \
 	Crypto/Cipher.cs \
 	Crypto/CryptoKey.cs \
 	Crypto/DH.cs \

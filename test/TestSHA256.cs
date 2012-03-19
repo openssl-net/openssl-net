@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2006-2007 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -28,13 +28,14 @@ using System.Collections.Generic;
 using System.Text;
 using OpenSSL;
 using OpenSSL.Crypto;
+using NUnit.Framework;
 
-namespace test
+namespace UnitTests
 {
-	class TestSHA256 : ICommand
+	[TestFixture]
+	public class TestSHA256 : TestBase
 	{
-		byte[][] app =
-		{
+		byte[][] app = {
 			new byte[] {
 				0xba,0x78,0x16,0xbf,0x8f,0x01,0xcf,0xea,
 				0x41,0x41,0x40,0xde,0x5d,0xae,0x22,0x23,
@@ -55,8 +56,7 @@ namespace test
 			},
 		};
 
-		byte[][] addenum =
-		{
+		byte[][] addenum = {
 			new byte[] {
 				0x23,0x09,0x7d,0x22,0x34,0x05,0xd8,0x22,
 				0x86,0x42,0xa4,0x77,0xbd,0xa2,0x55,0xb3,
@@ -76,10 +76,9 @@ namespace test
 				0x4e,0xe7,0xad,0x67 
 			},
 		};
-
-		#region ICommand Members
-
-		public void Execute(string[] args)
+		
+		[Test]
+		public void TestCase()
 		{
 			using (MessageDigestContext ctx = new MessageDigestContext(MessageDigest.SHA256))
 				this.GenericTest("SHA-256", ctx, this.app);
@@ -88,8 +87,6 @@ namespace test
 				this.GenericTest("SHA-224", ctx, this.addenum);
 		}
 
-		#endregion
-
 		private void GenericTest(string name, MessageDigestContext ctx, byte[][] results)
 		{
 			Console.WriteLine("Testing {0}", name);
@@ -97,8 +94,7 @@ namespace test
 			byte[] digest = ctx.Digest(Encoding.ASCII.GetBytes("abc"));
 			string str1 = BitConverter.ToString(digest);
 			string str2 = BitConverter.ToString(results[0]);
-			if (str1 != str2)
-				throw new Exception("TEST 1 of 3 failed");
+			Assert.AreEqual(str2, str1);
 
 			Console.Write(".");
 
@@ -108,8 +104,7 @@ namespace test
 			digest = ctx.Digest(msg);
 			str1 = BitConverter.ToString(digest);
 			str2 = BitConverter.ToString(results[1]);
-			if (str1 != str2)
-				throw new Exception("TEST 2 of 3 failed");
+			Assert.AreEqual(str2, str1);
 
 			Console.Write(".");
 
@@ -131,8 +126,7 @@ namespace test
 
 			str1 = BitConverter.ToString(digest);
 			str2 = BitConverter.ToString(results[2]);
-			if (str1 != str2)
-				throw new Exception("TEST 3 of 3 failed");
+			Assert.AreEqual(str2, str1);
 
 			Console.Write(".");
 

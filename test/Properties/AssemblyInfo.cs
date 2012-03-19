@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OpenSSL.NET test")]
+[assembly: AssemblyTitle("OpenSSL.NET UnitTests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OpenSSL.NET")]
-[assembly: AssemblyProduct("OpenSSL.NET test")]
+[assembly: AssemblyCompany("OpenSSL.NET ")]
+[assembly: AssemblyProduct("OpenSSL.NET UnitTests")]
 [assembly: AssemblyCopyright("Copyright (c) OpenSSL.NET 2006-2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c9839f55-0214-44af-9477-f8f188298513")]
+[assembly: Guid("302d019b-ace8-44b1-ab9a-323848a41871")]
 
 // Version information for an assembly consists of the following four values:
 //

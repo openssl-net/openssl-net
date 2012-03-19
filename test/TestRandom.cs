@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2007 Frank Laub
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,16 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL;
+using NUnit.Framework;
 
-namespace test
+namespace UnitTests
 {
-	class TestRandom : ICommand
+	[TestFixture]
+	public class TestRandom : TestBase
 	{
-		#region ICommand Members
-
-		public void Execute(string[] args)
+		[Test]
+		public void TestCase()
 		{
 			Console.WriteLine("Testing random");
 			int err = 0;
@@ -48,24 +45,20 @@ namespace test
 			int sign = 0;
 			int nsign = 0;
 
-			for (int i = 0; i < buf.Length; i++)
-			{
+			for (int i = 0; i < buf.Length; i++) {
 				int j = buf[i];
 
 				n2[j & 0x0f]++;
 				n2[(j >> 4) & 0x0f]++;
 
-				for (int k = 0; k < 8; k++)
-				{
+				for (int k = 0; k < 8; k++) {
 					int s = (j & 0x01);
 					if (s == sign)
 						nsign++;
-					else
-					{
+					else {
 						if (nsign > 34)
 							nsign = 34;
-						if (nsign != 0)
-						{
+						if (nsign != 0) {
 							runs[sign, nsign - 1]++;
 							if (nsign > 6)
 								runs[sign, 5]++;
@@ -84,12 +77,7 @@ namespace test
 				runs[sign, nsign - 1]++;
 
 			#region Test 1
-			if (!((9654 < n1) && (n1 < 10346)))
-			{
-				Console.WriteLine("test 1 failed, X={0}", n1);
-				err++;
-			}
-			Console.WriteLine("test 1 done");
+			Assert.IsTrue((9654 < n1) && (n1 < 10346));
 			#endregion
 
 			#region Test 2
@@ -97,69 +85,27 @@ namespace test
 			for (int i = 0; i < 16; i++)
 				d += n2[i] * n2[i];
 			d = (d * 8) / 25 - 500000;
-			if (!((103 < d) && (d < 5740)))
-			{
-				Console.WriteLine("test 2 failed, X={0}.{1}", d / 100, d % 100);
-				err++;
-			}
-			Console.WriteLine("test 2 done");
+			Assert.IsTrue((103 < d) && (d < 5740));
 			#endregion
 
 			#region Test 3
-			for (int i = 0; i < 2; i++)
-			{
-				if (!((2267 < runs[i, 0]) && (runs[i, 0] < 2733)))
-				{
-					Console.WriteLine("test 3 failed, bit={0} run={1} num={2}", i, 1, runs[i, 0]);
-					err++;
-				}
-				if (!((1079 < runs[i, 1]) && (runs[i, 1] < 1421)))
-				{
-					Console.WriteLine("test 3 failed, bit={0} run={1} num={2}", i, 2, runs[i, 1]);
-					err++;
-				}
-				if (!((502 < runs[i, 2]) && (runs[i, 2] < 748)))
-				{
-					Console.WriteLine("test 3 failed, bit={0} run={1} num={2}", i, 3, runs[i, 2]);
-					err++;
-				}
-				if (!((223 < runs[i, 3]) && (runs[i, 3] < 402)))
-				{
-					Console.WriteLine("test 3 failed, bit={0} run={1} num={2}", i, 4, runs[i, 3]);
-					err++;
-				}
-				if (!((90 < runs[i, 4]) && (runs[i, 4] < 223)))
-				{
-					Console.WriteLine("test 3 failed, bit={0} run={1} num={0}", i, 5, runs[i, 4]);
-					err++;
-				}
-				if (!((90 < runs[i, 5]) && (runs[i, 5] < 223)))
-				{
-					Console.WriteLine("test 3 failed, bit={0} run={1} num={2}", i, 6, runs[i, 5]);
-					err++;
-				}
+			for (int i = 0; i < 2; i++) {
+				Assert.IsTrue((2267 < runs[i, 0]) && (runs[i, 0] < 2733));
+				Assert.IsTrue((1079 < runs[i, 1]) && (runs[i, 1] < 1421));
+				Assert.IsTrue((502 < runs[i, 2]) && (runs[i, 2] < 748));
+				Assert.IsTrue((223 < runs[i, 3]) && (runs[i, 3] < 402));
+				Assert.IsTrue((90 < runs[i, 4]) && (runs[i, 4] < 223));
+				Assert.IsTrue((90 < runs[i, 5]) && (runs[i, 5] < 223));
 			}
-			Console.WriteLine("test 3 done");
-
 			#endregion
 
 			#region Test 4
-			if (runs[0, 33] != 0)
-			{
-				Console.WriteLine("test 4 failed, bit={0} run={1} num={2}", 0, 34, runs[0, 33]);
-				err++;
-			}
-			if (runs[1, 33] != 0)
-			{
-				Console.WriteLine("test 4 failed, bit={0} run={1} num={2}", 1, 34, runs[1, 33]);
-				err++;
-			}
-			Console.WriteLine("test 4 done");
+			Assert.AreEqual(0, runs[0, 33]);
+			Assert.AreEqual(0, runs[1, 33]);
 			#endregion
 
 			Console.WriteLine("done");
 		}
-
-		#endregion
 	}
 }
+

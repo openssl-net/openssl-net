@@ -36,7 +36,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -47,7 +47,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -66,16 +66,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseTest.cs" />
-    <Compile Include="CryptoKeyTest.cs" />
-    <Compile Include="X509CertificateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceForgeBugs.cs" />
-    <Compile Include="ECDSATest.cs" />
-    <Compile Include="ECDHTest.cs" />
+    <Compile Include="TestAES.cs" />
+    <Compile Include="TestDH.cs" />
+    <Compile Include="TestDSA.cs" />
+    <Compile Include="TestRSA.cs" />
+    <Compile Include="TestECDH.cs" />
+    <Compile Include="TestECDSA.cs" />
+    <Compile Include="TestCryptoKey.cs" />
+    <Compile Include="TestX509Certificate.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="TestHMAC.cs" />
+    <Compile Include="TestRandom.cs" />
+    <Compile Include="TestSHA.cs" />
+    <Compile Include="TestSHA1.cs" />
+    <Compile Include="TestSHA256.cs" />
+    <Compile Include="TestSHA512.cs" />
+    <Compile Include="TestX509.cs" />
+    <Compile Include="TestServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ManagedOpenSsl\ManagedOpenSsl-2010.csproj">
+    <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl-2010.csproj">
       <Project>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</Project>
       <Name>ManagedOpenSsl-2010</Name>
     </ProjectReference>
@@ -107,5 +119,25 @@
   -->
   <ItemGroup>
     <None Include="Makefile" />
+    <None Include="openssl.cnf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="certs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="certs\ca.crt" />
+    <EmbeddedResource Include="certs\ca.der" />
+    <EmbeddedResource Include="certs\ca.key" />
+    <EmbeddedResource Include="certs\ca_chain.p7c" />
+    <EmbeddedResource Include="certs\ca_chain.p7c.pem" />
+    <EmbeddedResource Include="certs\ca_chain.pem" />
+    <EmbeddedResource Include="certs\client.crt" />
+    <EmbeddedResource Include="certs\client.key" />
+    <EmbeddedResource Include="certs\client.pfx" />
+    <EmbeddedResource Include="certs\server.crt" />
+    <EmbeddedResource Include="certs\server.key" />
+    <EmbeddedResource Include="certs\server.pfx" />
   </ItemGroup>
 </Project>

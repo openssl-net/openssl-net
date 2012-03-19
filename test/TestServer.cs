@@ -1,4 +1,5 @@
 ﻿// Copyright (c) 2009 Ben Henderson
+// Copyright (c) 2012 Frank Laub
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,10 +34,12 @@ using OpenSSL;
 using OpenSSL.Core;
 using OpenSSL.X509;
 using OpenSSL.SSL;
+using NUnit.Framework;
 
-namespace test
+namespace UnitTests
 {
-	class TestServer : ICommand
+	[TestFixture]
+	public class TestServer : TestBase
 	{
 		public X509Chain serverCAChain = null;
 		public X509Certificate serverCertificate = null;
@@ -821,10 +824,10 @@ namespace test
 			asyncTests.AdvancedAsyncClientTest();
 
 		}
-
-		#region ICommand Members
-
-		public void Execute(string[] args) {
+		
+		[Test]
+		[Ignore]
+		public void TestCase() {
 			string serverCertPath = @"../../test/certs/server.pfx";
 			string serverPrivateKeyPassword = "p@ssw0rd";
 			string caFilePath = "../../test/certs/ca_chain.pem";
@@ -868,7 +871,5 @@ namespace test
 			}
 			ThreadInitialization.UninitializeThreads();
 		}
-
-		#endregion
 	}
 }

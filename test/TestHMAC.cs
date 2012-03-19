@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2009 Ben Henderson
+// Copyright (c) 2006-2007 Frank Laub
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,16 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL;
-using OpenSSL.Core;
+using NUnit.Framework;
 using OpenSSL.Crypto;
+using System.Text;
+using OpenSSL.Core;
 
-namespace test
+namespace UnitTests
 {
-	class TestHMAC : ICommand
+	[TestFixture]
+	public class TestHMAC : TestBase
 	{
 		public readonly byte[] key = Encoding.ASCII.GetBytes("hmac_key");
 		public readonly byte[] small_data = Encoding.ASCII.GetBytes("This is a small data sample");
@@ -131,9 +130,8 @@ namespace test
 			}
 		}
 
-		#region ICommand Members
-
-		public void Execute(string[] args)
+		[Test]
+		public void TestCase()
 		{
 			VerifyHMAC(MessageDigest.SHA512, sha512_results);
 			VerifyHMAC(MessageDigest.SHA384, sha384_results);
@@ -144,15 +142,13 @@ namespace test
 			VerifyHMAC(MessageDigest.DSS, dss_results);
 			// Shouldn't work in FIPS mode (actually, will crash the program, as the crypto
 			// library calls OpenSSLDie() which calls abort()
-			if (!FIPS.Enabled)
-			{
+			if (!FIPS.Enabled) {
 				VerifyHMAC(MessageDigest.SHA, sha_results);
 				VerifyHMAC(MessageDigest.RipeMD160, ripemd_results);
 				VerifyHMAC(MessageDigest.MD5, md5_results);
 				VerifyHMAC(MessageDigest.MD4, md4_results);
 			}
 		}
-
-		#endregion
 	}
 }
+

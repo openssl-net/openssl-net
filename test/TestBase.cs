@@ -29,7 +29,7 @@ using OpenSSL.Core;
 
 namespace UnitTests
 {
-	public class BaseTest
+	public class TestBase
 	{
 		[SetUp]
 		public virtual void Setup()

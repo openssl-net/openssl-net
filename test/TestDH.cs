@@ -1,6 +1,6 @@
-﻿// Copyright (c) 2006-2007 Frank Laub
+// Copyright (c) 2006-2007 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -22,25 +22,21 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL;
-using System.Runtime.InteropServices;
-using System.IO;
+using NUnit.Framework;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System.IO;
 
-namespace test
+namespace UnitTests
 {
-	class TestDH : ICommand
+	[TestFixture]
+	public class TestDH : TestBase
 	{
 		const string rnd_seed = "string to make the random number generator think it has entropy";
 
-		#region ICommand Members
-
-		public void Execute(string[] args)
+		[Test]
+		public void TestCase()
 		{
 			OpenSSL.Core.Random.Seed(rnd_seed);
 
@@ -89,14 +85,11 @@ namespace test
 			b.Dispose();
 		}
 
-		#endregion
-
 		private int OnStatus(int p, int n, object arg)
 		{
 			TextWriter cout = (TextWriter)arg;
 
-			switch (p)
-			{
+			switch (p) {
 				case 0: cout.Write('.'); break;
 				case 1: cout.Write('+'); break;
 				case 2: cout.Write('*'); break;
@@ -107,3 +100,4 @@ namespace test
 		}
 	}
 }
+

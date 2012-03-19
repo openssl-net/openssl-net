@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2006-2008 Frank Laub
 // All rights reserved.
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -31,20 +31,15 @@ using OpenSSL;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 using OpenSSL.X509;
+using NUnit.Framework;
 
-namespace test
+namespace UnitTests
 {
-	class TestX509 : ICommand
+	[TestFixture]
+	public class TestX509 : TestBase
 	{
-		#region ICommand Members
-
-		public void Execute(string[] args) {
-			TestDefaultDSA();
-			TestRsaSha1();
-			TestWithoutCfg();
-		}
-
-		private void TestDefaultDSA() {
+		[Test]
+		public void TestDefaultDSA() {
 			using (Configuration cfg = new Configuration("openssl.cnf")) {
 				// Test default DSA method
 				using (X509CertificateAuthority root = X509CertificateAuthority.SelfSigned(
@@ -57,8 +52,9 @@ namespace test
 				}
 			}
 		}
-
-		private void TestRsaSha1() {
+		
+		[Test]
+		public void TestRsaSha1() {
 			using (Configuration cfg = new Configuration("openssl.cnf")) {
 				// Test RSA/SHA1 with other SelfSigned method
 				BigNumber bn = 0x10001;
@@ -81,8 +77,9 @@ namespace test
 				}
 			}
 		}
-
-		private void TestWithoutCfg() {
+		
+		[Test]
+		public void TestWithoutCfg() {
 			BigNumber bn = 0x10001;
 			CryptoKey key;
 			using (RSA rsa = new RSA()) {
@@ -116,8 +113,7 @@ namespace test
 			}
 		}
 
-		#endregion
-		public static int OnGenerator(int p, int n, object arg) {
+		private static int OnGenerator(int p, int n, object arg) {
 			TextWriter cout = Console.Error;
 
 			switch (p) {

@@ -32,10 +32,10 @@ using OpenSSL.Core;
 using OpenSSL.Crypto;
 using OpenSSL.X509;
 
-namespace UnitTests.OpenSSL
+namespace UnitTests
 {
 	[TestFixture]
-	public class SourceForgeBugs : BaseTest
+	public class SourceForgeBugs : TestBase
 	{
 		/// <summary>
 		/// BIO.ReadBytes() throws error when count = 0
