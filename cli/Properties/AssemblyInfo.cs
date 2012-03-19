@@ -30,12 +30,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("sandbox")]
+[assembly: AssemblyTitle("cli")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("CoCo Communications")]
-[assembly: AssemblyProduct("cli")]
-[assembly: AssemblyCopyright("Copyright © CoCo Communications 2006")]
+[assembly: AssemblyCompany("OpenSSL.NET")]
+[assembly: AssemblyProduct("OpenSSL.NET cli")]
+[assembly: AssemblyCopyright("Copyright (c) OpenSSL.NET 2006-2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -54,5 +54,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.4.3.0")]
-[assembly: AssemblyFileVersion("0.4.3.0")]
+[assembly: AssemblyVersion("0.6.0.0")]
+[assembly: AssemblyFileVersion("0.6.0.0")]

@@ -33,9 +33,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("OpenSSL.NET")]
 [assembly: AssemblyDescription("A managed wrapper for OpenSSL")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Blue Tree Labs")]
+[assembly: AssemblyCompany("OpenSSL.NET")]
 [assembly: AssemblyProduct("OpenSSL.NET")]
-[assembly: AssemblyCopyright("Copyright (c) 2006-2009")]
+[assembly: AssemblyCopyright("Copyright (c) OpenSSL.NET 2006-2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -56,5 +56,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("0.4.3.0")]
-[assembly: AssemblyFileVersion("0.4.3.0")]
+[assembly: AssemblyVersion("0.6.0.0")]
+[assembly: AssemblyFileVersion("0.6.0.0")]
