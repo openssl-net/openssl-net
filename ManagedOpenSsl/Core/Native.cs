@@ -1674,14 +1674,93 @@ namespace OpenSSL.Core
 		#endregion EVP
 		
 		#region EC
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_get_builtin_curves(IntPtr r, int nitems);
 		
 		#region EC_METHOD
+//		const EC_METHOD *EC_GFp_simple_method(void);
+//		const EC_METHOD *EC_GFp_mont_method(void);
+//		const EC_METHOD *EC_GFp_nist_method(void);
+//		const EC_METHOD *EC_GF2m_simple_method(void);
 		#endregion
 		
-		#region EC_POINT
+		#region EC_GROUP
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr EC_GROUP_new(IntPtr meth);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void EC_GROUP_free(IntPtr group);
+		
+//		public extern static void EC_GROUP_clear_free(EC_GROUP *group);
+//		public extern static int EC_GROUP_copy(EC_GROUP *dst, const EC_GROUP *src);
+//		public extern static EC_GROUP *EC_GROUP_dup(const EC_GROUP *src);
+//		public extern static const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *group);
+//		public extern static int EC_METHOD_get_field_type(const EC_METHOD *meth);
+//		public extern static int EC_GROUP_set_generator(EC_GROUP *group, const EC_POINT *generator, const BIGNUM *order, const BIGNUM *cofactor);
+//		public extern static const EC_POINT *EC_GROUP_get0_generator(const EC_GROUP *group);
+//		public extern static int EC_GROUP_get_order(const EC_GROUP *group, BIGNUM *order, BN_CTX *ctx);
+//		public extern static int EC_GROUP_get_cofactor(const EC_GROUP *group, BIGNUM *cofactor, BN_CTX *ctx);
+//		public extern static void EC_GROUP_set_curve_name(EC_GROUP *group, int nid);
+//		public extern static int EC_GROUP_get_curve_name(const EC_GROUP *group);
+//		public extern static void EC_GROUP_set_asn1_flag(EC_GROUP *group, int flag);
+//		public extern static int EC_GROUP_get_asn1_flag(const EC_GROUP *group);
+//		public extern static void EC_GROUP_set_point_conversion_form(EC_GROUP *, point_conversion_form_t);
+//		public extern static point_conversion_form_t EC_GROUP_get_point_conversion_form(const EC_GROUP *);
+//		public extern static unsigned char *EC_GROUP_get0_seed(const EC_GROUP *);
+//		public extern static size_t EC_GROUP_get_seed_len(const EC_GROUP *);
+//		public extern static size_t EC_GROUP_set_seed(EC_GROUP *, const unsigned char *, size_t len);
+//		public extern static int EC_GROUP_set_curve_GFp(EC_GROUP *group, const BIGNUM *p, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
+//		public extern static int EC_GROUP_get_curve_GFp(const EC_GROUP *group, BIGNUM *p, BIGNUM *a, BIGNUM *b, BN_CTX *ctx);
+//		public extern static int EC_GROUP_set_curve_GF2m(EC_GROUP *group, const BIGNUM *p, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
+//		public extern static int EC_GROUP_get_curve_GF2m(const EC_GROUP *group, BIGNUM *p, BIGNUM *a, BIGNUM *b, BN_CTX *ctx);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_GROUP_get_degree(IntPtr group);
+
+//		public extern static int EC_GROUP_check(const EC_GROUP *group, BN_CTX *ctx);
+//		public extern static int EC_GROUP_check_discriminant(const EC_GROUP *group, BN_CTX *ctx);
+//		public extern static int EC_GROUP_cmp(const EC_GROUP *a, const EC_GROUP *b, BN_CTX *ctx);
+//		public extern static EC_GROUP *EC_GROUP_new_curve_GFp(const BIGNUM *p, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
+//		public extern static EC_GROUP *EC_GROUP_new_curve_GF2m(const BIGNUM *p, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr EC_GROUP_new_by_curve_name(int nid);
 		#endregion
 
-		#region EC_GROUP
+		#region EC_POINT
+//		EC_POINT *EC_POINT_new(const EC_GROUP *group);
+//		void EC_POINT_free(EC_POINT *point);
+//		void EC_POINT_clear_free(EC_POINT *point);
+//		int EC_POINT_copy(EC_POINT *dst, const EC_POINT *src);
+//		EC_POINT *EC_POINT_dup(const EC_POINT *src, const EC_GROUP *group);
+//		const EC_METHOD *EC_POINT_method_of(const EC_POINT *point);
+//		int EC_POINT_set_to_infinity(const EC_GROUP *group, EC_POINT *point);
+//		int EC_POINT_set_Jprojective_coordinates_GFp(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, const BIGNUM *z, BN_CTX *ctx);
+//		int EC_POINT_get_Jprojective_coordinates_GFp(const EC_GROUP *group, const EC_POINT *p, BIGNUM *x, BIGNUM *y, BIGNUM *z, BN_CTX *ctx);
+//		int EC_POINT_set_affine_coordinates_GFp(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, BN_CTX *ctx);
+//		int EC_POINT_get_affine_coordinates_GFp(const EC_GROUP *group, const EC_POINT *p, BIGNUM *x, BIGNUM *y, BN_CTX *ctx);
+//		int EC_POINT_set_compressed_coordinates_GFp(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, int y_bit, BN_CTX *ctx);
+//		int EC_POINT_set_affine_coordinates_GF2m(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, BN_CTX *ctx);
+//		int EC_POINT_get_affine_coordinates_GF2m(const EC_GROUP *group, const EC_POINT *p, BIGNUM *x, BIGNUM *y, BN_CTX *ctx);
+//		int EC_POINT_set_compressed_coordinates_GF2m(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, int y_bit, BN_CTX *ctx);
+//		size_t EC_POINT_point2oct(const EC_GROUP *group, const EC_POINT *p, point_conversion_form_t form, unsigned char *buf, size_t len, BN_CTX *ctx);
+//		int EC_POINT_oct2point(const EC_GROUP *group, EC_POINT *p, const unsigned char *buf, size_t len, BN_CTX *ctx);
+//		BIGNUM *EC_POINT_point2bn(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BIGNUM *, BN_CTX *);
+//		EC_POINT *EC_POINT_bn2point(const EC_GROUP *, const BIGNUM *, EC_POINT *, BN_CTX *);
+//		char *EC_POINT_point2hex(const EC_GROUP *, const EC_POINT *, point_conversion_form_t form, BN_CTX *);
+//		EC_POINT *EC_POINT_hex2point(const EC_GROUP *, const char *, EC_POINT *, BN_CTX *);
+//		int EC_POINT_add(const EC_GROUP *group, EC_POINT *r, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx);
+//		int EC_POINT_dbl(const EC_GROUP *group, EC_POINT *r, const EC_POINT *a, BN_CTX *ctx);
+//		int EC_POINT_invert(const EC_GROUP *group, EC_POINT *a, BN_CTX *ctx);
+//		int EC_POINT_is_at_infinity(const EC_GROUP *group, const EC_POINT *p);
+//		int EC_POINT_is_on_curve(const EC_GROUP *group, const EC_POINT *point, BN_CTX *ctx);
+//		int EC_POINT_cmp(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx);
+//		int EC_POINT_make_affine(const EC_GROUP *, EC_POINT *, BN_CTX *);
+//		int EC_POINTs_make_affine(const EC_GROUP *, size_t num, EC_POINT *[], BN_CTX *);
+//		int EC_POINTs_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM *n, size_t num, const EC_POINT *p[], const BIGNUM *m[], BN_CTX *ctx);
+//		int EC_POINT_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM *n, const EC_POINT *q, const BIGNUM *m, BN_CTX *ctx);
+//		int EC_GROUP_precompute_mult(EC_GROUP *group, BN_CTX *ctx);
+//		int EC_GROUP_have_precompute_mult(const EC_GROUP *group);
 		#endregion
 		
 		#region EC_KEY
@@ -1702,13 +1781,13 @@ namespace OpenSSL.Core
 //		
 //		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 //		public extern static int EC_KEY_up_ref(EC_KEY *key);
-//		
-//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-//		public extern static const EC_GROUP *EC_KEY_get0_group(const EC_KEY *key);
-//		
-//		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-//		public extern static int EC_KEY_set_group(EC_KEY *key, const EC_GROUP *group);
-//		
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr EC_KEY_get0_group(IntPtr key);
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_KEY_set_group(IntPtr key, IntPtr group);
+		
 //		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 //		public extern static const BIGNUM *EC_KEY_get0_private_key(const EC_KEY *key);
 //		
@@ -1777,11 +1856,20 @@ namespace OpenSSL.Core
 //		public extern static void ECDSA_set_default_method(const ECDSA_METHOD *meth);
 //		public extern static const ECDSA_METHOD *ECDSA_get_default_method(void);		
 //		public extern static int ECDSA_set_method(EC_KEY *eckey, const ECDSA_METHOD *meth);
-//		public extern static int ECDSA_size(const EC_KEY *eckey);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int ECDSA_size(IntPtr eckey);
+
 //		public extern static int ECDSA_sign_setup(EC_KEY *eckey, BN_CTX *ctx, BIGNUM **kinv, BIGNUM **rp);
-//		public extern static int ECDSA_sign(int type, const unsigned char *dgst, int dgstlen, unsigned char *sig, unsigned int *siglen, EC_KEY *eckey);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int ECDSA_sign(int type, byte[] dgst, int dgstlen, byte[] sig, ref uint siglen, IntPtr eckey);
+		
 //		public extern static int ECDSA_sign_ex(int type, const unsigned char *dgst, int dgstlen, unsigned char *sig, unsigned int *siglen, const BIGNUM *kinv, const BIGNUM *rp, EC_KEY *eckey);
-//		public extern static int ECDSA_verify(int type, const unsigned char *dgst, int dgstlen, const unsigned char *sig, int siglen, EC_KEY *eckey);
+		
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int ECDSA_verify(int type, byte[] dgst, int dgstlen, byte[] sig, int siglen, IntPtr eckey);
+
 //		public extern static int ECDSA_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
 //		public extern static int ECDSA_set_ex_data(EC_KEY *d, int idx, void *arg);
 //		public extern static void *ECDSA_get_ex_data(EC_KEY *d, int idx);

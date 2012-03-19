@@ -40,6 +40,8 @@ namespace OpenSSL.Core
 
 			public static Asn1Object X9_62_c2tnb191v1 = new Asn1Object(688);
 			public static Asn1Object X9_62_c2tnb239v1 = new Asn1Object(694);
+
+			public static Asn1Object ipsec4 = new Asn1Object(750);
 		}
 		
 		public class SN

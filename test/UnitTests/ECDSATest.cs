@@ -68,55 +68,90 @@ namespace UnitTests.OpenSSL
 
 			Console.WriteLine("some tests from X9.62");
 			
-			using(Random.Method meth = new Random.Method()) {
-				//meth.PseudoRand = meth.Bytes;
-				//meth.Bytes = this.fbytes;
-				//meth.Override();
-				
-				x9_62_test_internal(Objects.NID.X9_62_prime192v1, 
-				                    "3342403536405981729393488334694600415596881826869351677613", 
-				                    "5735822328888155254683894997897571951568553642892029982342");
-				x9_62_test_internal(Objects.NID.X9_62_prime239v1, 
-				                    "308636143175167811492622547300668018854959378758531778147462058306432176", 
-				                    "323813553209797357708078776831250505931891051755007842781978505179448783");
-				x9_62_test_internal(Objects.NID.X9_62_c2tnb191v1, 
-				                    "87194383164871543355722284926904419997237591535066528048", 
-				                    "308992691965804947361541664549085895292153777025772063598");
-				x9_62_test_internal(Objects.NID.X9_62_c2tnb239v1, 
-				                    "21596333210419611985018340039034612628818151486841789642455876922391552", 
-				                    "197030374000731686738334997654997227052849804072198819102649413465737174");
-			}
+			x9_62_test_internal(Objects.NID.X9_62_prime192v1, 
+			                    "3342403536405981729393488334694600415596881826869351677613", 
+			                    "5735822328888155254683894997897571951568553642892029982342");
+			x9_62_test_internal(Objects.NID.X9_62_prime239v1, 
+			                    "308636143175167811492622547300668018854959378758531778147462058306432176", 
+			                    "323813553209797357708078776831250505931891051755007842781978505179448783");
+			x9_62_test_internal(Objects.NID.X9_62_c2tnb191v1, 
+			                    "87194383164871543355722284926904419997237591535066528048", 
+			                    "308992691965804947361541664549085895292153777025772063598");
+			x9_62_test_internal(Objects.NID.X9_62_c2tnb239v1, 
+			                    "21596333210419611985018340039034612628818151486841789642455876922391552", 
+			                    "197030374000731686738334997654997227052849804072198819102649413465737174");
 		}
 
 		[Test]
 		public void test_builtin() {
-		}
-		
-		private int fbytes(byte[] buf, int num) {
-			if (fbytes_counter >= 8)
-				return 0;
+			/* fill digest values with some random data */
+			byte[] digest = Random.PseudoBytes(20);
+			byte[] wrong_digest = Random.PseudoBytes(20);
+
+			/* create and verify a ecdsa signature with every availble curve
+			 * (with ) */
+			Console.WriteLine("testing ECDSA_sign() and ECDSA_verify() with some internal curves:");
 			
-			using(BigNumber tmp = BigNumber.FromDecimalString(numbers[fbytes_counter])) {
-				fbytes_counter++;
-				if (num != tmp.Bytes)
-					return 0;
-				tmp.ToBytes(buf);
+			/* get a list of all internal curves */
+			ECBuiltinCurve[] curves = ECBuiltinCurve.Get();
+			
+			/* now create and verify a signature for every curve */
+			foreach (ECBuiltinCurve curve in curves) {
+				if (curve.Object.NID == Objects.NID.ipsec4.NID)
+					continue;
+				
+				/* create new ecdsa key (== EC_KEY) */
+				using(ECKey eckey = new ECKey()) {
+
+					using(ECGroup group = ECGroup.FromCurveName(curve.Object)) {
+						eckey.Group = group;
+					}
+					
+					if (eckey.Group.Degree < 160) {
+						/* drop the curve */ 
+						continue;
+					}
+					
+					Console.Write("{0}: ", curve.Object.ShortName);
+					
+					/* create key */
+					eckey.GenerateKey();
+					
+					/* create second key */
+					using(ECKey wrong_eckey = new ECKey()) {
+						using(ECGroup group = ECGroup.FromCurveName(curve.Object)) {
+							wrong_eckey.Group = group;
+						}
+						
+						wrong_eckey.GenerateKey();
+						Console.Write(".");
+						
+						/* check key */
+						Assert.IsTrue(eckey.CheckKey());
+						Console.Write(".");
+						
+						/* create signature */
+						byte[] signature = new byte[eckey.Size];
+						eckey.Sign(0, digest, signature);
+						Console.Write(".");
+						
+						/* verify signature */
+						Assert.IsTrue(eckey.Verify(0, digest, signature));
+						Console.Write(".");
+						
+						/* verify signature with the wrong key */
+						Assert.IsFalse(wrong_eckey.Verify(0, digest, signature));
+						Console.Write(".");
+						
+						/* wrong digest */
+						Assert.IsFalse(eckey.Verify(0, wrong_digest, signature));
+						Console.Write(".");
+						
+						Console.WriteLine(" ok");						
+					}
+				}
 			}
-			
-			return 1;
 		}
-		
-		private int fbytes_counter = 0;
-		private string[] numbers = {
-			"651056770906015076056810763456358567190100156695615665659",
-			"6140507067065001063065065565667405560006161556565665656654",
-			"876300101507107567501066130761671078357010671067781776716671676178726717",
-			"700000017569056646655505781757157107570501575775705779575555657156756655",
-			"1275552191113212300012030439187146164646146646466749494799",
-			"1542725565216523985789236956265265265235675811949404040041",
-			"145642755521911534651321230007534120304391871461646461466464667494947990",
-			"171278725565216523967285789236956265265265235675811949404040041670216363"
-		};
 	}
 }
 

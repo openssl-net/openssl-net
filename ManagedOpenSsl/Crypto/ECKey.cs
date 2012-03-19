@@ -57,6 +57,14 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region Properties
+		public int Size {
+			get { return Native.ECDSA_size(this.ptr); }
+		}
+		
+		public ECGroup Group {
+			get { return new ECGroup(Native.ExpectNonNull(Native.EC_KEY_get0_group(this.ptr)), false); }
+			set { Native.ExpectSuccess(Native.EC_KEY_set_group(this.ptr, value.Handle)); }
+		}
 		#endregion
 
 		#region Methods
@@ -64,15 +72,27 @@ namespace OpenSSL.Core
 			Native.ExpectSuccess(Native.EC_KEY_generate_key(this.ptr));
 		}
 		
+		public bool CheckKey() {
+			return Native.ExpectSuccess(Native.EC_KEY_check_key(this.ptr)) == 1;
+		}
+		
 		public ECDSASignature Sign(byte[] digest) {
 			IntPtr sig = Native.ExpectNonNull(Native.ECDSA_do_sign(digest, digest.Length, this.ptr));
 			return new ECDSASignature(sig, true);
 		}
 		
+		public uint Sign(int type, byte[] digest, byte[] sig) {
+			uint siglen = (uint)sig.Length;
+			Native.ExpectSuccess(Native.ECDSA_sign(type, digest, digest.Length, sig, ref siglen, this.ptr));
+			return siglen;
+		}
+		
 		public bool Verify(byte[] digest, ECDSASignature sig) {
-			return Native.ExpectSuccess(
-				Native.ECDSA_do_verify(digest, digest.Length, sig.Handle, this.ptr)
-			) == 1;
+			return Native.ECDSA_do_verify(digest, digest.Length, sig.Handle, this.ptr) == 1;
+		}
+		
+		public bool Verify(int type, byte[] digest, byte[] sig) {
+			return Native.ECDSA_verify(type, digest, digest.Length, sig, sig.Length, this.ptr) == 1;
 		}
 		#endregion
 
@@ -131,6 +151,90 @@ namespace OpenSSL.Core
 		#region Overrides
 		protected override void OnDispose() {
 			Native.ECDSA_SIG_free(this.ptr);
+		}
+		#endregion
+	}
+	
+	public class ECBuiltinCurve
+	{
+		[StructLayout(LayoutKind.Sequential)]
+		private struct EC_builtin_curve
+		{
+			public int nid;
+			public string comment;
+		}
+		
+		private Asn1Object obj;
+		private string comment;
+		
+		private ECBuiltinCurve(int nid, string comment) {
+			this.obj = new Asn1Object(nid);
+			this.comment = comment;
+		}
+		
+		public Asn1Object Object { get { return this.obj; } }
+		public string Comment { get { return this.comment; } }
+		
+		public static ECBuiltinCurve[] Get() {
+			int count = Native.EC_get_builtin_curves(IntPtr.Zero, 0);
+			ECBuiltinCurve[] curves = new ECBuiltinCurve[count];
+			IntPtr ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(EC_builtin_curve)) * count);
+			try {
+				Native.ExpectSuccess(Native.EC_get_builtin_curves(ptr, count));
+				IntPtr pItem = ptr;
+				for (int i = 0; i < count; i++) {
+					EC_builtin_curve raw = (EC_builtin_curve)Marshal.PtrToStructure(pItem, typeof(EC_builtin_curve));
+					curves[i] = new ECBuiltinCurve(raw.nid, raw.comment);
+					pItem = new IntPtr(pItem.ToInt64() + Marshal.SizeOf(typeof(EC_builtin_curve)));
+				}
+			}
+			finally {
+				Native.OPENSSL_free(ptr);
+			}
+			return curves;
+		}
+	}
+	
+	public class ECMethod : Base
+	{
+		internal ECMethod(IntPtr ptr, bool owner) 
+			: base(ptr, owner) { 
+		}
+
+		#region Overrides
+		protected override void OnDispose() {
+		}
+		#endregion
+	}
+	
+	public class ECGroup : Base
+	{
+		#region Initialization
+		internal ECGroup(IntPtr ptr, bool owner) 
+			: base(ptr, owner) { 
+		}
+
+		public ECGroup(ECMethod method)
+			: base(Native.ExpectNonNull(Native.EC_GROUP_new(method.Handle)), true) {
+		}
+		
+		public static ECGroup FromCurveName(Asn1Object obj) {
+			return new ECGroup(Native.ExpectNonNull(Native.EC_GROUP_new_by_curve_name(obj.NID)), true);
+		}
+		#endregion
+
+		#region Properties
+		public int Degree {
+			get { return Native.EC_GROUP_get_degree(this.ptr); }
+		}
+		#endregion
+
+		#region Methods
+		#endregion
+
+		#region Overrides
+		protected override void OnDispose() {
+			Native.EC_GROUP_free(this.ptr);
 		}
 		#endregion
 	}

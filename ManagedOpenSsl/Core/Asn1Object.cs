@@ -70,6 +70,17 @@ namespace OpenSSL.Core
 		public static Asn1Object FromLongName(string sn) {
 			return new Asn1Object(Native.OBJ_ln2nid(sn));
 		}
+		
+		public override bool Equals(object obj) {
+			Asn1Object rhs = obj as Asn1Object;
+			if (rhs == null)
+				return false;
+			return this.nid == rhs.nid;
+		}
+		
+		public override int GetHashCode() {
+			return this.nid;
+		}
 	}
 }
 
