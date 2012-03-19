@@ -421,5 +421,30 @@ namespace OpenSSL.Core
 		}
 
 		#endregion
+		
+		#region Context
+		public class Context : Base
+		{
+			public Context()
+				: base(Native.ExpectNonNull(Native.BN_CTX_new()), true) {
+			}
+			
+			public BigNumber BigNumber {
+				get { return new BigNumber(Native.ExpectNonNull(Native.BN_CTX_get(this.ptr)), false); }
+			}
+			
+			public void Start() {
+				Native.BN_CTX_start(this.ptr);
+			}
+			
+			public void End() {
+				Native.BN_CTX_end(this.ptr);
+			}
+			
+			protected override void OnDispose() {
+				Native.BN_CTX_free(this.ptr);
+			}
+		}
+		#endregion
 	}
 }

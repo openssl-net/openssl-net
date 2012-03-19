@@ -30,6 +30,7 @@ namespace OpenSSL.Core
 		public class NID
 		{
 			public static Asn1Object undef = new Asn1Object(0);
+			public static Asn1Object X9_62_prime_field = new Asn1Object(406);
 			public static Asn1Object X9_62_prime192v1 = new Asn1Object(409);
 			public static Asn1Object X9_62_prime192v2 = new Asn1Object(410);
 			public static Asn1Object X9_62_prime192v3 = new Asn1Object(411);
@@ -40,6 +41,21 @@ namespace OpenSSL.Core
 
 			public static Asn1Object X9_62_c2tnb191v1 = new Asn1Object(688);
 			public static Asn1Object X9_62_c2tnb239v1 = new Asn1Object(694);
+			
+			public static Asn1Object secp224r1 = new Asn1Object(713);
+			public static Asn1Object secp384r1 = new Asn1Object(715);
+			public static Asn1Object secp521r1 = new Asn1Object(716);
+
+			public static Asn1Object sect163k1 = new Asn1Object(721);
+			public static Asn1Object sect163r2 = new Asn1Object(723);
+			public static Asn1Object sect233k1 = new Asn1Object(726);
+			public static Asn1Object sect233r1 = new Asn1Object(727);
+			public static Asn1Object sect283k1 = new Asn1Object(729);
+			public static Asn1Object sect283r1 = new Asn1Object(730);
+			public static Asn1Object sect409k1 = new Asn1Object(731);
+			public static Asn1Object sect409r1 = new Asn1Object(732);
+			public static Asn1Object sect571k1 = new Asn1Object(733);
+			public static Asn1Object sect571r1 = new Asn1Object(734);
 
 			public static Asn1Object ipsec4 = new Asn1Object(750);
 		}

@@ -27,30 +27,42 @@ using OpenSSL.Core;
 
 namespace OpenSSL.Crypto.EC
 {
-	public class Method : Base
+	public class Point : Base
 	{
+		private Group group;
+		
 		#region Initialization
-		internal Method(IntPtr ptr, bool owner) 
+		internal Point(Group group, IntPtr ptr, bool owner) 
 			: base(ptr, owner) { 
+			this.group = group;
 		}
 		
-		public static Method GFpSimple = new Method(Native.EC_GFp_simple_method(), false);
-		public static Method GFpMont = new Method(Native.EC_GFp_mont_method(), false);
-		public static Method GFpNist = new Method(Native.EC_GFp_nist_method(), false);
-		public static Method GF2mSimple = new Method(Native.EC_GF2m_simple_method(), false);
+		public Point(Group group) 
+			: base(Native.EC_POINT_new(group.Handle), true) {
+			this.group = group;
+		}
 		#endregion
 
 		#region Properties
-		public int FieldType {
-			get { return Native.EC_METHOD_get_field_type(this.ptr); }
-		}
 		#endregion
 		
 		#region Methods
+		public void GetAffineCoordinatesGF2m(BigNumber x, BigNumber y, BigNumber.Context ctx) {
+			Native.ExpectSuccess(
+				Native.EC_POINT_get_affine_coordinates_GF2m(this.group.Handle, this.ptr, x.Handle, y.Handle, ctx.Handle)
+			);
+		}
+		
+		public void GetAffineCoordinatesGFp(BigNumber x, BigNumber y, BigNumber.Context ctx) {
+			Native.ExpectSuccess(
+				Native.EC_POINT_get_affine_coordinates_GFp(this.group.Handle, this.ptr, x.Handle, y.Handle, ctx.Handle)
+			);
+		}
 		#endregion
-
+		
 		#region Overrides
 		protected override void OnDispose() {
+			Native.EC_POINT_free(this.ptr);
 		}
 		#endregion
 	}

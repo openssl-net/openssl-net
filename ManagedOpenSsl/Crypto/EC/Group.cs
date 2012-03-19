@@ -47,6 +47,10 @@ namespace OpenSSL.Crypto.EC
 		public int Degree {
 			get { return Native.EC_GROUP_get_degree(this.ptr); }
 		}
+		
+		public Method Method {
+			get { return new Method(Native.EC_GROUP_method_of(this.ptr), false); }
+		}
 		#endregion
 
 		#region Methods

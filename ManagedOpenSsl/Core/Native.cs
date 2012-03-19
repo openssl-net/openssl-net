@@ -859,7 +859,6 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region RAND
-
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int RAND_set_rand_method(IntPtr meth);
 
@@ -1028,6 +1027,18 @@ namespace OpenSSL.Core
 		#region BIGNUM
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr BN_value_one();
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr BN_CTX_new();
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void BN_CTX_init(IntPtr c);
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void BN_CTX_free(IntPtr c);
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void BN_CTX_start(IntPtr ctx);
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static IntPtr BN_CTX_get(IntPtr ctx);
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void BN_CTX_end(IntPtr ctx);
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr BN_new();
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
@@ -1666,7 +1677,7 @@ namespace OpenSSL.Core
 
 		#endregion
 
-		#endregion EVP
+		#endregion
 		
 		#region EC
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
@@ -1779,6 +1790,12 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr EC_GROUP_new_by_curve_name(int nid);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_GROUP_precompute_mult(IntPtr group, IntPtr ctx);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EC_GROUP_have_precompute_mult(IntPtr group);
 		#endregion
 
 		#region EC_POINT
@@ -1874,12 +1891,6 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int EC_POINT_mul(IntPtr group, IntPtr r, IntPtr n, IntPtr q, IntPtr m, IntPtr ctx);
-
-		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static int EC_GROUP_precompute_mult(IntPtr group, IntPtr ctx);
-
-		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static int EC_GROUP_have_precompute_mult(IntPtr group);
 		#endregion
 		
 		#region EC_KEY
@@ -2019,9 +2030,6 @@ namespace OpenSSL.Core
 		#endregion
 		
 		#region ECDH
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate IntPtr ECDH_KDF(IntPtr pin, int inlen, IntPtr pout, out int outlen);
-		
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr ECDH_OpenSSL();
 		
@@ -2034,8 +2042,14 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int ECDH_set_method(IntPtr key, IntPtr method);
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate IntPtr ECDH_KDF([MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] pin,
+		                                int inlen,
+		                                IntPtr pout, 
+		                                ref int outlen);
+
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static int ECDH_compute_key(IntPtr pout, int outlen, IntPtr pub_key, IntPtr ecdh, ECDH_KDF kdf);
+		public extern static int ECDH_compute_key(byte[] pout, int outlen, IntPtr pub_key, IntPtr ecdh, ECDH_KDF kdf);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int ECDH_get_ex_new_index(IntPtr argl, IntPtr argp, IntPtr new_func, IntPtr dup_func, IntPtr free_func);
@@ -2197,7 +2211,7 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void ERR_clear_error();
 
-		#endregion ERR
+		#endregion
 
 		#region NCONF
 

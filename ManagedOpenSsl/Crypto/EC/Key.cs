@@ -30,6 +30,8 @@ namespace OpenSSL.Crypto.EC
 {
 	public class Key : BaseCopyableRef<Key>
 	{
+		public delegate byte[] ComputeKeyHandler(byte[] msg);
+		
 		[StructLayout(LayoutKind.Sequential)]
 		struct ec_key_st 
 		{
@@ -66,6 +68,25 @@ namespace OpenSSL.Crypto.EC
 			get { return new Group(Native.ExpectNonNull(Native.EC_KEY_get0_group(this.ptr)), false); }
 			set { Native.ExpectSuccess(Native.EC_KEY_set_group(this.ptr, value.Handle)); }
 		}
+		
+		public Point PublicKey {
+			get { 
+				return new Point(
+					this.Group,
+					Native.ExpectNonNull(Native.EC_KEY_get0_public_key(this.ptr)), 
+					false); 
+			}
+		}
+
+		public Point PrivateKey {
+			get { 
+				return new Point(
+					this.Group,
+					Native.ExpectNonNull(Native.EC_KEY_get0_private_key(this.ptr)), 
+					false); 
+			}
+		}
+		
 		#endregion
 
 		#region Methods
@@ -95,6 +116,32 @@ namespace OpenSSL.Crypto.EC
 		public bool Verify(int type, byte[] digest, byte[] sig) {
 			return Native.ECDSA_verify(type, digest, digest.Length, sig, sig.Length, this.ptr) == 1;
 		}
+		
+		public int ComputeKey(Key b, byte[] buf, ComputeKeyHandler kdf) {
+			ComputeKeyThunk thunk = new ComputeKeyThunk(kdf);
+			return Native.ExpectSuccess(
+				Native.ECDH_compute_key(buf, buf.Length, b.PublicKey.Handle, this.ptr, thunk.Wrapper)
+			);
+		}
+		
+		class ComputeKeyThunk
+		{
+			private ComputeKeyHandler kdf;
+			
+			public ComputeKeyThunk(ComputeKeyHandler kdf) {
+				this.kdf = kdf;
+			}
+			
+			public IntPtr Wrapper(byte[] pin, int inlen, IntPtr pout, ref int outlen) {
+				byte[] result = kdf(pin);
+				if (result.Length > outlen) 
+					return IntPtr.Zero;
+				Marshal.Copy(result, 0, pout, Math.Min(outlen, result.Length));
+				outlen = result.Length;
+				return pout;
+			}
+		}
+
 		#endregion
 
 		#region Overrides
@@ -103,7 +150,7 @@ namespace OpenSSL.Crypto.EC
 		}
 
 		internal override CryptoLockTypes LockType {
-			get { return CryptoLockTypes.CRYPTO_LOCK_ECDSA; }
+			get { return CryptoLockTypes.CRYPTO_LOCK_EC; }
 		}
 
 		internal override Type RawReferenceType {

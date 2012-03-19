@@ -91,7 +91,6 @@
     <Compile Include="Core\Asn1DateTime.cs" />
     <Compile Include="Core\Asn1String.cs" />
     <Compile Include="Core\Base.cs" />
-    <Compile Include="Core\BigNum.cs" />
     <Compile Include="Core\BIO.cs" />
     <Compile Include="Core\Asn1Integer.cs" />
     <Compile Include="Core\Crypto.cs" />
@@ -141,6 +140,8 @@
     <Compile Include="Crypto\EC\BuiltinCurve.cs" />
     <Compile Include="Crypto\EC\Method.cs" />
     <Compile Include="Crypto\EC\DSASignature.cs" />
+    <Compile Include="Crypto\EC\Point.cs" />
+    <Compile Include="Core\BigNumber.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
