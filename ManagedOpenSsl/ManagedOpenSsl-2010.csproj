@@ -136,7 +136,11 @@
     <Compile Include="SSL\SslMethod.cs" />
     <Compile Include="Core\Objects.cs" />
     <Compile Include="Core\Asn1Object.cs" />
-    <Compile Include="Crypto\ECKey.cs" />
+    <Compile Include="Crypto\EC\Key.cs" />
+    <Compile Include="Crypto\EC\Group.cs" />
+    <Compile Include="Crypto\EC\BuiltinCurve.cs" />
+    <Compile Include="Crypto\EC\Method.cs" />
+    <Compile Include="Crypto\EC\DSASignature.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -179,5 +183,6 @@
   -->
   <ItemGroup>
     <Folder Include="SSL\" />
+    <Folder Include="Crypto\EC\" />
   </ItemGroup>
 </Project>

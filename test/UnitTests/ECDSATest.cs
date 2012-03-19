@@ -30,6 +30,7 @@ using Random = OpenSSL.Core.Random;
 using System.Runtime.InteropServices;
 using OpenSSL.Crypto;
 using System.Text;
+using OpenSSL.Crypto.EC;
 
 namespace UnitTests.OpenSSL
 {
@@ -44,10 +45,10 @@ namespace UnitTests.OpenSSL
 				
 				Console.Write("testing {0}: ", obj.ShortName);
 	
-				using(ECKey key = ECKey.FromCurveName(obj)) {
+				using(Key key = Key.FromCurveName(obj)) {
 					key.GenerateKey();
 					Console.Write(".");
-					using(ECDSASignature signature = key.Sign(digest)) {
+					using(DSASignature signature = key.Sign(digest)) {
 						Console.Write(".");
 						BigNumber r = BigNumber.FromDecimalString(r_in);
 						BigNumber s = BigNumber.FromDecimalString(s_in);
@@ -93,17 +94,17 @@ namespace UnitTests.OpenSSL
 			Console.WriteLine("testing ECDSA_sign() and ECDSA_verify() with some internal curves:");
 			
 			/* get a list of all internal curves */
-			ECBuiltinCurve[] curves = ECBuiltinCurve.Get();
+			BuiltinCurve[] curves = BuiltinCurve.Get();
 			
 			/* now create and verify a signature for every curve */
-			foreach (ECBuiltinCurve curve in curves) {
+			foreach (BuiltinCurve curve in curves) {
 				if (curve.Object.NID == Objects.NID.ipsec4.NID)
 					continue;
 				
 				/* create new ecdsa key (== EC_KEY) */
-				using(ECKey eckey = new ECKey()) {
+				using(Key eckey = new Key()) {
 
-					using(ECGroup group = ECGroup.FromCurveName(curve.Object)) {
+					using(Group group = Group.FromCurveName(curve.Object)) {
 						eckey.Group = group;
 					}
 					
@@ -118,8 +119,8 @@ namespace UnitTests.OpenSSL
 					eckey.GenerateKey();
 					
 					/* create second key */
-					using(ECKey wrong_eckey = new ECKey()) {
-						using(ECGroup group = ECGroup.FromCurveName(curve.Object)) {
+					using(Key wrong_eckey = new Key()) {
+						using(Group group = Group.FromCurveName(curve.Object)) {
 							wrong_eckey.Group = group;
 						}
 						
