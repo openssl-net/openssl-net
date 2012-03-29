@@ -1,5 +1,12 @@
 OpenSSL.NET - CHANGES
 
+0.5 [Mar 29, 2012]
+
+* Breaking change: SSL API has been moved to its own namespace.
+* Bug fixes reported on sourceforge.
+* Adding Elliptic Curve support.
+* Conversion of tests to NUnit.
+
 0.5-rc2 [Feb 26, 2012]
 
 * Updating linux and osx native libraries to version 1.0.0g
