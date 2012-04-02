@@ -145,6 +145,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="..\native\osx\libcrypto.1.0.0.dylib">
+      <Link>libcrypto.1.0.0.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\native\osx\libssl.1.0.0.dylib">
+      <Link>libssl.1.0.0.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\native\windows\x86\libeay32.dll">
