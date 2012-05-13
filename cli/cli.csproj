@@ -96,9 +96,9 @@
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl-2010.csproj">
+    <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl.csproj">
       <Project>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</Project>
-      <Name>ManagedOpenSsl-2010</Name>
+      <Name>ManagedOpenSsl</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

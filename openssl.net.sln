@@ -19,11 +19,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{16576C0C-C83
 		web\index.html = web\index.html
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl-2010", "ManagedOpenSsl\ManagedOpenSsl-2010.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl", "ManagedOpenSsl\ManagedOpenSsl.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli-2010", "cli\cli-2010.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli", "cli\cli.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-2010", "test\UnitTests-2010.csproj", "{779FA0D7-D7CB-4408-A94D-B5718F118894}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\UnitTests.csproj", "{779FA0D7-D7CB-4408-A94D-B5718F118894}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,7 +48,7 @@ Global
 		{16576C0C-C834-416B-86B1-F89EAD9EFB8E} = {0B96FB71-2BB0-48F8-B3E0-E3848A4F9E87}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = test\UnitTests-2010.csproj
+		StartupItem = test\UnitTests.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
