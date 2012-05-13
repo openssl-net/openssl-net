@@ -38,8 +38,6 @@ namespace OpenSSL.SSL
 		string targetHost;
 		X509List clientCertificates;
 		X509Chain caCertificates;
-		// Internal callback for client certificate selection
-		protected ClientCertCallbackHandler internalCertificateSelectionCallback;
 
 		public SslStreamClient(Stream stream,
 			bool ownStream,
@@ -56,48 +54,45 @@ namespace OpenSSL.SSL
 			this.targetHost = targetHost;
 			this.clientCertificates = clientCertificates;
 			this.caCertificates = caCertificates;
-			this.checkCertificateRevocationStatus = checkCertificateRevocationStatus;
-			this.remoteCertificateSelectionCallback = remoteCallback;
-			this.localCertificateSelectionCallback = localCallback;
-			this.internalCertificateSelectionCallback = new ClientCertCallbackHandler(InternalClientCertificateSelectionCallback);
-			InitializeClientContext(clientCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocationStatus);
+			this.CheckCertificateRevocationStatus = checkCertificateRevocationStatus;
+			this.RemoteCertValidationCallback = remoteCallback;
+			this.LocalCertSelectionCallback = localCallback;
+
+			InitializeClientContext(enabledSslProtocols, sslStrength);
 		}
 
-		protected void InitializeClientContext(X509List certificates, SslProtocols enabledSslProtocols, SslStrength sslStrength, bool checkCertificateRevocation)
+		protected void InitializeClientContext(SslProtocols enabledSslProtocols, 
+		                                       SslStrength sslStrength)
 		{
 			// Initialize the context with the specified ssl version
 			// Initialize the context
 			sslContext = new SslContext(SslMethod.SSLv23_client_method);
 
 			// Remove support for protocols not specified in the enabledSslProtocols
-			if ((enabledSslProtocols & SslProtocols.Ssl2) != SslProtocols.Ssl2)
-			{
+			if ((enabledSslProtocols & SslProtocols.Ssl2) != SslProtocols.Ssl2) {
 				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv2;
 			}
 			if ((enabledSslProtocols & SslProtocols.Ssl3) != SslProtocols.Ssl3 &&
-				((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
-			{
+				((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)) {
 				// no SSLv3 support
 				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv3;
 			}
 			if ((enabledSslProtocols & SslProtocols.Tls) != SslProtocols.Tls &&
-				(enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
-			{
+				(enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default) {
 				sslContext.Options |= SslOptions.SSL_OP_NO_TLSv1;
 			}
 
 			// Set the Local certificate selection callback
-			sslContext.SetClientCertCallback(this.internalCertificateSelectionCallback);
+			sslContext.SetClientCertCallback(this.InternalClientCertificateSelectionCallback);
 			// Set the enabled cipher list
 			sslContext.SetCipherList(GetCipherString(false, enabledSslProtocols, sslStrength));
 			// Set the callbacks for remote cert verification and local cert selection
-			if (remoteCertificateSelectionCallback != null)
-			{
-				sslContext.SetVerify(VerifyMode.SSL_VERIFY_PEER | VerifyMode.SSL_VERIFY_FAIL_IF_NO_PEER_CERT, remoteCertificateSelectionCallback);
+			if (this.RemoteCertValidationCallback != null) {
+				sslContext.SetVerify(VerifyMode.SSL_VERIFY_PEER | VerifyMode.SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 
+				                     this.RemoteCertValidationCallback);
 			}
 			// Set the CA list into the store
-			if (caCertificates != null)
-			{
+			if (caCertificates != null) {
 				X509Store store = new X509Store(caCertificates);
 				sslContext.SetCertificateStore(store);
 			}
@@ -123,46 +118,37 @@ namespace OpenSSL.SSL
 			//!!}
 
 			int nRet = 0;
-			if (handShakeState == HandshakeState.InProcess)
-			{
+			if (handShakeState == HandshakeState.InProcess) {
 				nRet = ssl.Connect();
 			}
 			else if (handShakeState == HandshakeState.RenegotiateInProcess ||
-					 handShakeState == HandshakeState.Renegotiate)
-			{
+					 handShakeState == HandshakeState.Renegotiate) {
 				handShakeState = HandshakeState.RenegotiateInProcess;
 				nRet = ssl.DoHandshake();
 			}
-			if (nRet <= 0)
-			{
+			if (nRet <= 0) {
 				SslError lastError = ssl.GetError(nRet);
-				if (lastError == SslError.SSL_ERROR_WANT_READ)
-				{
+				if (lastError == SslError.SSL_ERROR_WANT_READ) {
 					// Do nothing -- the base stream will write the data from the bio
 					// when this call returns
 				}
-				else if (lastError == SslError.SSL_ERROR_WANT_WRITE)
-				{
+				else if (lastError == SslError.SSL_ERROR_WANT_WRITE) {
 					// unexpected error
 					//!!TODO - debug log
 				}
-				else
-				{
+				else {
 					// We should have alert data in the bio that needs to be written
 					// We'll save the exception, allow the write to start, and then throw the exception
 					// when we come back into the AsyncHandshakeCall
-					if (write_bio.BytesPending > 0)
-					{
+					if (write_bio.BytesPending > 0) {
 						handshakeException = new OpenSslException();
 					}
-					else
-					{
+					else {
 						throw new OpenSslException();
 					}
 				}
 			}
-			else
-			{
+			else {
 				// Successful handshake
 				ret = true;
 			}
@@ -171,6 +157,7 @@ namespace OpenSSL.SSL
 
 		public int InternalClientCertificateSelectionCallback(Ssl ssl, out X509Certificate x509_cert, out CryptoKey key)
 		{
+			Console.WriteLine("InternalClientCertificateSelectionCallback");
 			int nRet = 0;
 			x509_cert = null;
 			key = null;
@@ -179,16 +166,17 @@ namespace OpenSSL.SSL
 			string[] strIssuers = new string[name_stack.Count];
 			int count = 0;
 
-			foreach (X509Name name in name_stack)
-			{
+			foreach (X509Name name in name_stack) {
 				strIssuers[count++] = name.OneLine;
 			}
 
-			if (localCertificateSelectionCallback != null)
-			{
-				X509Certificate cert = localCertificateSelectionCallback(this, targetHost, clientCertificates, ssl.GetPeerCertificate(), strIssuers);
-				if (cert != null && cert.HasPrivateKey)
-				{
+			if (this.LocalCertSelectionCallback != null) {
+				X509Certificate cert = LocalCertSelectionCallback(this, 
+				                                                  targetHost, 
+				                                                  clientCertificates, 
+				                                                  ssl.GetPeerCertificate(), 
+				                                                  strIssuers);
+				if (cert != null && cert.HasPrivateKey) {
 					x509_cert = cert;
 					key = cert.PrivateKey;
 					// Addref the cert and private key
@@ -200,6 +188,20 @@ namespace OpenSSL.SSL
 			}
 
 			return nRet;
+		}
+		
+		public override void Close()
+		{
+			Console.WriteLine("SslStreamClient.Close");
+			base.Close();
+			if (this.clientCertificates != null) {
+				this.clientCertificates.Clear();
+				this.clientCertificates = null;
+			}
+			if (this.caCertificates != null) {
+				this.caCertificates.Dispose();
+				this.caCertificates = null;
+			}
 		}
 	}
 }

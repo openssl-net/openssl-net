@@ -85,6 +85,7 @@
     <Compile Include="TestSHA512.cs" />
     <Compile Include="TestX509.cs" />
     <Compile Include="TestServer.cs" />
+    <Compile Include="TestSSL.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl-2010.csproj">

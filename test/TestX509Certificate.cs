@@ -114,18 +114,19 @@ namespace UnitTests
 			X509Name subject = new X509Name("CN=localhost");
 			X509Name issuer = new X509Name("CN=Root");
 
-			CryptoKey key = new CryptoKey(new DSA(true));
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-
-			using (X509Certificate cert = new X509Certificate(serial, subject, issuer, key, start, end)) {
-				Assert.AreEqual(subject, cert.Subject);
-				Assert.AreEqual(issuer, cert.Issuer);
-				Assert.AreEqual(serial, cert.SerialNumber);
-
-				// We compare short date/time strings here because the wrapper can't handle milliseconds
-				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
-				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
+			using (CryptoKey key = new CryptoKey(new DSA(true))) {
+				DateTime start = DateTime.Now;
+				DateTime end = start + TimeSpan.FromMinutes(10);
+	
+				using (X509Certificate cert = new X509Certificate(serial, subject, issuer, key, start, end)) {
+					Assert.AreEqual(subject, cert.Subject);
+					Assert.AreEqual(issuer, cert.Issuer);
+					Assert.AreEqual(serial, cert.SerialNumber);
+	
+					// We compare short date/time strings here because the wrapper can't handle milliseconds
+					Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
+					Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
+				}
 			}
 		}
 
@@ -318,10 +319,12 @@ namespace UnitTests
 		{
 			DateTime start = DateTime.Now;
 			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
-				X509Request request = cert.CreateRequest(key, MessageDigest.DSS1);
-				Assert.AreEqual(true, request.Verify(key));
+			using (CryptoKey key = new CryptoKey(new DSA(true))) {
+				using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
+					using (X509Request request = cert.CreateRequest(key, MessageDigest.DSS1)) {
+						Assert.AreEqual(true, request.Verify(key));
+					}
+				}
 			}
 		}
 
@@ -351,6 +354,15 @@ namespace UnitTests
 				Assert.AreEqual(extList.Count, cert.Extensions.Count);
 			}
 		}
+		
+		[Test]
+		public void TestChain() {
+			using (BIO bio = new BIO(LoadString(Resources.CaChainPem))) {
+				using (X509Chain chain = new X509Chain(bio)) {
+//					Assert.AreEqual(1, chain.Count);
+				}
+			}
+		}
 
 		private void TestCert(X509Certificate cert, string subject, string issuer, int serial)
 		{
@@ -359,37 +371,6 @@ namespace UnitTests
 			Assert.AreEqual(serial, cert.SerialNumber); 
 		}
 		
-		private string LoadString(string resourceId) {
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId)) {
-				using (StreamReader reader = new StreamReader(stream)) {
-					return reader.ReadToEnd();
-				}
-			}
-		}
-		
-		private byte[] LoadBytes(string resourceId) {
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId)) {
-				using (BinaryReader reader = new BinaryReader(stream)) {
-					return reader.ReadBytes((int)stream.Length);
-				}
-			}
-		}
-
-		static class Resources
-		{
-			public const string CaCrt = "UnitTests.certs.ca.crt";
-			public const string CaDer = "UnitTests.certs.ca.der";
-			public const string CaChainP7c = "UnitTests.certs.ca_chain.p7c";
-			public const string CaChainP7cPem = "UnitTests.certs.ca_chain.p7c.pem";
-			public const string CaChainPem = "UnitTests.certs.ca_chain.pem";
-			public const string ClientCrt = "UnitTests.certs.client.crt";
-			public const string ClientPfx = "UnitTests.certs.client.pfx";
-			public const string ClientKey = "UnitTests.certs.client.key";
-			public const string ServerCrt = "UnitTests.certs.server.crt";
-			public const string ServerPfx = "UnitTests.certs.server.pfx";
-			public const string ServerKey = "UnitTests.certs.server.key";
-		}
-
 		const string password = "p@ssw0rd";
 	}
 }

@@ -286,8 +286,7 @@ namespace OpenSSL.SSL
 			get
 			{
 				IntPtr ptr = Native.SSL_get_client_CA_list(this.ptr);
-				Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(ptr, false);
-				return name_stack;
+				return new Core.Stack<X509Name>(ptr, false);
 			}
 			set
 			{
@@ -335,8 +334,7 @@ namespace OpenSSL.SSL
 		public X509Certificate GetPeerCertificate()
 		{
 			IntPtr cert_ptr = Native.ExpectNonNull(Native.SSL_get_peer_certificate(this.ptr));
-			X509Certificate cert = new X509Certificate(cert_ptr, true);
-			return cert;
+			return new X509Certificate(cert_ptr, true);
 		}
 
 		public VerifyResult GetVerifyResult()

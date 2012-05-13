@@ -142,6 +142,9 @@ namespace OpenSSL.Core
 		public delegate uint CRYPTO_id_callback();
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void CRYPTO_THREADID_callback(IntPtr id);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int VerifyCertCallback(int ok, IntPtr x509_store_ctx);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -182,39 +185,63 @@ namespace OpenSSL.Core
 			RAND_seed(seed, seed.Length);
 		}
 
+		private static System.Collections.Generic.Dictionary<int, IntPtr> threadIDs;
+
 		public static void InitializeThreads()
 		{
+			Console.WriteLine("InitializeThreads: {0}", Thread.CurrentThread.ManagedThreadId);
+
 			// Initialize the threading locks
 			int nLocks = CRYPTO_num_locks();
-			lock_objects = new List<object>(nLocks);
-			for (int i = 0; i < nLocks; i++)
-			{
-				object obj = new object();
-				lock_objects.Add(obj);
+			lock_objects = new object[nLocks];
+			for (int i = 0; i < nLocks; i++) {
+				lock_objects[i] = new object();
 			}
 			// Initialize the internal thread id stack
-			threadIDs = new System.Collections.Generic.Stack<uint>();
+			threadIDs = new System.Collections.Generic.Dictionary<int, IntPtr>();
 			// Initialize the delegate for the locking callback
-			CRYPTO_locking_callback_delegate = new CRYPTO_locking_callback(LockingCallback);
-			CRYPTO_set_locking_callback(CRYPTO_locking_callback_delegate);
+			CRYPTO_set_locking_callback(OnLocking);
 			// Initialze the thread id callback
-			CRYPTO_id_callback_delegate = new CRYPTO_id_callback(ThreadIDCallback);
-			CRYPTO_set_id_callback(CRYPTO_id_callback_delegate);
+//			CRYPTO_THREADID_set_callback(OnThreadId);
 		}
-
+		
 		public static void UninitializeThreads()
 		{
+			Console.WriteLine("UninitializeThreads: {0}", Thread.CurrentThread.ManagedThreadId);
+			// Clean up error state for each thread that was used by OpenSSL
+			if (threadIDs != null) {
+				foreach (KeyValuePair<int, IntPtr> item in threadIDs) {
+					Console.WriteLine("ERR_remove_thread_state: {0}, 0x{1}", item.Key, item.Value.ToString("X8"));
+					if (item.Key != Thread.CurrentThread.ManagedThreadId) {
+//						Native.ERR_remove_thread_state(item.Value);
+					}
+				}
+			}
+			
+//			CRYPTO_THREADID_set_callback(null);
+
 			// Cleanup the thread lock objects
 			CRYPTO_set_locking_callback(null);
-			lock_objects.Clear();
-			CRYPTO_set_id_callback(null);
-			// Clean up error state for each thread that was used by OpenSSL
-			if (threadIDs != null)
-			{
-				foreach (uint id in threadIDs)
-				{
-					Native.ERR_remove_state(id);
-				}
+		}
+
+		public static void OnThreadId(IntPtr id)
+		{
+			int threadID = Thread.CurrentThread.ManagedThreadId;
+			CRYPTO_THREADID_set_numeric(id, (ulong)threadID);
+			if (!threadIDs.ContainsKey(threadID)) {
+				Console.WriteLine("OnThreadId: {0}, {1}, 0x{2}", Thread.CurrentThread.Name, threadID, id.ToString("X8"));
+				threadIDs.Add(threadID, id);
+			}
+		}
+
+		public static void OnLocking(int mode, int type, string file, int line)
+		{
+//			Console.WriteLine("OnLocking: {0}, {1}, {2}, {3}", mode, type, file, line);
+			if ((mode & CRYPTO_LOCK) == CRYPTO_LOCK) {
+				Monitor.Enter(lock_objects[type]);
+			}
+			else {
+				Monitor.Exit(lock_objects[type]);
 			}
 		}
 
@@ -250,9 +277,7 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region Threading
-		private static List<object> lock_objects;
-		private static CRYPTO_locking_callback CRYPTO_locking_callback_delegate;
-		private static CRYPTO_id_callback CRYPTO_id_callback_delegate;
+		private static object[] lock_objects;
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void CRYPTO_set_id_callback(CRYPTO_id_callback cb);
@@ -266,32 +291,16 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int CRYPTO_add_lock(IntPtr ptr, int amount, CryptoLockTypes type, string file, int line);
 
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int CRYPTO_THREADID_set_callback(CRYPTO_THREADID_callback func);
+			
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void CRYPTO_THREADID_set_numeric(IntPtr id, ulong val);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void CRYPTO_THREADID_current(out IntPtr id);
+
 		public const int CRYPTO_LOCK = 1;
-
-		public static void LockingCallback(int mode, int type, string file, int line)
-		{
-			if ((mode & CRYPTO_LOCK) == CRYPTO_LOCK)
-			{
-				Monitor.Enter(lock_objects[type]);
-			}
-			else
-			{
-				Monitor.Exit(lock_objects[type]);
-			}
-		}
-
-		private static System.Collections.Generic.Stack<uint> threadIDs;
-
-		public static uint ThreadIDCallback()
-		{
-			uint threadID = (uint)Thread.CurrentThread.ManagedThreadId;
-			if (!threadIDs.Contains(threadID))
-			{
-				threadIDs.Push(threadID);
-			}
-			return threadID;
-		}
-
 		#endregion
 
 		#region CRYPTO
@@ -2207,6 +2216,9 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void ERR_remove_state(uint pid);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static void ERR_remove_thread_state(IntPtr id);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static void ERR_clear_error();

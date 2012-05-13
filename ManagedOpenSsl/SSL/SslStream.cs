@@ -41,7 +41,11 @@ namespace OpenSSL.SSL
 	/// <param name="depth"></param>
 	/// <param name="result"></param>
 	/// <returns></returns>
-	public delegate bool RemoteCertificateValidationHandler(Object sender, X509Certificate cert, X509Chain chain, int depth, VerifyResult result);
+	public delegate bool RemoteCertificateValidationHandler(Object sender, 
+	                                                        X509Certificate cert, 
+	                                                        X509Chain chain, 
+	                                                        int depth, 
+	                                                        VerifyResult result);
 
 	/// <summary>
 	/// 
@@ -52,7 +56,11 @@ namespace OpenSSL.SSL
 	/// <param name="remoteCert"></param>
 	/// <param name="acceptableIssuers"></param>
 	/// <returns></returns>
-	public delegate X509Certificate LocalCertificateSelectionHandler(Object sender, string targetHost, X509List localCerts, X509Certificate remoteCert, string[] acceptableIssuers);
+	public delegate X509Certificate LocalCertificateSelectionHandler(Object sender, 
+	                                                                 string targetHost, 
+	                                                                 X509List localCerts, 
+	                                                                 X509Certificate remoteCert, 
+	                                                                 string[] acceptableIssuers);
 
 	/// <summary>
 	/// Implments an AuthenticatedStream and is the main interface to the SSL library.
@@ -88,7 +96,9 @@ namespace OpenSSL.SSL
 		/// <param name="stream"></param>
 		/// <param name="leaveInnerStreamOpen"></param>
 		/// <param name="remote_callback"></param>
-		public SslStream(Stream stream, bool leaveInnerStreamOpen, RemoteCertificateValidationHandler remote_callback)
+		public SslStream(Stream stream, 
+		                 bool leaveInnerStreamOpen, 
+		                 RemoteCertificateValidationHandler remote_callback)
 			: this(stream, leaveInnerStreamOpen, remote_callback, null)
 		{
 		}
@@ -100,7 +110,10 @@ namespace OpenSSL.SSL
 		/// <param name="leaveInnerStreamOpen"></param>
 		/// <param name="remote_callback"></param>
 		/// <param name="local_callback"></param>
-		public SslStream(Stream stream, bool leaveInnerStreamOpen, RemoteCertificateValidationHandler remote_callback, LocalCertificateSelectionHandler local_callback)
+		public SslStream(Stream stream, 
+		                 bool leaveInnerStreamOpen, 
+		                 RemoteCertificateValidationHandler remote_callback, 
+		                 LocalCertificateSelectionHandler local_callback)
 			: base(stream, leaveInnerStreamOpen)
 		{
 			remoteCertificateValidationCallback = remote_callback;
@@ -132,11 +145,7 @@ namespace OpenSSL.SSL
 		{
 			get
 			{
-				if (IsAuthenticated && (IsServer ? sslStream.RemoteCertificate != null : sslStream.LocalCertificate != null))
-				{
-					return true;
-				}
-				return false;
+				return (IsAuthenticated && (IsServer ? sslStream.RemoteCertificate != null : sslStream.LocalCertificate != null));
 			}
 		}
 
@@ -346,10 +355,17 @@ namespace OpenSSL.SSL
 			base.Close();
 			sslStream.Close();
 		}
+		
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+			if (disposing && this.sslStream != null) {
+				this.sslStream.Dispose();
+			}
+		}
 		#endregion
 
 		#region Properties
-
 		/// <summary>
 		/// 
 		/// </summary>
@@ -487,8 +503,7 @@ namespace OpenSSL.SSL
 		{
 			get { return sslStream.CipherList; }
 		}
-
-		#endregion //Properties
+		#endregion
 
 		#region Methods
 		/// <summary>
@@ -517,7 +532,14 @@ namespace OpenSSL.SSL
 			SslStrength sslStrength,
 			bool checkCertificateRevocation)
 		{
-			EndAuthenticateAsClient(BeginAuthenticateAsClient(targetHost, certificates, caCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation, null, null));
+			EndAuthenticateAsClient(BeginAuthenticateAsClient(targetHost, 
+			                                                  certificates, 
+			                                                  caCertificates, 
+			                                                  enabledSslProtocols, 
+			                                                  sslStrength, 
+			                                                  checkCertificateRevocation, 
+			                                                  null, 
+			                                                  null));
 		}
 
 		/// <summary>
@@ -529,7 +551,14 @@ namespace OpenSSL.SSL
 		/// <returns></returns>
 		public virtual IAsyncResult BeginAuthenticateAsClient(string targetHost, AsyncCallback asyncCallback, Object asyncState)
 		{
-			return BeginAuthenticateAsClient(targetHost, null, null, SslProtocols.Default, SslStrength.Medium, false, asyncCallback, asyncState);
+			return BeginAuthenticateAsClient(targetHost, 
+			                                 null, 
+			                                 null, 
+			                                 SslProtocols.Default, 
+			                                 SslStrength.Medium, 
+			                                 false, 
+			                                 asyncCallback, 
+			                                 asyncState);
 		}
 
 		/// <summary>
@@ -560,9 +589,16 @@ namespace OpenSSL.SSL
 			}
 
 			// Create the stream
-			SslStreamClient client_stream = new SslStreamClient(InnerStream, false, targetHost, clientCertificates, caCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback, localCertificateSelectionCallback);
-			// set the internal stream
-			sslStream = client_stream;
+			this.sslStream = new SslStreamClient(InnerStream, 
+			                                     false, 
+			                                     targetHost, 
+			                                     clientCertificates, 
+			                                     caCertificates, 
+			                                     enabledSslProtocols, 
+			                                     sslStrength, 
+			                                     checkCertificateRevocation, 
+			                                     remoteCertificateValidationCallback, 
+			                                     localCertificateSelectionCallback);
 			// start the write operation
 			return BeginWrite(new byte[0], 0, 0, asyncCallback, asyncState);
 		}
@@ -605,7 +641,14 @@ namespace OpenSSL.SSL
 			SslStrength sslStrength,
 			bool checkCertificateRevocation)
 		{
-			EndAuthenticateAsServer(BeginAuthenticateAsServer(serverCertificate, clientCertificateRequired, caCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation, null, null));
+			EndAuthenticateAsServer(BeginAuthenticateAsServer(serverCertificate, 
+			                                                  clientCertificateRequired, 
+			                                                  caCertificates, 
+			                                                  enabledSslProtocols, 
+			                                                  sslStrength, 
+			                                                  checkCertificateRevocation, 
+			                                                  null, 
+			                                                  null));
 		}
 
 		/// <summary>
@@ -620,7 +663,14 @@ namespace OpenSSL.SSL
 			AsyncCallback asyncCallback,
 			Object asyncState)
 		{
-			return BeginAuthenticateAsServer(serverCertificate, false, null, SslProtocols.Default, SslStrength.Medium, false, asyncCallback, asyncState);
+			return BeginAuthenticateAsServer(serverCertificate, 
+			                                 false, 
+			                                 null, 
+			                                 SslProtocols.Default, 
+			                                 SslStrength.Medium, 
+			                                 false, 
+			                                 asyncCallback, 
+			                                 asyncState);
 		}
 
 		/// <summary>
@@ -650,9 +700,15 @@ namespace OpenSSL.SSL
 				throw new InvalidOperationException("SslStream is already authenticated");
 			}
 			// Initialize the server stream
-			SslStreamServer server_stream = new SslStreamServer(InnerStream, false, serverCertificate, clientCertificateRequired, caCerts, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback);
-			// Set the internal sslStream
-			sslStream = server_stream;
+			this.sslStream = new SslStreamServer(InnerStream, 
+			                                     false, 
+			                                     serverCertificate, 
+			                                     clientCertificateRequired, 
+			                                     caCerts, 
+			                                     enabledSslProtocols, 
+			                                     sslStrength, 
+			                                     checkCertificateRevocation, 
+			                                     remoteCertificateValidationCallback);
 			// Start the read operation
 			return BeginRead(new byte[0], 0, 0, asyncCallback, asyncState);
 		}
@@ -691,12 +747,10 @@ namespace OpenSSL.SSL
 
 			sslStream.Renegotiate();
 
-			if (sslStream is SslStreamClient)
-			{
+			if (sslStream is SslStreamClient) {
 				return BeginWrite(new byte[0], 0, 0, callback, state);
 			}
-			else
-			{
+			else {
 				return BeginRead(new byte[0], 0, 0, callback, state);
 			}
 		}
@@ -709,23 +763,19 @@ namespace OpenSSL.SSL
 		{
 			TestConnectionIsValid();
 
-			if (sslStream is SslStreamClient)
-			{
+			if (sslStream is SslStreamClient) {
 				EndWrite(asyncResult);
 			}
-			else
-			{
+			else {
 				EndRead(asyncResult);
 			}
 		}
-
 		#endregion
 
 		#region Helpers
 		private void TestConnectionIsValid()
 		{
-			if (sslStream == null)
-			{
+			if (sslStream == null) {
 				throw new InvalidOperationException("SslStream has not been authenticated");
 			}
 		}

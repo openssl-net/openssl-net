@@ -149,6 +149,7 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// 
 	/// </summary>
+	[Flags]
 	public enum SslProtocols
 	{
 		/// <summary>
@@ -176,12 +177,13 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// 
 	/// </summary>
+	[Flags]
 	public enum SslStrength
 	{
 		/// <summary>
 		/// 
 		/// </summary>
-		High = 4,   //256
+		Low = 1,    //40
 		/// <summary>
 		/// 
 		/// </summary>
@@ -189,7 +191,7 @@ namespace OpenSSL.SSL
 		/// <summary>
 		/// 
 		/// </summary>
-		Low = 1,    //40
+		High = 4,   //256
 		/// <summary>
 		/// 
 		/// </summary>
@@ -231,6 +233,7 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// Options enumeration for Options property
 	/// </summary>
+	[Flags]
 	enum SslOptions
 	{
 		SSL_OP_MICROSOFT_SESS_ID_BUG = 0x00000001,
@@ -282,6 +285,7 @@ namespace OpenSSL.SSL
 		SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG = 0x40000000,
 	}
 
+	[Flags]
 	enum SslMode
 	{
 		/* Allow SSL_write(..., n) to return r with 0 < r < n (i.e. report success
@@ -299,6 +303,7 @@ namespace OpenSSL.SSL
 		SSL_MODE_NO_AUTO_CHAIN = 0x00000008
 	}
 
+	[Flags]
 	enum VerifyMode
 	{
 		SSL_VERIFY_NONE = 0x00,

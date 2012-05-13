@@ -72,7 +72,7 @@ namespace UnitTests
 		public void Bug3018093_1()
 		{
 			FileSerialNumber fsn = new FileSerialNumber("/does/not/exist");
-			int serial = fsn.Next();
+			fsn.Next();
 		}
 
 		/// <summary>
@@ -107,7 +107,7 @@ namespace UnitTests
 			byte[] inputData = Encoding.UTF8.GetBytes("1234567");
 			byte[] key = Encoding.UTF8.GetBytes("secret!!");
 			byte[] iv = Encoding.UTF8.GetBytes("secret!!");
-			byte[] outputData = cc.Encrypt(inputData, key, iv);
+			cc.Encrypt(inputData, key, iv);
 		}
 	}
 }

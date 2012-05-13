@@ -165,9 +165,9 @@ namespace OpenSSL.Core
 		/// Calls ERR_remove_state()
 		/// </summary>
 		/// <param name="value"></param>
-		public static void RemoveState(uint value)
+		public static void RemoveState()
 		{
-			Native.ERR_remove_state(value);
+			Native.ERR_remove_state(0);
 		}
 
 		/// <summary>

@@ -34,7 +34,6 @@ namespace UnitTests
 		public void TestCase()
 		{
 			Console.WriteLine("Testing random");
-			int err = 0;
 
 			byte[] buf = OpenSSL.Core.Random.PseudoBytes(2500);
 

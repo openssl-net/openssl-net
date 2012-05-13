@@ -26,6 +26,8 @@
 using System;
 using NUnit.Framework;
 using OpenSSL.Core;
+using System.Reflection;
+using System.IO;
 
 namespace UnitTests
 {
@@ -42,6 +44,38 @@ namespace UnitTests
 		{
 			MemoryTracker.Finish();
 			Assert.AreEqual(0, MemoryTracker.Leaked);
+		}
+	
+		protected string LoadString(string resourceId) {
+			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId)) {
+				using (StreamReader reader = new StreamReader(stream)) {
+					return reader.ReadToEnd();
+				}
+			}
+		}
+		
+		protected byte[] LoadBytes(string resourceId) {
+			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId)) {
+				using (BinaryReader reader = new BinaryReader(stream)) {
+					return reader.ReadBytes((int)stream.Length);
+				}
+			}
+		}
+
+		protected static class Resources
+		{
+			public const string CaCrt = "UnitTests.certs.ca.crt";
+			public const string CaDer = "UnitTests.certs.ca.der";
+			public const string CaChainP7c = "UnitTests.certs.ca_chain.p7c";
+			public const string CaChainP7cPem = "UnitTests.certs.ca_chain.p7c.pem";
+			public const string CaChainPem = "UnitTests.certs.ca_chain.pem";
+			public const string ClientCrt = "UnitTests.certs.client.crt";
+			public const string ClientPfx = "UnitTests.certs.client.pfx";
+			public const string ClientKey = "UnitTests.certs.client.key";
+			public const string ServerCrt = "UnitTests.certs.server.crt";
+			public const string ServerPfx = "UnitTests.certs.server.pfx";
+			public const string ServerKey = "UnitTests.certs.server.key";
+			public const string PfxPassword = "p@ssw0rd";
 		}
 	}
 }
