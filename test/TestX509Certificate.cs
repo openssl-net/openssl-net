@@ -111,21 +111,23 @@ namespace UnitTests
 		public void CanCreateWithArgs()
 		{
 			int serial = 101;
-			X509Name subject = new X509Name("CN=localhost");
-			X509Name issuer = new X509Name("CN=Root");
-
-			CryptoKey key = new CryptoKey(new DSA(true));
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-
-			using (X509Certificate cert = new X509Certificate(serial, subject, issuer, key, start, end)) {
-				Assert.AreEqual(subject, cert.Subject);
-				Assert.AreEqual(issuer, cert.Issuer);
-				Assert.AreEqual(serial, cert.SerialNumber);
-
-				// We compare short date/time strings here because the wrapper can't handle milliseconds
-				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
-				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
+			using (X509Name subject = new X509Name("CN=localhost")) {
+				using (X509Name issuer = new X509Name("CN=Root")) {
+					using (CryptoKey key = new CryptoKey(new DSA(true))) {
+						DateTime start = DateTime.Now;
+						DateTime end = start + TimeSpan.FromMinutes(10);
+			
+						using (X509Certificate cert = new X509Certificate(serial, subject, issuer, key, start, end)) {
+							Assert.AreEqual(subject, cert.Subject);
+							Assert.AreEqual(issuer, cert.Issuer);
+							Assert.AreEqual(serial, cert.SerialNumber);
+			
+							// We compare short date/time strings here because the wrapper can't handle milliseconds
+							Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
+							Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
+						}
+					}
+				}
 			}
 		}
 

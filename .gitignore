@@ -10,3 +10,4 @@ dist
 *.aps
 *.eto
 .DS_Store
+test-results
