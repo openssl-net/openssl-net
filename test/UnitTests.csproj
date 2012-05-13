@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
     <Compile Include="CryptoKeyTest.cs" />
+    <Compile Include="SslStreamTest.cs" />
     <Compile Include="X509CertificateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
