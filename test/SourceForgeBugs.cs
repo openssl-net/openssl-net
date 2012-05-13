@@ -109,6 +109,26 @@ namespace UnitTests
 			byte[] iv = Encoding.UTF8.GetBytes("secret!!");
 			byte[] outputData = cc.Encrypt(inputData, key, iv);
 		}
+		
+		/// <summary>
+		/// The BIO class, if initialized with byte[] or string, uses BIO_new_mem_buf.
+		/// http://linux.die.net/man/3/bio_new_mem_buf states 
+		/// "The supplied data is read directly from the supplied buffer: 
+		/// it is not copied first, so the supplied area of memory must be unchanged until the BIO is freed."
+		/// In the string case, the byte[] is not stored anywhere.
+		/// In the byte[] case, it is relying on the calling application to do the same.
+		/// This means that garbage collection could potentially collect the data behind the BIO.
+		/// </summary>
+		[Test]
+		public void Bug3524222()
+		{
+			byte[] pattern = { 1, 2, 3 };
+			byte[] buf = (byte[])pattern.Clone();
+			using(BIO bio = new BIO(buf)) {
+				buf[1] = 1;
+				Assert.AreEqual(pattern, bio.ReadBytes(3).Array);
+			}
+		}
 	}
 }
 

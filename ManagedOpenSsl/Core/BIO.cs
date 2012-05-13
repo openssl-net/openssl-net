@@ -40,16 +40,17 @@ namespace OpenSSL.Core
 		internal BIO(IntPtr ptr, bool owner) : base(ptr, owner) { }
 
 		/// <summary>
-		/// Calls BIO_new_mem_buf() from the specified buffer.
+		/// Calls BIO_new(BIO_s_mem()) and then BIO_write() the buf
 		/// </summary>
 		/// <param name="buf"></param>
 		public BIO(byte[] buf)
-			: base(Native.ExpectNonNull(Native.BIO_new_mem_buf(buf, buf.Length)), true)
+			: base(Native.ExpectNonNull(Native.BIO_new(Native.BIO_s_mem())), true)
 		{
+			this.Write(buf);
 		}
 
 		/// <summary>
-		/// Calls BIO_new_mem_buf() from the specified string.
+		/// Calls BIO_new(BIO_s_mem()) and then BIO_write() the str
 		/// </summary>
 		/// <param name="str"></param>
 		public BIO(string str)
