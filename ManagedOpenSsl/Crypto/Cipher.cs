@@ -169,7 +169,7 @@ namespace OpenSSL.Crypto
 		/// <summary>
 		/// EVP_des_ede3_cfb1()
 		/// </summary>
-		public static Cipher DES_EDE3_CFB1 = new Cipher(Native.EVP_des_ede3_cfb1(), false);
+//		public static Cipher DES_EDE3_CFB1 = new Cipher(Native.EVP_des_ede3_cfb1(), false);
 		
 		/// <summary>
 		/// EVP_des_ede3_cfb8()
@@ -487,7 +487,7 @@ namespace OpenSSL.Crypto
 		/// <summary>
 		/// The key for a crypto operation
 		/// </summary>
-		public ArraySegment<byte>[] Keys;
+		public byte[][] Keys;
 
 		/// <summary>
 		/// The IV (Initialization Vector)
@@ -562,60 +562,80 @@ namespace OpenSSL.Crypto
 		/// Calls EVP_OpenInit() and EVP_OpenFinal()
 		/// </summary>
 		/// <param name="input"></param>
+		/// <param name="ekey"></param>
 		/// <param name="iv"></param>
 		/// <param name="pkey"></param>
 		/// <returns></returns>
-		public byte[] Open(byte[] input, byte[] iv, CryptoKey pkey) 
+		public byte[] Open(byte[] input, byte[] ekey, byte[] iv, CryptoKey pkey) 
 		{
 			Native.ExpectSuccess(Native.EVP_OpenInit(
-				this.ptr, this.cipher.Handle, input, input.Length, iv, pkey.Handle));
-
+				this.ptr, this.cipher.Handle, ekey, ekey.Length, iv, pkey.Handle));
+			
+			MemoryStream memory = new MemoryStream();
+			byte[] output = new byte[input.Length + this.Cipher.BlockSize]; 
 			int len;
-			Native.ExpectSuccess(Native.EVP_OpenFinal(this.ptr, null, out len));
-
-			byte[] output = new byte[len];
+			
+			Native.ExpectSuccess(Native.EVP_DecryptUpdate(this.ptr, output, out len, input, input.Length));
+			memory.Write(output, 0, len);
+			
 			Native.ExpectSuccess(Native.EVP_OpenFinal(this.ptr, output, out len));
+			memory.Write(output, 0, len);
 
-			return output;
+			return memory.ToArray();
 		}
-
+		
 		/// <summary>
 		/// Calls EVP_SealInit() and EVP_SealFinal()
 		/// </summary>
 		/// <param name="pkeys"></param>
-		/// <param name="needsIV"></param>
+		/// <param name="input"></param>
 		/// <returns></returns>
-		public Envelope Seal(CryptoKey[] pkeys, bool needsIV) 
+		public Envelope Seal(CryptoKey[] pkeys, byte[] input)
 		{
-			Envelope ret = new Envelope();
-			byte[][] bufs = new byte[pkeys.Length][];
-			int[] lens = new int[pkeys.Length];
-			IntPtr[] pubkeys = new IntPtr[pkeys.Length];
-			ret.Keys = new ArraySegment<byte>[pkeys.Length];
-			for (int i = 0; i < pkeys.Length; ++i)
-			{
-				bufs[i] = new byte[pkeys[i].Size];
-				lens[i] = pkeys[i].Size;
-				pubkeys[i] = pkeys[i].Handle;
+			Envelope env = new Envelope();
+			
+			var ptrs = new IntPtr[pkeys.Length];
+			try {
+				env.Keys = new byte[pkeys.Length][];
+				IntPtr[] pubkeys = new IntPtr[pkeys.Length];
+				int[] ekeylens =  new int[pkeys.Length];
+
+				for (int i = 0; i < pkeys.Length; i++) {
+					ptrs[i] = Marshal.AllocHGlobal(pkeys[i].Size);
+					pubkeys[i] = pkeys[i].Handle;
+				}
+				
+				if (this.Cipher.IVLength > 0) {
+					env.IV = new byte[this.Cipher.IVLength];
+				}
+			
+				Native.ExpectSuccess(Native.EVP_SealInit(
+					this.ptr, this.Cipher.Handle, ptrs, ekeylens, env.IV, pubkeys, pubkeys.Length));
+
+				for (int i = 0; i < pkeys.Length; i++) {
+					env.Keys[i] = new byte[ekeylens[i]];
+					Marshal.Copy(ptrs[i], env.Keys[i], 0, ekeylens[i]);
+				}
+	
+				MemoryStream memory = new MemoryStream();
+				byte[] output = new byte[input.Length + this.Cipher.BlockSize];
+	
+				int len;
+				Native.ExpectSuccess(Native.EVP_EncryptUpdate(this.ptr, output, out len, input, input.Length));
+				memory.Write(output, 0, len);
+				
+				Native.ExpectSuccess(Native.EVP_SealFinal(this.ptr, output, out len));
+				memory.Write(output, 0, len);
+				
+				env.Data = memory.ToArray();
+
+				return env;
 			}
-
-			if(needsIV)
-				ret.IV = new byte[this.cipher.IVLength];
-
-			int len;
-			Native.ExpectSuccess(Native.EVP_SealInit(
-				this.ptr, this.cipher.Handle, bufs, lens, ret.IV, pubkeys, pubkeys.Length));
-			for (int i = 0; i < pkeys.Length; ++i)
-			{
-				ret.Keys[i] = new ArraySegment<byte>(bufs[i], 0, lens[i]);
+			finally {
+				foreach (var ptr in ptrs) {
+					Marshal.FreeHGlobal(ptr);
+				}
 			}
-
-			Native.ExpectSuccess(Native.EVP_SealFinal(this.ptr, null, out len));
-
-			ret.Data = new byte[len];
-			Native.ExpectSuccess(Native.EVP_SealFinal(this.ptr, ret.Data, out len));
-
-			return ret;
 		}
 
 		/// <summary>
@@ -633,39 +653,19 @@ namespace OpenSSL.Crypto
 
 		private byte[] SetupKey(byte[] key)
 		{
-			byte[] real_key;
-			bool isStreamCipher = (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER;
-			if (isStreamCipher)
-			{
-				real_key = new byte[this.Cipher.KeyLength];
-				if (key == null)
-					real_key.Initialize();
-				else
-					Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
+			if (key == null) {
+				key = new byte[this.Cipher.KeyLength];
+				key.Initialize();
+				return key;
 			}
-			else
-			{
-				if (key == null)
-				{
-					real_key = new byte[this.Cipher.KeyLength];
-					real_key.Initialize();
-				}
-				else
-				{
-					if (this.Cipher.KeyLength != key.Length)
-					{
-						real_key = new byte[this.Cipher.KeyLength];
-						real_key.Initialize();
-						Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
-					}
-					else
-					{
-						real_key = key;
-					}
-				}
-				// FIXME: what was this for??
-//				total += this.cipher.BlockSize;
+
+			if (this.Cipher.KeyLength == key.Length) {
+				return key;
 			}
+			
+			byte[] real_key = new byte[this.Cipher.KeyLength];
+			real_key.Initialize();
+			Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
 			return real_key;
 		}
 
@@ -703,12 +703,12 @@ namespace OpenSSL.Crypto
 
 			Native.ExpectSuccess(Native.EVP_CipherInit_ex(
 				this.ptr, this.cipher.Handle, IntPtr.Zero, null, null, enc));
+			
 			Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_key_length(this.ptr, real_key.Length));
 			if (padding >= 0)
 				Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_padding(this.ptr, padding));
 
-			bool isStreamCipher = (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER;
-			if (isStreamCipher)
+			if (this.IsStream)
 			{
 				for (int i = 0; i < Math.Min(real_key.Length, iv.Length); i++)
 				{
@@ -724,9 +724,8 @@ namespace OpenSSL.Crypto
 					this.ptr, this.cipher.Handle, IntPtr.Zero, real_key, real_iv, enc));
 			}
 
-			int len = buf.Length;
-			Native.ExpectSuccess(Native.EVP_CipherUpdate(
-				this.ptr, buf, out len, input, input.Length));
+			int len = 0;
+			Native.ExpectSuccess(Native.EVP_CipherUpdate(this.ptr, buf, out len, input, input.Length));
 
 			memory.Write(buf, 0, len);
 
@@ -799,8 +798,18 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] BytesToKey(MessageDigest md, byte[] salt, byte[] data, int count, out byte[] iv)
 		{
-			byte[] key = new byte[this.cipher.KeyLength];
-			iv = new byte[this.cipher.IVLength];
+			int keylen = this.Cipher.KeyLength;
+			if (keylen == 0) {
+				keylen = 8;
+			}
+			byte[] key = new byte[keylen];
+			
+			int ivlen = this.Cipher.IVLength;
+			if (ivlen == 0) {
+				ivlen = 8;
+			}
+			iv = new byte[ivlen];
+			
 			Native.ExpectSuccess(Native.EVP_BytesToKey(
 				this.cipher.Handle,
 				md.Handle,
@@ -822,6 +831,11 @@ namespace OpenSSL.Crypto
 		public Cipher Cipher
 		{
 			get { return this.cipher; }
+		}
+		
+		public bool IsStream
+		{
+			get { return (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER; }
 		}
 
 		private EVP_CIPHER_CTX Raw

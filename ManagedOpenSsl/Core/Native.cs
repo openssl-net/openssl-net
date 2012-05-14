@@ -1547,6 +1547,9 @@ namespace OpenSSL.Core
 		public extern static int EVP_PKEY_encrypt(byte[] enc_key, byte[] key, int key_len, IntPtr pub_key);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_PKEY_encrypt_old(byte[] enc_key, byte[] key,int key_len, IntPtr pub_key);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int EVP_PKEY_type(int type);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
@@ -1595,6 +1598,9 @@ namespace OpenSSL.Core
 		public extern static void EVP_CIPHER_CTX_init(IntPtr a);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_CIPHER_CTX_rand_key(IntPtr ctx, byte[] key);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int EVP_CIPHER_CTX_set_padding(IntPtr x, int padding);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
@@ -1625,13 +1631,16 @@ namespace OpenSSL.Core
 		public extern static int EVP_OpenFinal(IntPtr ctx, byte[] outb, out int outl);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static int EVP_SealInit(IntPtr ctx, IntPtr type, byte[][] ek, int[] ekl, byte[] iv, IntPtr[] pubk, int npubk);
+		public extern static int EVP_SealInit(IntPtr ctx, IntPtr type, IntPtr[] ek, int[] ekl, byte[] iv, IntPtr[] pubk, int npubk);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int EVP_SealFinal(IntPtr ctx, byte[] outb, out int outl);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int EVP_DecryptUpdate(IntPtr ctx, byte[] output, out int outl, byte[] input, int inl);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_EncryptInit_ex(IntPtr ctx, IntPtr cipher, IntPtr impl, byte[] key, byte[] iv);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int EVP_EncryptUpdate(IntPtr ctx, byte[] output, out int outl, byte[] input, int inl);
