@@ -705,8 +705,6 @@ namespace OpenSSL.Crypto
 				this.ptr, this.cipher.Handle, IntPtr.Zero, null, null, enc));
 			
 			Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_key_length(this.ptr, real_key.Length));
-			if (padding >= 0)
-				Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_padding(this.ptr, padding));
 
 			if (this.IsStream)
 			{
@@ -723,6 +721,9 @@ namespace OpenSSL.Crypto
 				Native.ExpectSuccess(Native.EVP_CipherInit_ex(
 					this.ptr, this.cipher.Handle, IntPtr.Zero, real_key, real_iv, enc));
 			}
+
+			if (padding >= 0)
+				Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_padding(this.ptr, padding));
 
 			int len = 0;
 			Native.ExpectSuccess(Native.EVP_CipherUpdate(this.ptr, buf, out len, input, input.Length));
