@@ -1,2 +1,2 @@
 all:
-	xbuild openssl.net-2010.sln
+	xbuild openssl.net.sln
