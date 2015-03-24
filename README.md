@@ -64,6 +64,6 @@ This library is the product of many contributors, both directly, and indirectly,
 
 **Maintainer:**
  * Adam Caudill <adam@adamcaudill.com>
- * Frank Laub (2009-2014)
+ * Frank Laub (2007-2014)
 
-For security issues, please contact the maintainer directly prior to opening a public ticket. Security issues with receive propmt attaention and be handled as quickly as possible.
+For security issues, please contact the maintainer directly prior to opening a public ticket. Security issues will receive prompt attention and be handled as quickly as possible.
