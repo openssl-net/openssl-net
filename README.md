@@ -6,7 +6,7 @@ A managed [OpenSSL](https://www.openssl.org/) wrapper written in C# for the 2.0 
 
 This a must for .NET developers that need crypto but don't want to use Microsoft's SSPI.
 
-This wrapper is based on version 1.0.0d of libeay32.dll and ssleay32.dll.
+This wrapper is based on version 1.0.2a of libeay32.dll and ssleay32.dll.
 
 ### Wrapper Example
 
