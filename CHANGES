@@ -1,5 +1,9 @@
 OpenSSL.NET - CHANGES
 
+0.6 [In Progress]
+
+* Update to OpenSSL 1.0.2a
+
 0.5 [Mar 29, 2012]
 
 * Breaking change: SSL API has been moved to its own namespace.
