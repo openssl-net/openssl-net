@@ -153,8 +153,7 @@ namespace OpenSSL.Core
 		{
 			var lib = Version.Library;
 			var wrapper = Version.Wrapper;
-			var mmf = lib.Raw & 0xfffff000;
-			if (mmf != wrapper.Raw)
+			if (lib.Raw < wrapper.Raw)
 				throw new Exception(string.Format("Invalid version of {0}, expecting {1}, got: {2}",
 					DLLNAME, wrapper, lib));
 
@@ -225,7 +224,7 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region Version
-		public const uint Wrapper = 0x10000000;
+		public const uint Wrapper = 0x1000201F; //1.0.2a Release
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static string SSLeay_version(int type);
