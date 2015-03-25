@@ -23,14 +23,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
 using NUnit.Framework;
 using OpenSSL.Core;
-using Random = OpenSSL.Core.Random;
-using System.Runtime.InteropServices;
 using OpenSSL.Crypto;
-using System.Text;
 using OpenSSL.Crypto.EC;
+using System;
+using System.Text;
+using Random = OpenSSL.Core.Random;
 
 namespace UnitTests
 {
@@ -133,11 +132,13 @@ namespace UnitTests
 						
 						/* create signature */
 						byte[] signature = new byte[eckey.Size];
-						eckey.Sign(0, digest, signature);
+						var sigSize = eckey.Sign(0, digest, signature);
+						Array.Resize(ref signature, (int)sigSize);
 						Console.Write(".");
 						
 						/* verify signature */
-						Assert.IsTrue(eckey.Verify(0, digest, signature));
+						var verifyResult = eckey.Verify(0, digest, signature);
+						Assert.IsTrue(verifyResult);
 						Console.Write(".");
 						
 						/* verify signature with the wrong key */
@@ -155,4 +156,3 @@ namespace UnitTests
 		}
 	}
 }
-

@@ -111,7 +111,7 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				var patch = (raw & 0x00000ff0) >> 4;
+				var patch = (raw & 0x00000ff0) >> 5;
 
 				var a = Encoding.ASCII.GetBytes("a")[0];
 				var x = a + patch;
