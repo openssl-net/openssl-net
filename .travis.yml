@@ -1,2 +1,9 @@
 language: csharp
 solution: openssl.net.sln
+
+install:
+  - nuget restore openssl.net.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=Release openssl.net.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./bin/Release/UnitTests.dll
