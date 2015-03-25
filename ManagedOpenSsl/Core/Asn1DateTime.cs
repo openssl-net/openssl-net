@@ -24,8 +24,6 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Globalization;
 
 namespace OpenSSL.Core
@@ -48,19 +46,19 @@ namespace OpenSSL.Core
 
 		protected override void OnDispose()
 		{
-			Native.ASN1_TIME_free(this.ptr);
+			Native.ASN1_TIME_free(ptr);
 		}
 
 		public DateTime DateTime
 		{
 			get
 			{
-				return ToDateTime(this.ptr);
+				return ToDateTime(ptr);
 			}
 			set
 			{
-				long time_t = DateTimeToTimeT(value.ToUniversalTime());
-				Native.ASN1_TIME_set(this.ptr, time_t);
+				var time_t = DateTimeToTimeT(value.ToUniversalTime());
+				Native.ASN1_TIME_set(ptr, time_t);
 			}
 		}
 
@@ -71,25 +69,30 @@ namespace OpenSSL.Core
 
 		private long DateTimeToTimeT(DateTime value)
 		{
-			DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+			var dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+
 			// # of 100 nanoseconds since 1970
-			long ticks = (value.Ticks - dt1970.Ticks) / 10000000L;
+			var ticks = (value.Ticks - dt1970.Ticks) / 10000000L;
+			
 			return ticks;
 		}
 
 		private static DateTime AsnTimeToDateTime(IntPtr ptr)
 		{
 			string str;
-			using (BIO bio = BIO.MemoryBuffer())
+
+			using (var bio = BIO.MemoryBuffer())
 			{
 				Native.ExpectSuccess(Native.ASN1_UTCTIME_print(bio.Handle, ptr));
 				str = bio.ReadString();
 			}
+
 			string[] fmts = 
 			{ 
 				"MMM  d HH:mm:ss yyyy G\\MT",
 				"MMM dd HH:mm:ss yyyy G\\MT"
 			};
+
 			return DateTime.ParseExact(str, fmts, new DateTimeFormatInfo(), DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 		}
 	}

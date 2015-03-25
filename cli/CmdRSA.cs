@@ -23,12 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.IO;
 
 namespace OpenSSL.CLI
 {
@@ -104,13 +102,13 @@ where options are
 				return;
 			}
 
-			BIO bin = Program.GetInFile(options.GetString("in"));
+			var bin = Program.GetInFile(options.GetString("in"));
 
 			RSA rsa;
 			if (options.IsSet("pubin"))
-				rsa = RSA.FromPublicKey(bin, Program.OnPassword, this.options["passin"]);
+				rsa = RSA.FromPublicKey(bin, Program.OnPassword, options["passin"]);
 			else
-				rsa = RSA.FromPrivateKey(bin, Program.OnPassword, this.options["passin"]);
+				rsa = RSA.FromPrivateKey(bin, Program.OnPassword, options["passin"]);
 
 			Cipher enc = null;
 			if (options.IsSet("des"))
@@ -141,14 +139,14 @@ where options are
 			if (!options.IsSet("noout"))
 			{
 				Console.Error.WriteLine("writing RSA key");
-				using (BIO bio = BIO.MemoryBuffer())
+				using (var bio = BIO.MemoryBuffer())
 				{
-					if (this.options.IsSet("pubout"))
+					if (options.IsSet("pubout"))
 						rsa.WritePublicKey(bio);
 					else
-						rsa.WritePrivateKey(bio, enc, Program.OnPassword, this.options["passout"]);
+						rsa.WritePrivateKey(bio, enc, Program.OnPassword, options["passout"]);
 
-					string outfile = this.options["out"] as string;
+					string outfile = options["out"] as string;
 					if (string.IsNullOrEmpty(outfile))
 						Console.WriteLine(bio.ReadString());
 					else

@@ -22,8 +22,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-using System;
+
 using OpenSSL.Core;
+using System;
 
 namespace OpenSSL.Crypto.EC
 {
@@ -49,13 +50,13 @@ namespace OpenSSL.Crypto.EC
 		#region Methods
 		public void GetAffineCoordinatesGF2m(BigNumber x, BigNumber y, BigNumber.Context ctx) {
 			Native.ExpectSuccess(
-				Native.EC_POINT_get_affine_coordinates_GF2m(this.group.Handle, this.ptr, x.Handle, y.Handle, ctx.Handle)
+				Native.EC_POINT_get_affine_coordinates_GF2m(group.Handle, ptr, x.Handle, y.Handle, ctx.Handle)
 			);
 		}
 		
 		public void GetAffineCoordinatesGFp(BigNumber x, BigNumber y, BigNumber.Context ctx) {
 			Native.ExpectSuccess(
-				Native.EC_POINT_get_affine_coordinates_GFp(this.group.Handle, this.ptr, x.Handle, y.Handle, ctx.Handle)
+				Native.EC_POINT_get_affine_coordinates_GFp(group.Handle, ptr, x.Handle, y.Handle, ctx.Handle)
 			);
 		}
 		#endregion

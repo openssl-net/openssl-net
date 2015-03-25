@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto
 {
@@ -95,7 +93,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static CryptoKey FromPublicKey(string pem, string password)
 		{
-			using (BIO bio = new BIO(pem))
+			using (var bio = new BIO(pem))
 			{
 				return FromPublicKey(bio, password);
 			}
@@ -109,7 +107,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static CryptoKey FromPublicKey(BIO bio, string password)
 		{
-			PasswordCallback callback = new PasswordCallback(password);
+			var callback = new PasswordCallback(password);
 			return FromPublicKey(bio, callback.OnPassword, null);
 		}
 
@@ -122,8 +120,8 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static CryptoKey FromPublicKey(BIO bio, PasswordHandler handler, object arg)
 		{
-			PasswordThunk thunk = new PasswordThunk(handler, arg);
-			IntPtr ptr = Native.ExpectNonNull(Native.PEM_read_bio_PUBKEY(
+			var thunk = new PasswordThunk(handler, arg);
+			var ptr = Native.ExpectNonNull(Native.PEM_read_bio_PUBKEY(
 				bio.Handle,
 				IntPtr.Zero,
 				thunk.Callback,
@@ -141,7 +139,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(string pem, string password)
 		{
-			using (BIO bio = new BIO(pem))
+			using (var bio = new BIO(pem))
 			{
 				return FromPrivateKey(bio, password);
 			}
@@ -155,7 +153,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(BIO bio, string passwd)
 		{
-			PasswordCallback callback = new PasswordCallback(passwd);
+			var callback = new PasswordCallback(passwd);
 			return FromPrivateKey(bio, callback.OnPassword, null);
 		}
 
@@ -168,8 +166,8 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static CryptoKey FromPrivateKey(BIO bio, PasswordHandler handler, object arg)
 		{
-			PasswordThunk thunk = new PasswordThunk(handler, arg);
-			IntPtr ptr = Native.ExpectNonNull(Native.PEM_read_bio_PrivateKey(
+			var thunk = new PasswordThunk(handler, arg);
+			var ptr = Native.ExpectNonNull(Native.PEM_read_bio_PrivateKey(
 				bio.Handle,
 				IntPtr.Zero,
 				thunk.Callback,
@@ -186,7 +184,7 @@ namespace OpenSSL.Crypto
 		public CryptoKey(DSA dsa)
 			: this()
 		{
-			Native.ExpectSuccess(Native.EVP_PKEY_set1_DSA(this.ptr, dsa.Handle));
+			Native.ExpectSuccess(Native.EVP_PKEY_set1_DSA(ptr, dsa.Handle));
 		}
 
 		/// <summary>
@@ -196,7 +194,7 @@ namespace OpenSSL.Crypto
 		public CryptoKey(RSA rsa)
 			: this()
 		{
-			Native.ExpectSuccess(Native.EVP_PKEY_set1_RSA(this.ptr, rsa.Handle));
+			Native.ExpectSuccess(Native.EVP_PKEY_set1_RSA(ptr, rsa.Handle));
 		}
 
 		/// <summary>
@@ -206,14 +204,14 @@ namespace OpenSSL.Crypto
 		public CryptoKey(DH dh)
 			: this()
 		{
-			Native.ExpectSuccess(Native.EVP_PKEY_set1_DH(this.ptr, dh.Handle));
+			Native.ExpectSuccess(Native.EVP_PKEY_set1_DH(ptr, dh.Handle));
 		}
 		#endregion
 
 		#region Properties
 		private EVP_PKEY Raw
 		{
-			get { return (EVP_PKEY)Marshal.PtrToStructure(this.ptr, typeof(EVP_PKEY)); }
+			get { return (EVP_PKEY)Marshal.PtrToStructure(ptr, typeof(EVP_PKEY)); }
 		}
 
 		/// <summary>
@@ -223,7 +221,8 @@ namespace OpenSSL.Crypto
 		{
 			get
 			{
-				int ret = Native.EVP_PKEY_type(this.Raw.type);
+				var ret = Native.EVP_PKEY_type(Raw.type);
+
 				switch (ret)
 				{
 					case EVP_PKEY_EC:
@@ -245,7 +244,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Bits
 		{
-			get { return Native.EVP_PKEY_bits(this.ptr); }
+			get { return Native.EVP_PKEY_bits(ptr); }
 		}
 
 		/// <summary>
@@ -253,7 +252,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Size
 		{
-			get { return Native.EVP_PKEY_size(this.ptr); }
+			get { return Native.EVP_PKEY_size(ptr); }
 		}
 		#endregion
 
@@ -266,7 +265,7 @@ namespace OpenSSL.Crypto
 		/// <param name="key"></param>
 		public void Assign(int type, byte[] key)
 		{
-			Native.ExpectSuccess(Native.EVP_PKEY_assign(this.ptr, type, key));
+			Native.ExpectSuccess(Native.EVP_PKEY_assign(ptr, type, key));
 		}
 
 		/// <summary>
@@ -275,9 +274,10 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public DSA GetDSA()
 		{
-			if (this.Type != KeyType.DSA)
+			if (Type != KeyType.DSA)
 				throw new InvalidOperationException();
-			return new DSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_DSA(this.ptr)), true);
+
+			return new DSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_DSA(ptr)), true);
 		}
 
 		/// <summary>
@@ -286,9 +286,10 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public DH GetDH()
 		{
-			if (this.Type != KeyType.DH)
+			if (Type != KeyType.DH)
 				throw new InvalidOperationException();
-			return new DH(Native.ExpectNonNull(Native.EVP_PKEY_get1_DH(this.ptr)), false);
+
+			return new DH(Native.ExpectNonNull(Native.EVP_PKEY_get1_DH(ptr)), false);
 		}
 
 		/// <summary>
@@ -297,9 +298,10 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public RSA GetRSA()
 		{
-			if (this.Type != KeyType.RSA)
+			if (Type != KeyType.RSA)
 				throw new InvalidOperationException();
-			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(this.ptr)), false);
+
+			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(ptr)), false);
 		}
 
 		/// <summary>
@@ -323,8 +325,8 @@ namespace OpenSSL.Crypto
 		/// <param name="arg"></param>
 		public void WritePrivateKey(BIO bp, Cipher cipher, PasswordHandler handler, object arg)
 		{
-			PasswordThunk thunk = new PasswordThunk(handler, null);
-			Native.ExpectSuccess(Native.PEM_write_bio_PKCS8PrivateKey(bp.Handle, this.ptr, cipher.Handle, IntPtr.Zero, 0, thunk.Callback, IntPtr.Zero));
+			var thunk = new PasswordThunk(handler, null);
+			Native.ExpectSuccess(Native.PEM_write_bio_PKCS8PrivateKey(bp.Handle, ptr, cipher.Handle, IntPtr.Zero, 0, thunk.Callback, IntPtr.Zero));
 		}
 
 		#endregion
@@ -336,7 +338,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.EVP_PKEY_free(this.ptr);
+			Native.EVP_PKEY_free(ptr);
 		}
 
 		/// <summary>
@@ -346,10 +348,12 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public override bool Equals(object obj)
 		{
-			CryptoKey rhs = obj as CryptoKey;
+			var rhs = obj as CryptoKey;
+
 			if (rhs == null)
 				return false;
-			return Native.EVP_PKEY_cmp(this.ptr, rhs.Handle) == 1;
+
+			return Native.EVP_PKEY_cmp(ptr, rhs.Handle) == 1;
 		}
 
 		/// <summary>
@@ -377,7 +381,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			switch (this.Type)
+			switch (Type)
 			{
 				case KeyType.RSA:
 					GetRSA().Print(bio);

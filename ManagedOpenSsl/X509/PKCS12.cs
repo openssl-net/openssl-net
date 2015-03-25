@@ -23,11 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
@@ -197,23 +196,23 @@ namespace OpenSSL.X509
 			IntPtr cacerts;
 
 			// Parse the PKCS12 object and get privatekey, cert, cacerts if available
-			Native.ExpectSuccess(Native.PKCS12_parse(this.ptr, password, out pkey, out cert, out cacerts));
+			Native.ExpectSuccess(Native.PKCS12_parse(ptr, password, out pkey, out cert, out cacerts));
 
 			if (cert != IntPtr.Zero) {
-				this.certificate = new X509Certificate(cert, true);
+				certificate = new X509Certificate(cert, true);
 				if (pkey != IntPtr.Zero) {
-					this.privateKey = new CryptoKey(pkey, true);
+					privateKey = new CryptoKey(pkey, true);
 
 					// We have a private key, assign it to the cert
-					this.certificate.PrivateKey = this.privateKey.CopyRef();
+					certificate.PrivateKey = privateKey.CopyRef();
 				}
 			}
 
 			if (cacerts != IntPtr.Zero) {
-				this.caCertificates = new Stack<X509Certificate>(cacerts, true);
+				caCertificates = new Stack<X509Certificate>(cacerts, true);
 			}
 			else {
-				this.caCertificates = new Stack<X509Certificate>();
+				caCertificates = new Stack<X509Certificate>();
 			}
 		}
 
@@ -224,7 +223,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		/// <param name="bio"></param>
 		public void Write(BIO bio) {
-			Native.ExpectSuccess(Native.i2d_PKCS12_bio(bio.Handle, this.Handle));
+			Native.ExpectSuccess(Native.i2d_PKCS12_bio(bio.Handle, Handle));
 		}
 
 		#region Properties
@@ -238,9 +237,9 @@ namespace OpenSSL.X509
 			{
 				if (certificate != null)
 				{
-					X509Certificate cert = this.certificate.CopyRef();
+					var cert = certificate.CopyRef();
 					if (privateKey != null)
-						cert.PrivateKey = this.privateKey.CopyRef();
+						cert.PrivateKey = privateKey.CopyRef();
 					return cert;
 				}
 				return null;
@@ -255,7 +254,8 @@ namespace OpenSSL.X509
 			get
 			{
 				if (privateKey != null)
-					return this.privateKey.CopyRef();
+					return privateKey.CopyRef();
+
 				return null;
 			}
 		}
@@ -292,7 +292,8 @@ namespace OpenSSL.X509
 				caCertificates.Dispose();
 				caCertificates = null;
 			}
-			Native.PKCS12_free(this.ptr);
+
+			Native.PKCS12_free(ptr);
 		}
 
 		#endregion

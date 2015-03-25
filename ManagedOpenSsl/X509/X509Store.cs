@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
@@ -94,16 +92,16 @@ namespace OpenSSL.X509
 		{ }
 
 		/// <summary>
-		/// Calls X509_STORE_new() and then adds the specified chaing as trusted.
+		/// Calls X509_STORE_new() and then adds the specified chain as trusted.
 		/// </summary>
 		/// <param name="chain"></param>
 		/// <param name="takeOwnership"></param>
 		public X509Store(X509Chain chain, bool takeOwnership)
 			: base(Native.ExpectNonNull(Native.X509_STORE_new()), takeOwnership)
 		{
-			foreach (X509Certificate cert in chain)
+			foreach (var cert in chain)
 			{
-				this.AddTrusted(cert);
+				AddTrusted(cert);
 			}
 		}
 
@@ -118,8 +116,9 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				X509_STORE raw = (X509_STORE)Marshal.PtrToStructure(this.ptr, typeof(X509_STORE));
-				Core.Stack<X509Object> stack = new Core.Stack<X509Object>(raw.objs, false);
+				var raw = (X509_STORE)Marshal.PtrToStructure(ptr, typeof(X509_STORE));
+				var stack = new Core.Stack<X509Object>(raw.objs, false);
+
 				return stack;
 			}
 		}
@@ -129,8 +128,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public X509Chain Untrusted
 		{
-			get { return this.untrusted; }
-			set { this.untrusted = value; }
+			get { return untrusted; }
+			set { untrusted = value; }
 		}
 
 		#endregion
@@ -145,16 +144,18 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public bool Verify(X509Certificate cert, out string error)
 		{
-			using (X509StoreContext ctx = new X509StoreContext())
+			using (var ctx = new X509StoreContext())
 			{
-				ctx.Init(this, cert, this.untrusted);
+				ctx.Init(this, cert, untrusted);
 				if (ctx.Verify())
 				{
 					error = "";
 					return true;
 				}
+
 				error = ctx.ErrorString;
 			}
+
 			return false;
 		}
 
@@ -164,7 +165,7 @@ namespace OpenSSL.X509
 		/// <param name="chain"></param>
 		public void AddTrusted(X509Chain chain)
 		{
-			foreach (X509Certificate cert in chain)
+			foreach (var cert in chain)
 			{
 				AddTrusted(cert);
 			}
@@ -177,7 +178,7 @@ namespace OpenSSL.X509
 		public void AddTrusted(X509Certificate cert)
 		{
 			// Don't Addref here -- X509_STORE_add_cert increases the refcount of the certificate pointer
-			Native.ExpectSuccess(Native.X509_STORE_add_cert(this.ptr, cert.Handle));
+			Native.ExpectSuccess(Native.X509_STORE_add_cert(ptr, cert.Handle));
 		}
 
 		/// <summary>
@@ -186,7 +187,7 @@ namespace OpenSSL.X509
 		/// <param name="cert"></param>
 		public void AddUntrusted(X509Certificate cert)
 		{
-			this.untrusted.Add(cert);
+			untrusted.Add(cert);
 		}
 
 		#endregion
@@ -198,11 +199,11 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.X509_STORE_free(this.ptr);
-			if (this.untrusted != null)
+			Native.X509_STORE_free(ptr);
+			if (untrusted != null)
 			{
-				this.untrusted.Dispose();
-				this.untrusted = null;
+				untrusted.Dispose();
+				untrusted = null;
 			}
 		}
 

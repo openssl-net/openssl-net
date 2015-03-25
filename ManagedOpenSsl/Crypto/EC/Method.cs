@@ -22,8 +22,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-using System;
+
 using OpenSSL.Core;
+using System;
 
 namespace OpenSSL.Crypto.EC
 {
@@ -42,7 +43,7 @@ namespace OpenSSL.Crypto.EC
 
 		#region Properties
 		public int FieldType {
-			get { return Native.EC_METHOD_get_field_type(this.ptr); }
+			get { return Native.EC_METHOD_get_field_type(ptr); }
 		}
 		#endregion
 		

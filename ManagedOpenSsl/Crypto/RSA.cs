@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto
 {
@@ -155,8 +153,9 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static RSA FromPublicKey(BIO bio, PasswordHandler callback, object arg)
 		{
-			PasswordThunk thunk = new PasswordThunk(callback, arg);
-			IntPtr ptr = Native.PEM_read_bio_RSA_PUBKEY(bio.Handle, IntPtr.Zero, thunk.Callback, IntPtr.Zero);
+			var thunk = new PasswordThunk(callback, arg);
+			var ptr = Native.PEM_read_bio_RSA_PUBKEY(bio.Handle, IntPtr.Zero, thunk.Callback, IntPtr.Zero);
+			
 			return new RSA(Native.ExpectNonNull(ptr), true);
 		}
 
@@ -169,8 +168,9 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static RSA FromPrivateKey(BIO bio, PasswordHandler callback, object arg)
 		{
-			PasswordThunk thunk = new PasswordThunk(callback, arg);
-			IntPtr ptr = Native.PEM_read_bio_RSAPrivateKey(bio.Handle, IntPtr.Zero, thunk.Callback, IntPtr.Zero);
+			var thunk = new PasswordThunk(callback, arg);
+			var ptr = Native.PEM_read_bio_RSAPrivateKey(bio.Handle, IntPtr.Zero, thunk.Callback, IntPtr.Zero);
+			
 			return new RSA(Native.ExpectNonNull(ptr), true);
 		}
 
@@ -179,8 +179,8 @@ namespace OpenSSL.Crypto
 		#region Properties
 		private rsa_st Raw
 		{
-			get { return (rsa_st)Marshal.PtrToStructure(this.ptr, typeof(rsa_st)); }
-			set { Marshal.StructureToPtr(value, this.ptr, false); }
+			get { return (rsa_st)Marshal.PtrToStructure(ptr, typeof(rsa_st)); }
+			set { Marshal.StructureToPtr(value, ptr, false); }
 		}
 
 		/// <summary>
@@ -188,7 +188,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Size
 		{
-			get { return Native.ExpectSuccess(Native.RSA_size(this.ptr)); }
+			get { return Native.ExpectSuccess(Native.RSA_size(ptr)); }
 		}
 
 		/// <summary>
@@ -207,12 +207,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber PublicExponent
 		{
-			get { return new BigNumber(this.Raw.e, false); }
+			get { return new BigNumber(Raw.e, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.e = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -221,12 +221,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber PublicModulus
 		{
-			get { return new BigNumber(this.Raw.n, false); }
+			get { return new BigNumber(Raw.n, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.n = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -235,12 +235,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber PrivateExponent
 		{
-			get { return new BigNumber(this.Raw.d, false); }
+			get { return new BigNumber(Raw.d, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.d = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -249,12 +249,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber SecretPrimeFactorP
 		{
-			get { return new BigNumber(this.Raw.p, false); }
+			get { return new BigNumber(Raw.p, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.p = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -263,12 +263,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber SecretPrimeFactorQ
 		{
-			get { return new BigNumber(this.Raw.q, false); }
+			get { return new BigNumber(Raw.q, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.q = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -278,12 +278,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber DmodP1
 		{
-			get { return new BigNumber(this.Raw.dmp1, false); }
+			get { return new BigNumber(Raw.dmp1, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.dmp1 = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -293,12 +293,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber DmodQ1
 		{
-			get { return new BigNumber(this.Raw.dmq1, false); }
+			get { return new BigNumber(Raw.dmq1, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.dmq1 = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -308,12 +308,12 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber IQmodP
 		{
-			get { return new BigNumber(this.Raw.iqmp, false); }
+			get { return new BigNumber(Raw.iqmp, false); }
 			set
 			{
-				rsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.iqmp = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -324,9 +324,9 @@ namespace OpenSSL.Crypto
 		{
 			get
 			{
-				using (BIO bio = BIO.MemoryBuffer())
+				using (var bio = BIO.MemoryBuffer())
 				{
-					this.WritePublicKey(bio);
+					WritePublicKey(bio);
 					return bio.ReadString();
 				}
 			}
@@ -339,9 +339,9 @@ namespace OpenSSL.Crypto
 		{
 			get
 			{
-				using (BIO bio = BIO.MemoryBuffer())
+				using (var bio = BIO.MemoryBuffer())
 				{
-					this.WritePrivateKey(bio, null, null, null);
+					WritePrivateKey(bio, null, null, null);
 					return bio.ReadString();
 				}
 			}
@@ -358,8 +358,8 @@ namespace OpenSSL.Crypto
 		/// <param name="arg"></param>
 		public void GenerateKeys(int bits, BigNumber e, BigNumber.GeneratorHandler callback, object arg)
 		{
-			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
-			Native.ExpectSuccess(Native.RSA_generate_key_ex(this.ptr, bits, e.Handle, this.thunk.CallbackStruct));
+			thunk = new BigNumber.GeneratorThunk(callback, arg);
+			Native.ExpectSuccess(Native.RSA_generate_key_ex(ptr, bits, e.Handle, thunk.CallbackStruct));
 		}
 
 		/// <summary>
@@ -370,14 +370,16 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] PublicEncrypt(byte[] msg, Padding padding)
 		{
-			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_public_encrypt(msg.Length, msg, ret, this.ptr, (int)padding));
+			var ret = new byte[Size];
+			var len = Native.ExpectSuccess(Native.RSA_public_encrypt(msg.Length, msg, ret, ptr, (int)padding));
+
 			if (len != ret.Length)
 			{
-				byte[] tmp = new byte[len];
+				var tmp = new byte[len];
 				Buffer.BlockCopy(ret, 0, tmp, 0, len);
 				return tmp;
 			}
+
 			return ret;
 		}
 
@@ -408,14 +410,16 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] PublicDecrypt(byte[] msg, Padding padding)
 		{
-			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_public_decrypt(msg.Length, msg, ret, this.ptr, (int)padding));
+			var ret = new byte[Size];
+			var len = Native.ExpectSuccess(Native.RSA_public_decrypt(msg.Length, msg, ret, ptr, (int)padding));
+
 			if (len != ret.Length)
 			{
-				byte[] tmp = new byte[len];
+				var tmp = new byte[len];
 				Buffer.BlockCopy(ret, 0, tmp, 0, len);
 				return tmp;
 			}
+
 			return ret;
 		}
 
@@ -427,14 +431,16 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] PrivateDecrypt(byte[] msg, Padding padding)
 		{
-			byte[] ret = new byte[this.Size];
-			int len = Native.ExpectSuccess(Native.RSA_private_decrypt(msg.Length, msg, ret, this.ptr, (int)padding));
+			var ret = new byte[this.Size];
+			var len = Native.ExpectSuccess(Native.RSA_private_decrypt(msg.Length, msg, ret, ptr, (int)padding));
+
 			if (len != ret.Length)
 			{
-				byte[] tmp = new byte[len];
+				var tmp = new byte[len];
 				Buffer.BlockCopy(ret, 0, tmp, 0, len);
 				return tmp;
 			}
+
 			return ret;
 		}
 
@@ -444,7 +450,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public void WritePublicKey(BIO bio)
 		{
-			Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, this.ptr));
+			Native.ExpectSuccess(Native.PEM_write_bio_RSA_PUBKEY(bio.Handle, ptr));
 		}
 
 		/// <summary>
@@ -473,7 +479,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public bool Check()
 		{
-			int ret = Native.ExpectSuccess(Native.RSA_check_key(this.ptr));
+			var ret = Native.ExpectSuccess(Native.RSA_check_key(ptr));
 			return ret == 1;
 		}
 
@@ -483,7 +489,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			Native.ExpectSuccess(Native.RSA_print(bio.Handle, this.ptr, 0));
+			Native.ExpectSuccess(Native.RSA_print(bio.Handle, ptr, 0));
 		}
 
 		#endregion
@@ -494,7 +500,7 @@ namespace OpenSSL.Crypto
 		/// Calls RSA_free()
 		/// </summary>
 		protected override void OnDispose() {
-			Native.RSA_free(this.ptr);
+			Native.RSA_free(ptr);
 		}
 
 		#endregion

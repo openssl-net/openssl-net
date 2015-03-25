@@ -23,11 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.Text;
 
 namespace OpenSSL.X509
 {
@@ -71,19 +70,21 @@ namespace OpenSSL.X509
 			if (str.IndexOf('/') == -1 &&
 				str.IndexOf('=') == -1)
 			{
-				this.Common = str;
+				Common = str;
 				return;
 			}
 
-			string[] parts = str.Split('/');
-			foreach (string part in parts)
+			var parts = str.Split('/');
+			foreach (var part in parts)
 			{
 				if (part == "")
 					continue;
-				string[] nv = part.Split('=');
-				string name = nv[0];
-				string value = nv[1];
-				this.AddEntryByName(name, value);
+
+				var nv = part.Split('=');
+				var name = nv[0];
+				var value = nv[1];
+
+				AddEntryByName(name, value);
 			}
 		}
 
@@ -100,12 +101,12 @@ namespace OpenSSL.X509
 
 		#region Properties
 
-        /// <summary>
+		/// <summary>
 		/// Returns X509_NAME_oneline()
 		/// </summary>
 		public string OneLine
 		{
-			get { return Native.PtrToStringAnsi(Native.X509_NAME_oneline(this.ptr, null, 0), true);	 }
+			get { return Native.PtrToStringAnsi(Native.X509_NAME_oneline(ptr, null, 0), true);	 }
 		}
 		
 		/// <summary>
@@ -113,8 +114,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Common
 		{
-			get { return this.GetTextByName("CN"); }
-			set { this.AddEntryByName("CN", value); }
+			get { return GetTextByName("CN"); }
+			set { AddEntryByName("CN", value); }
 		}
 
 		/// <summary>
@@ -122,8 +123,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Country
 		{
-			get { return this.GetTextByName("C"); }
-			set { this.AddEntryByName("C", value); }
+			get { return GetTextByName("C"); }
+			set { AddEntryByName("C", value); }
 		}
 
 		/// <summary>
@@ -131,8 +132,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Locality
 		{
-			get { return this.GetTextByName("L"); }
-			set { this.AddEntryByName("L", value); }
+			get { return GetTextByName("L"); }
+			set { AddEntryByName("L", value); }
 		}
 
 		/// <summary>
@@ -140,8 +141,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string StateOrProvince
 		{
-			get { return this.GetTextByName("ST"); }
-			set { this.AddEntryByName("ST", value); }
+			get { return GetTextByName("ST"); }
+			set { AddEntryByName("ST", value); }
 		}
 
 		/// <summary>
@@ -149,8 +150,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Organization
 		{
-			get { return this.GetTextByName("O"); }
-			set { this.AddEntryByName("O", value); }
+			get { return GetTextByName("O"); }
+			set { AddEntryByName("O", value); }
 		}
 
 		/// <summary>
@@ -158,8 +159,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string OrganizationUnit
 		{
-			get { return this.GetTextByName("OU"); }
-			set { this.AddEntryByName("OU", value); }
+			get { return GetTextByName("OU"); }
+			set { AddEntryByName("OU", value); }
 		}
 
 		/// <summary>
@@ -167,8 +168,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Given
 		{
-			get { return this.GetTextByName("G"); }
-			set { this.AddEntryByName("G", value); }
+			get { return GetTextByName("G"); }
+			set { AddEntryByName("G", value); }
 		}
 
 		/// <summary>
@@ -176,8 +177,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Surname
 		{
-			get { return this.GetTextByName("S"); }
-			set { this.AddEntryByName("S", value); }
+			get { return GetTextByName("S"); }
+			set { AddEntryByName("S", value); }
 		}
 
 		/// <summary>
@@ -185,8 +186,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Initials
 		{
-			get { return this.GetTextByName("I"); }
-			set { this.AddEntryByName("I", value); }
+			get { return GetTextByName("I"); }
+			set { AddEntryByName("I", value); }
 		}
 
 		/// <summary>
@@ -194,8 +195,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string UniqueIdentifier
 		{
-			get { return this.GetTextByName("UID"); }
-			set { this.AddEntryByName("UID", value); }
+			get { return GetTextByName("UID"); }
+			set { AddEntryByName("UID", value); }
 		}
 
 		/// <summary>
@@ -203,8 +204,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string SerialNumber
 		{
-			get { return this.GetTextByName("SN"); }
-			set { this.AddEntryByName("SN", value); }
+			get { return GetTextByName("SN"); }
+			set { AddEntryByName("SN", value); }
 		}
 
 		/// <summary>
@@ -212,8 +213,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Title
 		{
-			get { return this.GetTextByName("T"); }
-			set { this.AddEntryByName("T", value); }
+			get { return GetTextByName("T"); }
+			set { AddEntryByName("T", value); }
 		}
 
 		/// <summary>
@@ -221,8 +222,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Description
 		{
-			get { return this.GetTextByName("D"); }
-			set { this.AddEntryByName("D", value); }
+			get { return GetTextByName("D"); }
+			set { AddEntryByName("D", value); }
 		}
 
 		/// <summary>
@@ -230,8 +231,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string X509
 		{
-			get { return this.GetTextByName("X509"); }
-			set { this.AddEntryByName("X509", value); }
+			get { return GetTextByName("X509"); }
+			set { AddEntryByName("X509", value); }
 		}
 
 		/// <summary>
@@ -239,7 +240,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public int Count
 		{
-			get { return Native.X509_NAME_entry_count(this.ptr); }
+			get { return Native.X509_NAME_entry_count(ptr); }
 		}
 
 		/// <summary>
@@ -249,8 +250,8 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public string this[string name]
 		{
-			get { return this.GetTextByName(name); }
-			set { this.AddEntryByName(name, value); }
+			get { return GetTextByName(name); }
+			set { AddEntryByName(name, value); }
 		}
 
 		/// <summary>
@@ -278,7 +279,7 @@ namespace OpenSSL.X509
 		/// <param name="value"></param>
 		public void AddEntryByName(string name, string value)
 		{
-			this.AddEntryByNid(Native.TextToNID(name), value);
+			AddEntryByNid(Native.TextToNID(name), value);
 		}
 
 		/// <summary>
@@ -288,9 +289,10 @@ namespace OpenSSL.X509
 		/// <param name="value"></param>
 		public void AddEntryByNid(int nid, string value)
 		{
-			byte[] buf = Encoding.ASCII.GetBytes(value);
+			var buf = Encoding.ASCII.GetBytes(value);
+			
 			Native.ExpectSuccess(Native.X509_NAME_add_entry_by_NID(
-				this.ptr,
+				ptr,
 				nid,
 				Native.MBSTRING_ASC,
 				buf,
@@ -306,13 +308,15 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public string GetTextByNid(int nid)
 		{
-			if (this.GetIndexByNid(nid, -1) == -1)
+			if (GetIndexByNid(nid, -1) == -1)
 				return null;
 
-			byte[] buf = new byte[1024];
-			int len = Native.X509_NAME_get_text_by_NID(this.ptr, nid, buf, buf.Length);
+			var buf = new byte[1024];
+			var len = Native.X509_NAME_get_text_by_NID(ptr, nid, buf, buf.Length);
+
 			if (len <= 0)
 				throw new OpenSslException();
+			
 			return Encoding.ASCII.GetString(buf, 0, len);
 		}
 
@@ -324,7 +328,7 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public string GetTextByName(string name)
 		{
-			return this.GetTextByNid(Native.TextToNID(name));
+			return GetTextByNid(Native.TextToNID(name));
 		}
 
 		/// <summary>
@@ -335,11 +339,13 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public int GetIndexByNid(int nid, int lastpos)
 		{
-			int ret = Native.X509_NAME_get_index_by_NID(this.ptr, nid, lastpos);
+			var ret = Native.X509_NAME_get_index_by_NID(ptr, nid, lastpos);
+
 			if (ret == lastpos)
 				return lastpos;
 			if (ret < 0)
 				throw new OpenSslException();
+
 			return ret;
 		}
 
@@ -361,7 +367,7 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public int IndexOf(string name)
 		{
-			return this.IndexOf(name, -1);
+			return IndexOf(name, -1);
 		}
 
 		/// <summary>
@@ -371,7 +377,7 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public bool Contains(string name)
 		{
-			return this.IndexOf(name) >= 0;
+			return IndexOf(name) >= 0;
 		}
 
 		/// <summary>
@@ -382,9 +388,10 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public ArraySegment<byte> Digest(MessageDigest type, int cbSize)
 		{
-			byte[] buf = new byte[cbSize];
-			uint len = (uint)cbSize;
+			var buf = new byte[cbSize];
+			var len = (uint)cbSize;
 			Native.ExpectSuccess(Native.X509_NAME_digest(this.ptr, type.Handle, buf, ref len));
+			
 			return new ArraySegment<byte>(buf, 0, (int)len);
 		}
 
@@ -399,7 +406,8 @@ namespace OpenSSL.X509
 				Native.ASN1_STRFLGS_ESC_QUOTE | 
 				Native.XN_FLAG_SEP_COMMA_PLUS | 
 				Native.XN_FLAG_FN_SN;
-			int ret = Native.X509_NAME_print_ex(bio.Handle, this.Handle, 0, flags);
+			
+			var ret = Native.X509_NAME_print_ex(bio.Handle, Handle, 0, flags);
 			if (ret <= 0)
 				throw new OpenSslException();
 		}
@@ -413,12 +421,12 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.X509_NAME_free(this.ptr);
+			Native.X509_NAME_free(ptr);
 		}
 
 		internal override IntPtr DuplicateHandle()
 		{
-			return Native.X509_NAME_dup(this.ptr);
+			return Native.X509_NAME_dup(ptr);
 		}
 
 		/// <summary>
@@ -426,11 +434,12 @@ namespace OpenSSL.X509
 		/// </summary>
 		public override bool Equals(object rhs)
 		{
-			X509Name other = rhs as X509Name;
+			var other = rhs as X509Name;
+
 			if(other == null)
 				return false;
 
-			return this.CompareTo(other) == 0;
+			return CompareTo(other) == 0;
 		}
 
 		/// <summary>
@@ -452,7 +461,7 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public int CompareTo(X509Name other)
 		{
-			return Native.X509_NAME_cmp(this.ptr, other.ptr);
+			return Native.X509_NAME_cmp(ptr, other.ptr);
 		}
 
 		#endregion

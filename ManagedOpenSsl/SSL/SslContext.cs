@@ -23,13 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 using OpenSSL.X509;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.SSL
 {
@@ -161,14 +160,14 @@ namespace OpenSSL.SSL
 		/// </summary>
 		public SslOptions Options
 		{
-			set { Native.ExpectSuccess(Native.SSL_CTX_set_options(this.ptr, (int)value)); }
-			get { return (SslOptions)Native.SSL_CTX_get_options(this.ptr); }
+			set { Native.ExpectSuccess(Native.SSL_CTX_set_options(ptr, (int)value)); }
+			get { return (SslOptions)Native.SSL_CTX_get_options(ptr); }
 		}
 
 		public SslMode Mode
 		{
-			set { Native.ExpectSuccess(Native.SSL_CTX_set_mode(this.ptr, (int)value)); }
-			get { return (SslMode)Native.SSL_CTX_get_mode(this.ptr); }
+			set { Native.ExpectSuccess(Native.SSL_CTX_set_mode(ptr, (int)value)); }
+			get { return (SslMode)Native.SSL_CTX_get_mode(ptr); }
 		}
 
 		#endregion
@@ -182,36 +181,37 @@ namespace OpenSSL.SSL
 			{
 				get
 				{
-					if (this.OnClientCertCallback == null)
+					if (OnClientCertCallback == null)
 					{
 						return null;
 					}
-					if (this.nativeCallback != null)
+					if (nativeCallback != null)
 					{
-						return this.nativeCallback;
+						return nativeCallback;
 					}
 					else
 					{
-						this.nativeCallback = new Native.client_cert_cb(this.OnClientCertThunk);
-						return this.nativeCallback;
+						nativeCallback = OnClientCertThunk;
+						return nativeCallback;
 					}
 				}
 			}
 
 			public ClientCertCallbackThunk(ClientCertCallbackHandler callback)
 			{
-				this.OnClientCertCallback = callback;
+				OnClientCertCallback = callback;
 			}
 
 			internal int OnClientCertThunk(IntPtr ssl_ptr, out IntPtr cert_ptr, out IntPtr key_ptr)
 			{
-				X509Certificate cert = null;
-				CryptoKey key = null;
-				Ssl ssl = new Ssl(ssl_ptr, false);
+				X509Certificate cert;
+				CryptoKey key;
+				var ssl = new Ssl(ssl_ptr, false);
 				cert_ptr = IntPtr.Zero;
 				key_ptr = IntPtr.Zero;
 
-				int nRet = OnClientCertCallback(ssl, out cert, out key);
+				var nRet = OnClientCertCallback(ssl, out cert, out key);
+
 				if (nRet != 0)
 				{
 					if (cert != null)
@@ -225,7 +225,6 @@ namespace OpenSSL.SSL
 				}
 				return nRet;
 			}
-
 		}
 
 		internal class VerifyCertCallbackThunk
@@ -237,45 +236,48 @@ namespace OpenSSL.SSL
 			{
 				get
 				{
-					if (this.OnVerifyCert == null)
+					if (OnVerifyCert == null)
 					{
 						return null;
 					}
-					if (this.nativeCallback != null)
+					if (nativeCallback != null)
 					{
-						return this.nativeCallback;
+						return nativeCallback;
 					}
 					else
 					{
-						this.nativeCallback = new Native.VerifyCertCallback(OnVerifyCertThunk);
-						return this.nativeCallback;
+						nativeCallback = OnVerifyCertThunk;
+						return nativeCallback;
 					}
 				}
 			}
 
 			public VerifyCertCallbackThunk(RemoteCertificateValidationHandler callback)
 			{
-				this.OnVerifyCert = callback;
+				OnVerifyCert = callback;
 			}
 
 			internal int OnVerifyCertThunk(int ok, IntPtr store_ctx)
 			{
-				X509StoreContext ctx = new X509StoreContext(store_ctx, false);
-				X509Certificate cert = ctx.CurrentCert;
-				int depth = ctx.ErrorDepth;
-				VerifyResult result = (VerifyResult)ctx.Error;
+				var ctx = new X509StoreContext(store_ctx, false);
+				var cert = ctx.CurrentCert;
+				var depth = ctx.ErrorDepth;
+				var result = (VerifyResult)ctx.Error;
+
 				// build the X509Chain from the store
-				X509Store store = ctx.Store;
-				Core.Stack<X509Object> objStack = store.Objects;
-				X509Chain chain = new X509Chain();
-				foreach (X509Object obj in objStack)
+				var store = ctx.Store;
+				var objStack = store.Objects;
+				var chain = new X509Chain();
+
+				foreach (var obj in objStack)
 				{
-					X509Certificate objCert = obj.Certificate;
+					var objCert = obj.Certificate;
 					if (objCert != null)
 					{
 						chain.Add(objCert);
 					}
 				}
+
 				// Call the managed delegate
 				if (OnVerifyCert(this, cert, chain, depth, result))
 				{
@@ -303,7 +305,7 @@ namespace OpenSSL.SSL
 			// Reference counts don't work for the X509_STORE, so
 			// we just remove ownership from the X509Store object
 			store.IsOwner = false;
-			Native.SSL_CTX_set_cert_store(this.ptr, store.Handle);
+			Native.SSL_CTX_set_cert_store(ptr, store.Handle);
 		}
 
 		/// <summary>
@@ -313,8 +315,8 @@ namespace OpenSSL.SSL
 		/// <param name="callback"></param>
 		public void SetVerify(VerifyMode mode, RemoteCertificateValidationHandler callback)
 		{
-			this._verifyCertCallbackThunk = new VerifyCertCallbackThunk(callback);
-			Native.SSL_CTX_set_verify(this.ptr, (int)mode, _verifyCertCallbackThunk.Callback);
+			_verifyCertCallbackThunk = new VerifyCertCallbackThunk(callback);
+			Native.SSL_CTX_set_verify(ptr, (int)mode, _verifyCertCallbackThunk.Callback);
 		}
 
 		/// <summary>
@@ -323,19 +325,20 @@ namespace OpenSSL.SSL
 		/// <param name="depth"></param>
 		public void SetVerifyDepth(int depth)
 		{
-			Native.SSL_CTX_set_verify_depth(this.ptr, depth);
+			Native.SSL_CTX_set_verify_depth(ptr, depth);
 		}
 
 		public Core.Stack<X509Name> LoadClientCAFile(string filename)
 		{
-			IntPtr stack = Native.SSL_load_client_CA_file(filename);
-			Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(stack, true);
+			var stack = Native.SSL_load_client_CA_file(filename);
+			var name_stack = new Core.Stack<X509Name>(stack, true);
+			
 			return name_stack;
 		}
 
 		/// <summary>
 		/// Calls SSL_CTX_set_client_CA_list/SSL_CTX_get_client_CA_list
-		/// The Stack and the X509Name objects contined within them
+		/// The Stack and the X509Name objects contained within them
 		/// are freed when the context is disposed.  Make sure that
 		/// the Stack and X509Name objects have set IsOwner to false
 		/// before assigning them to the context.
@@ -344,84 +347,87 @@ namespace OpenSSL.SSL
 		{
 			get
 			{
-				IntPtr ptr = Native.SSL_CTX_get_client_CA_list(this.ptr);
-				Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(ptr, false);
+				var ptr = Native.SSL_CTX_get_client_CA_list(this.ptr);
+				var name_stack = new Core.Stack<X509Name>(ptr, false);
+				
 				return name_stack;
 			}
 			set
 			{
 				// Remove the native pointer ownership from the Stack object
 				value.IsOwner = false;
-				Native.SSL_CTX_set_client_CA_list(this.ptr, value.Handle);
+				Native.SSL_CTX_set_client_CA_list(ptr, value.Handle);
 			}
 		}
 
 		public int LoadVerifyLocations(string caFile, string caPath)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_load_verify_locations(this.ptr, caFile, caPath));
+			return Native.ExpectSuccess(Native.SSL_CTX_load_verify_locations(ptr, caFile, caPath));
 		}
 
 		public int SetDefaultVerifyPaths()
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_set_default_verify_paths(this.ptr));
+			return Native.ExpectSuccess(Native.SSL_CTX_set_default_verify_paths(ptr));
 		}
 
 		public int SetCipherList(string cipherList)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_set_cipher_list(this.ptr, cipherList));
+			return Native.ExpectSuccess(Native.SSL_CTX_set_cipher_list(ptr, cipherList));
 		}
 
 		public int UseCertificate(X509Certificate cert)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_use_certificate(this.ptr, cert.Handle));
+			return Native.ExpectSuccess(Native.SSL_CTX_use_certificate(ptr, cert.Handle));
 		}
 
 		public int UseCertificateChainFile(string filename)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_use_certificate_chain_file(this.ptr, filename));
+			return Native.ExpectSuccess(Native.SSL_CTX_use_certificate_chain_file(ptr, filename));
 		}
 
 		public int UsePrivateKey(CryptoKey key)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_use_PrivateKey(this.ptr, key.Handle));
+			return Native.ExpectSuccess(Native.SSL_CTX_use_PrivateKey(ptr, key.Handle));
 		}
 
 		public int UsePrivateKeyFile(string filename, SslFileType type)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_use_PrivateKey_file(this.ptr, filename, (int)type));
+			return Native.ExpectSuccess(Native.SSL_CTX_use_PrivateKey_file(ptr, filename, (int)type));
 		}
 
 		public int CheckPrivateKey()
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_check_private_key(this.ptr));
+			return Native.ExpectSuccess(Native.SSL_CTX_check_private_key(ptr));
 		}
 
 		public int SetSessionIdContext(byte[] sid_ctx)
 		{
-			return Native.ExpectSuccess(Native.SSL_CTX_set_session_id_context(this.ptr, sid_ctx, (uint)sid_ctx.Length));
+			return Native.ExpectSuccess(Native.SSL_CTX_set_session_id_context(ptr, sid_ctx, (uint)sid_ctx.Length));
 		}
 
 		public void SetClientCertCallback(ClientCertCallbackHandler callback)
 		{
 			_clientCertCallbackThunk = new ClientCertCallbackThunk(callback);
-			Native.SSL_CTX_set_client_cert_cb(this.ptr, _clientCertCallbackThunk.Callback);
+			Native.SSL_CTX_set_client_cert_cb(ptr, _clientCertCallbackThunk.Callback);
 		}
 
 		public List<string> GetCipherList()
 		{
-			List<string> ret = new List<string>();
-			SSL_CTX raw = (SSL_CTX)Marshal.PtrToStructure(ptr, typeof(SSL_CTX));
-			Core.Stack<SslCipher> stack = new Core.Stack<SslCipher>(raw.cipher_list, false);
-			foreach (SslCipher cipher in stack)
+			var ret = new List<string>();
+			var raw = (SSL_CTX)Marshal.PtrToStructure(ptr, typeof(SSL_CTX));
+			var stack = new Core.Stack<SslCipher>(raw.cipher_list, false);
+
+			foreach (var cipher in stack)
 			{
-				IntPtr cipher_ptr = Native.SSL_CIPHER_description(cipher.Handle, null, 0);
+				var cipher_ptr = Native.SSL_CIPHER_description(cipher.Handle, null, 0);
 				if (cipher_ptr != IntPtr.Zero)
 				{
-					string strCipher = Marshal.PtrToStringAnsi(cipher_ptr);
+					var strCipher = Marshal.PtrToStringAnsi(cipher_ptr);
 					ret.Add(strCipher);
 					Native.OPENSSL_free(cipher_ptr);
 				}
 			}
+
 			return ret;
 		}
 
@@ -434,7 +440,7 @@ namespace OpenSSL.SSL
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.SSL_CTX_free(this.ptr);
+			Native.SSL_CTX_free(ptr);
 		}
 
 		#endregion

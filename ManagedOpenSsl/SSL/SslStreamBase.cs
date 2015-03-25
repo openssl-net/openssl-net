@@ -23,13 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Threading;
 using OpenSSL.Core;
 using OpenSSL.X509;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace OpenSSL.SSL
 {
@@ -94,33 +93,33 @@ namespace OpenSSL.SSL
 
 			public bool ContinueAfterHandshake
 			{
-				get { return this.continueAfterHandshake; }
+				get { return continueAfterHandshake; }
 			}
 
 			public bool IsWriteOperation
 			{
-				get { return this.isWriteOperation; }
-				set { this.isWriteOperation = value; }
+				get { return isWriteOperation; }
+				set { isWriteOperation = value; }
 			}
 
 			public byte[] Buffer
 			{
-				get { return this.buffer; }
+				get { return buffer; }
 			}
 
 			public int Offset
 			{
-				get { return this.offset; }
+				get { return offset; }
 			}
 
 			public int Count
 			{
-				get { return this.count; }
+				get { return count; }
 			}
 
 			public int BytesRead
 			{
-				get { return this.bytesRead; }
+				get { return bytesRead; }
 			}
 
 			public object AsyncState
@@ -130,7 +129,7 @@ namespace OpenSSL.SSL
 
 			public Exception AsyncException
 			{
-				get { return this.asyncException; }
+				get { return asyncException; }
 			}
 
 			public bool CompletedWithError
@@ -141,6 +140,7 @@ namespace OpenSSL.SSL
 					{
 						return false;
 					}
+
 					return (null != asyncException);
 				}
 			}
@@ -152,12 +152,12 @@ namespace OpenSSL.SSL
 					lock (locker)
 					{
 						// Create the event if we haven't already done so
-						if (this.asyncWaitHandle == null)
+						if (asyncWaitHandle == null)
 						{
-							this.asyncWaitHandle = new ManualResetEvent(isCompleted);
+							asyncWaitHandle = new ManualResetEvent(isCompleted);
 						}
 					}
-					return this.asyncWaitHandle;
+					return asyncWaitHandle;
 				}
 			}
 
@@ -172,7 +172,7 @@ namespace OpenSSL.SSL
 				{
 					lock (locker)
 					{
-						return this.isCompleted;
+						return isCompleted;
 					}
 				}
 			}
@@ -181,25 +181,25 @@ namespace OpenSSL.SSL
 			{
 				lock (locker)
 				{
-					if (this.isCompleted)
+					if (isCompleted)
 					{
 						return;
 					}
 
-					this.isCompleted = true;
-					this.asyncException = ex;
+					isCompleted = true;
+					asyncException = ex;
 					this.bytesRead = bytesRead;
 					// If the wait handle isn't null, we should set the event
 					// rather than fire a callback
-					if (this.asyncWaitHandle != null)
+					if (asyncWaitHandle != null)
 					{
-						this.asyncWaitHandle.Set();
+						asyncWaitHandle.Set();
 					}
 				}
 				// If we have a callback method, invoke it
-				if (this.userCallback != null)
+				if (userCallback != null)
 				{
-					this.userCallback.BeginInvoke(this, null, null);
+					userCallback.BeginInvoke(this, null, null);
 				}
 			}
 
@@ -230,6 +230,7 @@ namespace OpenSSL.SSL
 			{
 				throw new ArgumentException("Stream must allow read and write capabilities", "stream");
 			}
+
 			innerStream = stream;
 			this.ownStream = ownStream;
 			read_buffer = new byte[16384];
@@ -1137,7 +1138,7 @@ namespace OpenSSL.SSL
 
 		internal string GetCipherString(bool FIPSmode, SslProtocols sslProtocols, SslStrength sslStrength)
 		{
-			string str = "";
+			var str = "";
 
 			if (FIPSmode || ((sslStrength & SslStrength.High) == SslStrength.High))
 			{

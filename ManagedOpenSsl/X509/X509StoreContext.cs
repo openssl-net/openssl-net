@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
@@ -47,7 +45,7 @@ namespace OpenSSL.X509
 			public int purpose;
 			public int trust;
 #if PocketPC
-            public uint check_time;
+			public uint check_time;
 #else
 			public long check_time;
 #endif
@@ -102,7 +100,8 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				IntPtr cert = Native.X509_STORE_CTX_get_current_cert(this.ptr);
+				var cert = Native.X509_STORE_CTX_get_current_cert(ptr);
+				
 				return new X509Certificate(cert, false);
 			}
 		}
@@ -112,7 +111,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public int ErrorDepth
 		{
-			get { return Native.X509_STORE_CTX_get_error_depth(this.ptr); }
+			get { return Native.X509_STORE_CTX_get_error_depth(ptr); }
 		}
 
 		/// <summary>
@@ -120,8 +119,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public int Error
 		{
-			get { return Native.X509_STORE_CTX_get_error(this.ptr); }
-			set { Native.X509_STORE_CTX_set_error(this.ptr, value); }
+			get { return Native.X509_STORE_CTX_get_error(ptr); }
+			set { Native.X509_STORE_CTX_set_error(ptr, value); }
 		}
 
 		/// <summary>
@@ -129,7 +128,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public X509Store Store
 		{
-			get { return new X509Store(this.Raw.ctx, false); }
+			get { return new X509Store(Raw.ctx, false); }
 		}
 
 		/// <summary>
@@ -137,12 +136,12 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string ErrorString
 		{
-			get { return Native.PtrToStringAnsi(Native.X509_verify_cert_error_string(this.Raw.error), false); }
+			get { return Native.PtrToStringAnsi(Native.X509_verify_cert_error_string(Raw.error), false); }
 		}
 
 		private X509_STORE_CONTEXT Raw
 		{
-			get { return (X509_STORE_CONTEXT)Marshal.PtrToStructure(this.ptr, typeof(X509_STORE_CONTEXT)); }
+			get { return (X509_STORE_CONTEXT)Marshal.PtrToStructure(ptr, typeof(X509_STORE_CONTEXT)); }
 		}
 		#endregion
 
@@ -156,7 +155,7 @@ namespace OpenSSL.X509
 		public void Init(X509Store store, X509Certificate cert, X509Chain uchain)
 		{
 			Native.ExpectSuccess(Native.X509_STORE_CTX_init(
-				this.ptr,
+				ptr,
 				store.Handle,
 				cert != null ? cert.Handle : IntPtr.Zero,
 				uchain.Handle));
@@ -168,9 +167,11 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public bool Verify()
 		{
-			int ret = Native.X509_verify_cert(this.ptr);
+			var ret = Native.X509_verify_cert(ptr);
+
 			if (ret < 0)
 				throw new OpenSslException();
+
 			return ret == 1;
 		}
 
@@ -183,7 +184,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.X509_STORE_CTX_free(this.ptr);
+			Native.X509_STORE_CTX_free(ptr);
 		}
 
 		#endregion

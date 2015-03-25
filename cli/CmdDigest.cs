@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL.Crypto;
+﻿using OpenSSL.Crypto;
+using System;
 
 namespace OpenSSL.CLI 
 {
@@ -28,9 +26,12 @@ namespace OpenSSL.CLI
 -binary         output in binary form
 -engine e       use engine e, possibly a hardware device.
 Message Digest Types");
-			string[] types = MessageDigest.AllNamesSorted;
-			for (int i = 0; i < types.Length; i++) {
-				string name = types[i];
+
+			var types = MessageDigest.AllNamesSorted;
+
+			for (var i = 0; i < types.Length; i++) {
+				var name = types[i];
+				
 				if (name == name.ToUpper())
 					continue;
 

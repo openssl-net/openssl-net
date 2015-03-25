@@ -23,14 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL;
-using System.IO;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace OpenSSL.CLI
 {
@@ -51,7 +49,7 @@ namespace OpenSSL.CLI
 		#region ICommand Members
 		public void Execute(string[] args)
 		{
-			Console.Error.WriteLine("{0}: {1}", this.name, string.Join(" ", args));
+			Console.Error.WriteLine("{0}: {1}", name, string.Join(" ", args));
 			Console.Error.WriteLine("Not implemented yet!");
 		}
 		#endregion
@@ -62,7 +60,7 @@ namespace OpenSSL.CLI
 	{
 		static void Main(string[] args)
 		{
-			Program program = new Program();
+			var program = new Program();
 			program.Run(args);
 		}
 
@@ -77,16 +75,16 @@ namespace OpenSSL.CLI
 
 		Program()
 		{
-			CmdCipher cmdCipher = new CmdCipher();
-			CmdDigest cmdDigest = new CmdDigest();
+			var cmdCipher = new CmdCipher();
+			var cmdDigest = new CmdDigest();
 
-			this.std_cmds.Add("dh", new CmdDH());
-			this.std_cmds.Add("gendh", new CmdGenDH());
-			this.std_cmds.Add("rsa", new CmdRSA());
-			this.std_cmds.Add("genrsa", new CmdGenRSA());
-			this.std_cmds.Add("version", new CmdVersion());
-			this.std_cmds.Add("enc", cmdCipher);
-			this.std_cmds.Add("dgst", cmdDigest);
+			std_cmds.Add("dh", new CmdDH());
+			std_cmds.Add("gendh", new CmdGenDH());
+			std_cmds.Add("rsa", new CmdRSA());
+			std_cmds.Add("genrsa", new CmdGenRSA());
+			std_cmds.Add("version", new CmdVersion());
+			std_cmds.Add("enc", cmdCipher);
+			std_cmds.Add("dgst", cmdDigest);
 
 			#region Standard Commands
 			AddNullCommand(std_cmds, "asn1parse");
@@ -124,16 +122,16 @@ namespace OpenSSL.CLI
 			#endregion
 
 			#region Message Digest commands
-			foreach (string name in MessageDigest.AllNames) 
+			foreach (var name in MessageDigest.AllNames) 
 			{
-				this.md_cmds.Add(name, cmdDigest);
+				md_cmds.Add(name, cmdDigest);
 			}
 			#endregion
 
 			#region Cipher commands
-			foreach (string name in Cipher.AllNames) 
+			foreach (var name in Cipher.AllNames) 
 			{
-				this.cipher_cmds.Add(name, cmdCipher);
+				cipher_cmds.Add(name, cmdCipher);
 			}
 			#endregion
 		}
@@ -146,14 +144,17 @@ namespace OpenSSL.CLI
 				return md_cmds[name];
 			if (cipher_cmds.ContainsKey(name))
 				return cipher_cmds[name];
+
 			return null;
 		}
 
 		void PrintCommands(IEnumerable<string> cmds)
 		{
 			const int COLUMN_WIDTH = 15;
-			int col = 0;
-			foreach (string cmd in cmds)
+
+			var col = 0;
+			
+			foreach (var cmd in cmds)
 			{
 				if (cmd == cmd.ToUpper())
 					continue;
@@ -176,8 +177,8 @@ namespace OpenSSL.CLI
 						continue;
 					}
 				}
-
 			}
+
 			Console.Error.WriteLine();
 		}
 
@@ -200,7 +201,8 @@ namespace OpenSSL.CLI
 				Usage();
 				return;
 			}
-			ICommand cmd = FindCommand(args[0]);
+
+			var cmd = FindCommand(args[0]);
 			if (cmd == null)
 			{
 				Usage();
@@ -212,7 +214,7 @@ namespace OpenSSL.CLI
 
 		public static int OnGenerator(int p, int n, object arg)
 		{
-			TextWriter cout = Console.Error;
+			var cout = Console.Error;
 
 			switch (p)
 			{
@@ -228,35 +230,40 @@ namespace OpenSSL.CLI
 		private static string ReadPassword()
 		{
 			Console.TreatControlCAsInput = true;
-			StringBuilder sb = new StringBuilder();
+			var sb = new StringBuilder();
+
 			while (true)
 			{
-				ConsoleKeyInfo key = Console.ReadKey(true);
+				var key = Console.ReadKey(true);
+
 				if (key.Key == ConsoleKey.Enter)
 					break;
 
 				if (key.Key == ConsoleKey.C && key.Modifiers == ConsoleModifiers.Control)
 				{
 					Console.Error.WriteLine();
-					throw new Exception("Cancelled");
+					throw new Exception("Canceled");
 				}
 
 				sb.Append(key.KeyChar);
 			}
+
 			Console.TreatControlCAsInput = false;
+
 			return sb.ToString();
 		}
 
 		public static string OnPassword(bool verify, object arg)
 		{
-			string passout = arg as string;
+			var passout = arg as string;
+
 			if (!string.IsNullOrEmpty(passout))
 				return File.ReadAllText(passout);
 
 			while (true)
 			{
 				Console.Error.Write("Enter pass phrase:");
-				string strPassword = ReadPassword();
+				var strPassword = ReadPassword();
 				Console.Error.WriteLine();
 
 				if (strPassword.Length == 0)
@@ -266,7 +273,7 @@ namespace OpenSSL.CLI
 					return strPassword;
 
 				Console.Error.Write("Verifying - Enter pass phrase:");
-				string strVerify = ReadPassword();
+				var strVerify = ReadPassword();
 				Console.Error.WriteLine();
 	
 				if (strPassword == strVerify)
@@ -279,18 +286,22 @@ namespace OpenSSL.CLI
 		public static BIO GetInFile(string infile)
 		{
 			BIO bio;
+
 			if (string.IsNullOrEmpty(infile))
 			{
 				bio = BIO.MemoryBuffer();
-				Stream cin = Console.OpenStandardInput();
-				byte[] buf = new byte[1024];
+				var cin = Console.OpenStandardInput();
+				var buf = new byte[1024];
 				while (true)
 				{
-					int len = cin.Read(buf, 0, buf.Length);
+					var len = cin.Read(buf, 0, buf.Length);
+					
 					if (len == 0)
 						break;
+					
 					bio.Write(buf, len);
 				}
+				
 				return bio;
 			}
 

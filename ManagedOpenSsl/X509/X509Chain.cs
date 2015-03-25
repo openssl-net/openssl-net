@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using OpenSSL.Core;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using OpenSSL.Core;
 
 namespace OpenSSL.X509
 {
@@ -50,17 +48,19 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		public X509Chain(BIO bio)
 		{
-			IntPtr sk = Native.ExpectNonNull(Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
-			using (Core.Stack<X509CertificateInfo> stack = new Core.Stack<X509CertificateInfo>(sk, true))
+			var sk = Native.ExpectNonNull(Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
+
+			using (var stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
 				while (stack.Count > 0)
 				{
-					using (X509CertificateInfo xi = stack.Shift())
+					using (var xi = stack.Shift())
 					{
-						X509Certificate cert = xi.Certificate;
+						var cert = xi.Certificate;
+						
 						if (cert != null)
 						{
-							this.Add(cert);
+							Add(cert);
 						}
 					}
 				}
@@ -86,14 +86,18 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public X509Certificate FindByIssuerAndSerial(X509Name issuer, int serial)
 		{
-			using (Asn1Integer asnInt = new Asn1Integer(serial))
+			using (var asnInt = new Asn1Integer(serial))
 			{
-				IntPtr ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, asnInt.Handle);
+				var ptr = Native.X509_find_by_issuer_and_serial(this.ptr, issuer.Handle, asnInt.Handle);
+
 				if (ptr == IntPtr.Zero)
 					return null;
-				X509Certificate cert = new X509Certificate(ptr, true);
+				
+				var cert = new X509Certificate(ptr, true);
+				
 				// Increase the reference count for the native pointer
 				cert.AddRef();
+				
 				return cert;
 			}
 		}
@@ -105,12 +109,16 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public X509Certificate FindBySubject(X509Name subject)
 		{
-			IntPtr ptr = Native.X509_find_by_subject(this.ptr, subject.Handle);
+			var ptr = Native.X509_find_by_subject(this.ptr, subject.Handle);
+
 			if (ptr == IntPtr.Zero)
 				return null;
-			X509Certificate cert = new X509Certificate(ptr, true);
+			
+			var cert = new X509Certificate(ptr, true);
+			
 			// Increase the reference count for the native pointer
 			cert.AddRef();
+			
 			return cert;
 		}
 		#endregion
@@ -133,16 +141,17 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		public X509List(BIO bio)
 		{
-			IntPtr sk = Native.ExpectNonNull(
+			var sk = Native.ExpectNonNull(
 				Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
-			using (Core.Stack<X509CertificateInfo> stack = new Core.Stack<X509CertificateInfo>(sk, true))
+
+			using (var stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
 				while (stack.Count > 0)
 				{
-					using (X509CertificateInfo xi = stack.Shift())
+					using (var xi = stack.Shift())
 					{
 						if (xi.Certificate != null)
-							this.Add(xi.Certificate);
+							Add(xi.Certificate);
 					}
 				}
 			}
@@ -163,11 +172,12 @@ namespace OpenSSL.X509
 		/// <param name="der"></param>
 		public X509List(byte[] der)
 		{
-			BIO bio = new BIO(der);
+			var bio = new BIO(der);
+			
 			while (bio.NumberRead < der.Length)
 			{
-				X509Certificate x509 = X509Certificate.FromDER(bio);
-				this.Add(x509);
+				var x509 = X509Certificate.FromDER(bio);
+				Add(x509);
 			}
 		}
 		#endregion

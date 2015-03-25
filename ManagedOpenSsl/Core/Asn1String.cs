@@ -24,8 +24,6 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 
 namespace OpenSSL.Core
@@ -35,7 +33,7 @@ namespace OpenSSL.Core
 	/// </summary>
 	public class Asn1String : BaseValueType, IComparable<Asn1String>
 	{
-		#region Intialization
+		#region Initialization
 		/// <summary>
 		/// Calls ASN1_STRING_type_new()
 		/// </summary>
@@ -61,7 +59,7 @@ namespace OpenSSL.Core
 		public Asn1String(byte[] data)
 			: this()
 		{
-			Native.ExpectSuccess(Native.ASN1_STRING_set(this.ptr, data, data.Length));
+			Native.ExpectSuccess(Native.ASN1_STRING_set(ptr, data, data.Length));
 		}
 		#endregion
 
@@ -71,7 +69,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public int Length
 		{
-			get { return Native.ASN1_STRING_length(this.ptr); }
+			get { return Native.ASN1_STRING_length(ptr); }
 		}
 
 		/// <summary>
@@ -81,9 +79,11 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				IntPtr pData = Native.ASN1_STRING_data(this.ptr);
-				byte[] ret = new byte[this.Length];
+				var pData = Native.ASN1_STRING_data(ptr);
+				var ret = new byte[Length];
+
 				Marshal.Copy(pData, ret, 0, ret.Length);
+
 				return ret;
 			}
 		}
@@ -93,7 +93,7 @@ namespace OpenSSL.Core
 
 		internal override IntPtr DuplicateHandle()
 		{
-			return Native.ASN1_STRING_dup(this.ptr);
+			return Native.ASN1_STRING_dup(ptr);
 		}
 
 		/// <summary>
@@ -101,7 +101,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.ASN1_STRING_free(this.ptr);
+			Native.ASN1_STRING_free(ptr);
 		}
 
 		#endregion
@@ -115,7 +115,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public int CompareTo(Asn1String other)
 		{
-			return Native.ASN1_STRING_cmp(this.ptr, other.Handle);
+			return Native.ASN1_STRING_cmp(ptr, other.Handle);
 		}
 
 		#endregion

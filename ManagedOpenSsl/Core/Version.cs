@@ -23,8 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace OpenSSL.Core
@@ -87,7 +85,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public uint Major
 		{
-			get { return (this.raw & 0xf0000000) >> 28; }
+			get { return (raw & 0xf0000000) >> 28; }
 		}
 
 		/// <summary>
@@ -95,7 +93,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public uint Minor
 		{
-			get { return (this.raw & 0x0ff00000) >> 20; }
+			get { return (raw & 0x0ff00000) >> 20; }
 		}
 
 		/// <summary>
@@ -103,7 +101,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public uint Fix
 		{
-			get { return (this.raw & 0x000ff000) >> 12; }
+			get { return (raw & 0x000ff000) >> 12; }
 		}
 
 		/// <summary>
@@ -113,11 +111,12 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				uint patch = (this.raw & 0x00000ff0) >> 4;
+				var patch = (raw & 0x00000ff0) >> 4;
 
-				byte a = Encoding.ASCII.GetBytes("a")[0];
-				uint x = a + patch;
-				char ch = Encoding.ASCII.GetString(new byte[] { (byte)x })[0];
+				var a = Encoding.ASCII.GetBytes("a")[0];
+				var x = a + patch;
+				var ch = Encoding.ASCII.GetString(new[] { (byte)x })[0];
+
 				return ch;
 			}
 		}
@@ -129,7 +128,8 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				uint status = this.RawStatus;
+				var status = RawStatus;
+
 				if (status == 0)
 					return StatusType.Development;
 				else if (status == 0xf)
@@ -144,7 +144,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public uint Raw
 		{
-			get { return this.raw; }
+			get { return raw; }
 		}
 
 		/// <summary>
@@ -152,7 +152,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public uint RawStatus
 		{
-			get { return this.raw & 0x0000000f; }
+			get { return raw & 0x0000000f; }
 		}
 
 		/// <summary>

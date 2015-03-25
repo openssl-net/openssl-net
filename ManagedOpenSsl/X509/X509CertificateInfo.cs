@@ -23,12 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
@@ -65,8 +63,9 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				X509Certificate ret = new X509Certificate(this.raw.x509, true);
+				var ret = new X509Certificate(raw.x509, true);
 				ret.AddRef();
+
 				return ret;
 			}
 		}
@@ -75,8 +74,9 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				CryptoKey ret = new CryptoKey(this.raw.x_pkey, true);
+				var ret = new CryptoKey(raw.x_pkey, true);
 				ret.AddRef();
+
 				return ret;
 			}
 		}
@@ -87,12 +87,12 @@ namespace OpenSSL.X509
 
 		internal override void OnNewHandle(IntPtr ptr)
 		{
-			this.raw = (X509_INFO)Marshal.PtrToStructure(this.ptr, typeof(X509_INFO));
+			raw = (X509_INFO)Marshal.PtrToStructure(this.ptr, typeof(X509_INFO));
 		}
 
 		protected override void OnDispose()
 		{
-			Native.X509_INFO_free(this.ptr);
+			Native.X509_INFO_free(ptr);
 		}
 
 		internal override CryptoLockTypes LockType
@@ -111,5 +111,4 @@ namespace OpenSSL.X509
 		private X509_INFO raw;
 		#endregion
 	}
-
 }

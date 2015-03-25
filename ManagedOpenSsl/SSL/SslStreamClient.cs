@@ -23,13 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 using OpenSSL.X509;
+using System.IO;
 
 namespace OpenSSL.SSL
 {
@@ -57,15 +54,15 @@ namespace OpenSSL.SSL
 			this.clientCertificates = clientCertificates;
 			this.caCertificates = caCertificates;
 			this.checkCertificateRevocationStatus = checkCertificateRevocationStatus;
-			this.remoteCertificateSelectionCallback = remoteCallback;
-			this.localCertificateSelectionCallback = localCallback;
-			this.internalCertificateSelectionCallback = new ClientCertCallbackHandler(InternalClientCertificateSelectionCallback);
+			remoteCertificateSelectionCallback = remoteCallback;
+			localCertificateSelectionCallback = localCallback;
+			internalCertificateSelectionCallback = InternalClientCertificateSelectionCallback;
 			InitializeClientContext(clientCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocationStatus);
 		}
 
 		protected void InitializeClientContext(X509List certificates, SslProtocols enabledSslProtocols, SslStrength sslStrength, bool checkCertificateRevocation)
 		{
-			// Initialize the context with the specified ssl version
+			// Initialize the context with the specified SSL version
 			// Initialize the context
 			sslContext = new SslContext(SslMethod.SSLv23_client_method);
 
@@ -87,20 +84,24 @@ namespace OpenSSL.SSL
 			}
 
 			// Set the Local certificate selection callback
-			sslContext.SetClientCertCallback(this.internalCertificateSelectionCallback);
+			sslContext.SetClientCertCallback(internalCertificateSelectionCallback);
+
 			// Set the enabled cipher list
 			sslContext.SetCipherList(GetCipherString(false, enabledSslProtocols, sslStrength));
+
 			// Set the callbacks for remote cert verification and local cert selection
 			if (remoteCertificateSelectionCallback != null)
 			{
 				sslContext.SetVerify(VerifyMode.SSL_VERIFY_PEER | VerifyMode.SSL_VERIFY_FAIL_IF_NO_PEER_CERT, remoteCertificateSelectionCallback);
 			}
+
 			// Set the CA list into the store
 			if (caCertificates != null)
 			{
-				X509Store store = new X509Store(caCertificates);
+				var store = new X509Store(caCertificates);
 				sslContext.SetCertificateStore(store);
 			}
+
 			// Set up the read/write bio's
 			read_bio = BIO.MemoryBuffer(false);
 			write_bio = BIO.MemoryBuffer(false);
@@ -108,13 +109,14 @@ namespace OpenSSL.SSL
 			ssl.SetBIO(read_bio, write_bio);
 			read_bio.SetClose(BIO.CloseOption.Close);
 			write_bio.SetClose(BIO.CloseOption.Close);
+
 			// Set the Ssl object into Client mode
 			ssl.SetConnectState();
 		}
 
 		internal protected override bool ProcessHandshake()
 		{
-			bool ret = false;
+			var ret = false;
 
 			// Check to see if we have an exception from the previous call
 			//!!if (handshakeException != null)
@@ -122,7 +124,7 @@ namespace OpenSSL.SSL
 			//!!    throw handshakeException;
 			//!!}
 
-			int nRet = 0;
+			var nRet = 0;
 			if (handShakeState == HandshakeState.InProcess)
 			{
 				nRet = ssl.Connect();
@@ -133,9 +135,10 @@ namespace OpenSSL.SSL
 				handShakeState = HandshakeState.RenegotiateInProcess;
 				nRet = ssl.DoHandshake();
 			}
+
 			if (nRet <= 0)
 			{
-				SslError lastError = ssl.GetError(nRet);
+				var lastError = ssl.GetError(nRet);
 				if (lastError == SslError.SSL_ERROR_WANT_READ)
 				{
 					// Do nothing -- the base stream will write the data from the bio
@@ -166,34 +169,37 @@ namespace OpenSSL.SSL
 				// Successful handshake
 				ret = true;
 			}
+
 			return ret;
 		}
 
 		public int InternalClientCertificateSelectionCallback(Ssl ssl, out X509Certificate x509_cert, out CryptoKey key)
 		{
-			int nRet = 0;
+			var nRet = 0;
 			x509_cert = null;
 			key = null;
 
-			Core.Stack<X509Name> name_stack = ssl.CAList;
-			string[] strIssuers = new string[name_stack.Count];
-			int count = 0;
+			var name_stack = ssl.CAList;
+			var strIssuers = new string[name_stack.Count];
+			var count = 0;
 
-			foreach (X509Name name in name_stack)
+			foreach (var name in name_stack)
 			{
 				strIssuers[count++] = name.OneLine;
 			}
 
 			if (localCertificateSelectionCallback != null)
 			{
-				X509Certificate cert = localCertificateSelectionCallback(this, targetHost, clientCertificates, ssl.GetPeerCertificate(), strIssuers);
+				var cert = localCertificateSelectionCallback(this, targetHost, clientCertificates, ssl.GetPeerCertificate(), strIssuers);
 				if (cert != null && cert.HasPrivateKey)
 				{
 					x509_cert = cert;
 					key = cert.PrivateKey;
+
 					// Addref the cert and private key
 					x509_cert.AddRef();
 					key.AddRef();
+
 					// return success
 					nRet = 1;
 				}

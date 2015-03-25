@@ -23,12 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.X509;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.SSL
 {
@@ -264,34 +262,34 @@ namespace OpenSSL.SSL
 		{
 			get
 			{
-				int offset = (int)Marshal.OffsetOf(typeof(ssl_st), "state");
-				IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
+				var offset = (int)Marshal.OffsetOf(typeof(ssl_st), "state");
+				var offset_ptr = new IntPtr((int)ptr + offset);
 				return Marshal.ReadInt32(offset_ptr);
 			}
 			set
 			{
-				int offset = (int)Marshal.OffsetOf(typeof(ssl_st), "state");
-				IntPtr offset_ptr = new IntPtr((int)this.ptr + offset);
+				var offset = (int)Marshal.OffsetOf(typeof(ssl_st), "state");
+				var offset_ptr = new IntPtr((int)ptr + offset);
 				Marshal.WriteInt32(offset_ptr, value);
 			}
 		}
 
 		public SslCipher CurrentCipher
 		{
-			get { return new SslCipher(Native.SSL_get_current_cipher(this.Handle), false); }
+			get { return new SslCipher(Native.SSL_get_current_cipher(Handle), false); }
 		}
 
 		public Core.Stack<X509Name> CAList
 		{
 			get
 			{
-				IntPtr ptr = Native.SSL_get_client_CA_list(this.ptr);
-				Core.Stack<X509Name> name_stack = new Core.Stack<X509Name>(ptr, false);
+				var ptr = Native.SSL_get_client_CA_list(this.ptr);
+				var name_stack = new Core.Stack<X509Name>(ptr, false);
 				return name_stack;
 			}
 			set
 			{
-				Native.SSL_set_client_CA_list(this.ptr, value.Handle);
+				Native.SSL_set_client_CA_list(ptr, value.Handle);
 			}
 		}
 
@@ -299,12 +297,12 @@ namespace OpenSSL.SSL
 		{
 			get
 			{
-				IntPtr cert = Native.ExpectNonNull(Native.SSL_get_certificate(this.ptr));
+				var cert = Native.ExpectNonNull(Native.SSL_get_certificate(ptr));
 				return new X509Certificate(cert, false);
 			}
 			set
 			{
-				Native.ExpectSuccess(Native.SSL_use_certificate(this.ptr, value.Handle));
+				Native.ExpectSuccess(Native.SSL_use_certificate(ptr, value.Handle));
 			}
 		}
 
@@ -319,59 +317,59 @@ namespace OpenSSL.SSL
 
 		public int Accept()
 		{
-			return Native.SSL_accept(this.ptr);
+			return Native.SSL_accept(ptr);
 		}
 
 		public int Connect()
 		{
-			return Native.SSL_connect(this.ptr);
+			return Native.SSL_connect(ptr);
 		}
 
 		public SslError GetError(int ret_code)
 		{
-			return (SslError)Native.SSL_get_error(this.ptr, ret_code);
+			return (SslError)Native.SSL_get_error(ptr, ret_code);
 		}
 
 		public X509Certificate GetPeerCertificate()
 		{
-			IntPtr cert_ptr = Native.ExpectNonNull(Native.SSL_get_peer_certificate(this.ptr));
-			X509Certificate cert = new X509Certificate(cert_ptr, true);
+			var cert_ptr = Native.ExpectNonNull(Native.SSL_get_peer_certificate(ptr));
+			var cert = new X509Certificate(cert_ptr, true);
 			return cert;
 		}
 
 		public VerifyResult GetVerifyResult()
 		{
-			return (VerifyResult)Native.SSL_get_verify_result(this.ptr);
+			return (VerifyResult)Native.SSL_get_verify_result(ptr);
 		}
 
 		public void SetVerifyResult(VerifyResult result)
 		{
-			Native.SSL_set_verify_result(this.ptr, (int)result);
+			Native.SSL_set_verify_result(ptr, (int)result);
 		}
 
 		public int Shutdown()
 		{
-			return Native.SSL_shutdown(this.ptr);
+			return Native.SSL_shutdown(ptr);
 		}
 
 		public int Write(byte[] buf, int len)
 		{
-			return Native.SSL_write(this.ptr, buf, len);
+			return Native.SSL_write(ptr, buf, len);
 		}
 
 		public int Read(byte[] buf, int len)
 		{
-			return Native.SSL_read(this.ptr, buf, len);
+			return Native.SSL_read(ptr, buf, len);
 		}
 
 		public int SetSessionIdContext(byte[] sid_ctx, uint sid_ctx_len)
 		{
-			return Native.ExpectSuccess(Native.SSL_set_session_id_context(this.ptr, sid_ctx, sid_ctx_len));
+			return Native.ExpectSuccess(Native.SSL_set_session_id_context(ptr, sid_ctx, sid_ctx_len));
 		}
 
 		public int Renegotiate()
 		{
-			return Native.ExpectSuccess(Native.SSL_renegotiate(this.ptr));
+			return Native.ExpectSuccess(Native.SSL_renegotiate(ptr));
 		}
 
 		public int DoHandshake()
@@ -391,12 +389,12 @@ namespace OpenSSL.SSL
 
 		public void SetBIO(BIO read, BIO write)
 		{
-			Native.SSL_set_bio(this.ptr, read.Handle, write.Handle);
+			Native.SSL_set_bio(ptr, read.Handle, write.Handle);
 		}
 
 		public int UseCertificateFile(string filename, SslFileType type)
 		{
-			return Native.ExpectSuccess(Native.SSL_use_certificate_file(this.ptr, filename, (int)type));
+			return Native.ExpectSuccess(Native.SSL_use_certificate_file(ptr, filename, (int)type));
 		}
 
 		public int UsePrivateKeyFile(string filename, SslFileType type)
@@ -406,7 +404,7 @@ namespace OpenSSL.SSL
 
 		public int Clear()
 		{
-			return Native.ExpectSuccess(Native.SSL_clear(this.ptr));
+			return Native.ExpectSuccess(Native.SSL_clear(ptr));
 		}
 
 		#endregion
@@ -418,7 +416,7 @@ namespace OpenSSL.SSL
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.SSL_free(this.Handle);
+			Native.SSL_free(Handle);
 		}
 
 		#endregion

@@ -23,9 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OpenSSL.SSL
 {
@@ -306,5 +303,4 @@ namespace OpenSSL.SSL
 		SSL_VERIFY_FAIL_IF_NO_PEER_CERT = 0x02,
 		SSL_VERIFY_CLIENT_ONCE = 0x04,
 	}
-
 }

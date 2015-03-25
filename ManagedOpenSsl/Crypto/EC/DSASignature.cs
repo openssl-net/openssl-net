@@ -22,9 +22,10 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+using OpenSSL.Core;
 using System;
 using System.Runtime.InteropServices;
-using OpenSSL.Core;
 
 namespace OpenSSL.Crypto.EC
 {
@@ -49,16 +50,16 @@ namespace OpenSSL.Crypto.EC
 
 		#region Properties
 		private ECDSA_SIG_st Raw {
-			get { return (ECDSA_SIG_st)Marshal.PtrToStructure(this.ptr, typeof(ECDSA_SIG_st)); }
-			set { Marshal.StructureToPtr(value, this.ptr, false); }
+			get { return (ECDSA_SIG_st)Marshal.PtrToStructure(ptr, typeof(ECDSA_SIG_st)); }
+			set { Marshal.StructureToPtr(value, ptr, false); }
 		}
 
 		public BigNumber R {
-			get { return new BigNumber(this.Raw.r, false); }
+			get { return new BigNumber(Raw.r, false); }
 		}
 
 		public BigNumber S {
-			get { return new BigNumber(this.Raw.s, false); }
+			get { return new BigNumber(Raw.s, false); }
 		}
 		#endregion
 
@@ -67,7 +68,7 @@ namespace OpenSSL.Crypto.EC
 
 		#region Overrides
 		protected override void OnDispose() {
-			Native.ECDSA_SIG_free(this.ptr);
+			Native.ECDSA_SIG_free(ptr);
 		}
 		#endregion
 	}

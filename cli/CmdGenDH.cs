@@ -23,12 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using OpenSSL;
 using OpenSSL.Crypto;
+using System;
+using System.IO;
 
 namespace OpenSSL.CLI
 {
@@ -73,23 +70,23 @@ namespace OpenSSL.CLI
 				return;
 			}
 
-			int g = DH.Generator2;
-			if (this.options.IsSet("2"))
+			var g = DH.Generator2;
+			if (options.IsSet("2"))
 				g = DH.Generator2;
 
-			if (this.options.IsSet("5"))
+			if (options.IsSet("5"))
 				g = DH.Generator5;
 
-			int bits = 512;
-			if (this.options.Arguments.Count == 1)
-				bits = Convert.ToInt32(this.options.Arguments[0]);
+			var bits = 512;
+			if (options.Arguments.Count == 1)
+				bits = Convert.ToInt32(options.Arguments[0]);
 
 			Console.Error.WriteLine("Generating DH parameters, {0} bit long safe prime, generator {1}", bits, g);
 			Console.Error.WriteLine("This is going to take a long time");
 
-			DH dh = new DH(bits, g, Program.OnGenerator, null);
+			var dh = new DH(bits, g, Program.OnGenerator, null);
 
-			string outfile = this.options["out"] as string;
+			var outfile = options["out"] as string;
 			if (string.IsNullOrEmpty(outfile))
 			{
 				Console.WriteLine(dh.PEM);

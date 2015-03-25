@@ -23,11 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenSSL.X509
 {
@@ -88,8 +87,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		public void SetNoDB()
 		{
-			int db_offset = (int)Marshal.OffsetOf(typeof(X509V3_CTX), "db");
-			IntPtr db_param = new IntPtr((int)this.ptr + db_offset);
+			var db_offset = (int)Marshal.OffsetOf(typeof(X509V3_CTX), "db");
+			var db_param = new IntPtr((int)ptr + db_offset);
 			Marshal.WriteIntPtr(db_param, IntPtr.Zero);
 		}
 
@@ -99,7 +98,7 @@ namespace OpenSSL.X509
 		/// <param name="cfg"></param>
 		public void SetConfiguration(Configuration cfg)
 		{
-			Native.X509V3_set_nconf(this.ptr, cfg.Handle);
+			Native.X509V3_set_nconf(ptr, cfg.Handle);
 		}
 
 		#endregion
@@ -111,7 +110,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.OPENSSL_free(this.ptr);
+			Native.OPENSSL_free(ptr);
 		}
 
 		#endregion
@@ -139,7 +138,7 @@ namespace OpenSSL.X509
 		public Configuration(string filename)
 			: this()
 		{
-			this.Load(filename);
+			Load(filename);
 		}
 
 		#endregion
@@ -152,8 +151,8 @@ namespace OpenSSL.X509
 		/// <param name="filename"></param>
 		public void Load(string filename)
 		{
-			int eline = 0;
-			Native.ExpectSuccess(Native.NCONF_load(this.ptr, filename, ref eline));
+			var eline = 0;
+			Native.ExpectSuccess(Native.NCONF_load(ptr, filename, ref eline));
 		}
 
 		/// <summary>
@@ -170,7 +169,7 @@ namespace OpenSSL.X509
 			X509Certificate subject,
 			X509Request request)
 		{
-			using (X509V3Context ctx = new X509V3Context(issuer, subject, request))
+			using (var ctx = new X509V3Context(issuer, subject, request))
 			{
 				ctx.SetConfiguration(this);
 				Native.ExpectSuccess(Native.X509V3_EXT_add_nconf(
@@ -190,7 +189,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.NCONF_free(this.ptr);
+			Native.NCONF_free(ptr);
 		}
 
 		#endregion

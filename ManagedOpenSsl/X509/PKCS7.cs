@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
@@ -117,22 +115,22 @@ namespace OpenSSL.X509
 		#region Properties
 
 		/// <summary>
-		/// Extracts the X509Chain of certifcates from the internal PKCS7 structure
+		/// Extracts the X509Chain of certificates from the internal PKCS7 structure
 		/// </summary>
 		public X509Chain Certificates
 		{
 			get
 			{
-				if (this.stack == null)
+				if (stack == null)
 				{
-					int type = Native.OBJ_obj2nid(this.raw.type);
+					var type = Native.OBJ_obj2nid(raw.type);
 					switch (type)
 					{
 						case NID_pkcs7_signed:
-							this.stack = GetStackFromSigned();
+							stack = GetStackFromSigned();
 							break;
 						case NID_pkcs7_signedAndEnveloped:
-							this.stack = GetStackFromSignedAndEnveloped();
+							stack = GetStackFromSignedAndEnveloped();
 							break;
 						default:
 							throw new NotSupportedException();
@@ -141,15 +139,16 @@ namespace OpenSSL.X509
 
 				// Can we remove this and just use a Chain to begin with?
 				X509Chain chain = null;
-				if (this.stack != null)
+				if (stack != null)
 				{
 					chain = new X509Chain();
 					// We have a stack of certificates, build the chain object and return
-					foreach (X509Certificate cert in this.stack)
+					foreach (var cert in stack)
 					{
 						chain.Add(cert);
 					}
 				}
+
 				return chain;
 			}
 		}
@@ -160,13 +159,13 @@ namespace OpenSSL.X509
 
 		private Core.Stack<X509Certificate> GetStackFromSigned()
 		{
-			PKCS7_SIGNED signed = (PKCS7_SIGNED)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGNED));
+			var signed = (PKCS7_SIGNED)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGNED));
 			return new Core.Stack<X509Certificate>(signed.cert, false);
 		}
 
 		private Core.Stack<X509Certificate> GetStackFromSignedAndEnveloped()
 		{
-			PKCS7_SIGN_ENVELOPE envelope = (PKCS7_SIGN_ENVELOPE)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGN_ENVELOPE));
+			var envelope = (PKCS7_SIGN_ENVELOPE)Marshal.PtrToStructure(raw.ptr, typeof(PKCS7_SIGN_ENVELOPE));
 			return new Core.Stack<X509Certificate>(envelope.cert, false);
 		}
 
@@ -179,12 +178,12 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.PKCS7_free(this.ptr);
+			Native.PKCS7_free(ptr);
 		}
 
 		internal override void OnNewHandle(IntPtr ptr)
 		{
-			this.raw = (_PKCS7)Marshal.PtrToStructure(ptr, typeof(_PKCS7));
+			raw = (_PKCS7)Marshal.PtrToStructure(ptr, typeof(_PKCS7));
 		}
 
 		#endregion

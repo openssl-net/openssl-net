@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 
 namespace OpenSSL.Core
 {
@@ -50,6 +47,7 @@ namespace OpenSSL.Core
 		private static void OnMemoryLeak(uint order, IntPtr file, int line, int num_bytes, IntPtr addr)
 		{
 			string filename;
+
 			if(file != IntPtr.Zero)
 			{
 				filename = Native.PtrToStringAnsi(file, false);

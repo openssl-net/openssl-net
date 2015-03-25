@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL;
-using OpenSSL.Core;
+﻿using OpenSSL.Core;
+using System;
 
 namespace OpenSSL.CLI
 {
@@ -49,12 +46,12 @@ where options are
 				return;
 			}
 
-			bool version = false;
-			bool date = false;
-			bool platform = false;
-			bool cflags = false;
-			bool dir = false;
-			bool opts = false;
+			var version = false;
+			var date = false;
+			var platform = false;
+			var cflags = false;
+			var dir = false;
+			var opts = false;
 
 			if (options.IsSet("version") || args.Length == 1) version = true;
 			if (options.IsSet("date")) date = true;
@@ -67,6 +64,7 @@ where options are
 			if (version) Console.WriteLine(Core.Version.GetText(Core.Version.Format.Text));
 			if (date) Console.WriteLine(Core.Version.GetText(Core.Version.Format.BuildDate));
 			if (platform) Console.WriteLine(Core.Version.GetText(Core.Version.Format.Platform));
+
 			if (opts)
 			{
 				Console.WriteLine("options:  {0} {1} {2} {3} {4} {5}",
@@ -77,6 +75,7 @@ where options are
 					CryptoUtil.Idea_Options,
 					CryptoUtil.Blowfish_Options);
 			}
+
 			if (cflags) Console.WriteLine(Core.Version.GetText(Core.Version.Format.CompilerFlags));
 			if (dir) Console.WriteLine(Core.Version.GetText(Core.Version.Format.BuildDirectory));
 		}

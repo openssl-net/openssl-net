@@ -25,8 +25,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
 
 namespace OpenSSL.CLI
 {
@@ -37,12 +35,12 @@ namespace OpenSSL.CLI
 
 		public string Name
 		{
-			get { return this.name; }
+			get { return name; }
 		}
 
 		public object Value
 		{
-			get { return this.value; }
+			get { return value; }
 			set { this.value = value; }
 		}
 
@@ -63,20 +61,21 @@ namespace OpenSSL.CLI
 
 		public void AddOption(string keyword, Option option)
 		{
-			this.optionsByKeyword.Add(keyword, option);
-			this.optionsByName.Add(option.Name, option);
+			optionsByKeyword.Add(keyword, option);
+			optionsByName.Add(option.Name, option);
 		}
 
 		public void AddMultiOption(string[] keywords, Option option) {
-			this.optionsByName.Add(option.Name, option);
-			foreach (string keyword in keywords) {
-				this.optionsByKeyword.Add(keyword, option);
+			optionsByName.Add(option.Name, option);
+
+			foreach (var keyword in keywords) {
+				optionsByKeyword.Add(keyword, option);
 			}
 		}
 
 		public void ParseArguments(string[] args)
 		{
-			for (int i = 1; i < args.Length; i++)
+			for (var i = 1; i < args.Length; i++)
 			{
 				if (!args[i].StartsWith("-"))
 				{
@@ -84,10 +83,11 @@ namespace OpenSSL.CLI
 					continue;
 				}
 
-				if (!this.optionsByKeyword.ContainsKey(args[i]))
+				if (!optionsByKeyword.ContainsKey(args[i]))
 					throw new ArgumentOutOfRangeException(args[i], "Option not defined");
 
-				Option option = this.optionsByKeyword[args[i]];
+				var option = this.optionsByKeyword[args[i]];
+
 				if (option.Value.GetType() == typeof(bool))
 					option.Value = true;
 				else if (option.Value.GetType() == typeof(string))
@@ -97,17 +97,17 @@ namespace OpenSSL.CLI
 
 		public List<string> Arguments
 		{
-			get { return this.args; }
+			get { return args; }
 		}
 
 		public object this[string name]
 		{
-			get { return this.optionsByName[name].Value; }
+			get { return optionsByName[name].Value; }
 		}
 
 		public string GetString(string name)
 		{
-			return (string)this.optionsByName[name].Value; 
+			return (string)optionsByName[name].Value; 
 		}
 
 		public bool IsSet(string name)
@@ -119,6 +119,7 @@ namespace OpenSSL.CLI
 				else if(option.Value.ToString().Length > 0)
 					return true;
 			}
+
 			return false;
 		}
 	}

@@ -22,8 +22,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-using System;
+
 using OpenSSL.Core;
+using System;
 using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto.EC
@@ -61,19 +62,19 @@ namespace OpenSSL.Crypto.EC
 
 		#region Properties
 		public int Size {
-			get { return Native.ECDSA_size(this.ptr); }
+			get { return Native.ECDSA_size(ptr); }
 		}
 		
 		public Group Group {
-			get { return new Group(Native.ExpectNonNull(Native.EC_KEY_get0_group(this.ptr)), false); }
-			set { Native.ExpectSuccess(Native.EC_KEY_set_group(this.ptr, value.Handle)); }
+			get { return new Group(Native.ExpectNonNull(Native.EC_KEY_get0_group(ptr)), false); }
+			set { Native.ExpectSuccess(Native.EC_KEY_set_group(ptr, value.Handle)); }
 		}
 		
 		public Point PublicKey {
 			get { 
 				return new Point(
-					this.Group,
-					Native.ExpectNonNull(Native.EC_KEY_get0_public_key(this.ptr)), 
+					Group,
+					Native.ExpectNonNull(Native.EC_KEY_get0_public_key(ptr)), 
 					false); 
 			}
 		}
@@ -82,7 +83,7 @@ namespace OpenSSL.Crypto.EC
 			get { 
 				return new Point(
 					this.Group,
-					Native.ExpectNonNull(Native.EC_KEY_get0_private_key(this.ptr)), 
+					Native.ExpectNonNull(Native.EC_KEY_get0_private_key(ptr)), 
 					false); 
 			}
 		}
@@ -91,36 +92,37 @@ namespace OpenSSL.Crypto.EC
 
 		#region Methods
 		public void GenerateKey() {
-			Native.ExpectSuccess(Native.EC_KEY_generate_key(this.ptr));
+			Native.ExpectSuccess(Native.EC_KEY_generate_key(ptr));
 		}
 		
 		public bool CheckKey() {
-			return Native.ExpectSuccess(Native.EC_KEY_check_key(this.ptr)) == 1;
+			return Native.ExpectSuccess(Native.EC_KEY_check_key(ptr)) == 1;
 		}
 		
 		public DSASignature Sign(byte[] digest) {
-			IntPtr sig = Native.ExpectNonNull(Native.ECDSA_do_sign(digest, digest.Length, this.ptr));
+			var sig = Native.ExpectNonNull(Native.ECDSA_do_sign(digest, digest.Length, ptr));
 			return new DSASignature(sig, true);
 		}
 		
 		public uint Sign(int type, byte[] digest, byte[] sig) {
-			uint siglen = (uint)sig.Length;
-			Native.ExpectSuccess(Native.ECDSA_sign(type, digest, digest.Length, sig, ref siglen, this.ptr));
+			var siglen = (uint)sig.Length;
+			Native.ExpectSuccess(Native.ECDSA_sign(type, digest, digest.Length, sig, ref siglen, ptr));
+
 			return siglen;
 		}
 		
 		public bool Verify(byte[] digest, DSASignature sig) {
-			return Native.ECDSA_do_verify(digest, digest.Length, sig.Handle, this.ptr) == 1;
+			return Native.ECDSA_do_verify(digest, digest.Length, sig.Handle, ptr) == 1;
 		}
 		
 		public bool Verify(int type, byte[] digest, byte[] sig) {
-			return Native.ECDSA_verify(type, digest, digest.Length, sig, sig.Length, this.ptr) == 1;
+			return Native.ECDSA_verify(type, digest, digest.Length, sig, sig.Length, ptr) == 1;
 		}
 		
 		public int ComputeKey(Key b, byte[] buf, ComputeKeyHandler kdf) {
 			ComputeKeyThunk thunk = new ComputeKeyThunk(kdf);
 			return Native.ExpectSuccess(
-				Native.ECDH_compute_key(buf, buf.Length, b.PublicKey.Handle, this.ptr, thunk.Wrapper)
+				Native.ECDH_compute_key(buf, buf.Length, b.PublicKey.Handle, ptr, thunk.Wrapper)
 			);
 		}
 		
@@ -133,11 +135,14 @@ namespace OpenSSL.Crypto.EC
 			}
 			
 			public IntPtr Wrapper(byte[] pin, int inlen, IntPtr pout, ref int outlen) {
-				byte[] result = kdf(pin);
+				var result = kdf(pin);
+
 				if (result.Length > outlen) 
 					return IntPtr.Zero;
+
 				Marshal.Copy(result, 0, pout, Math.Min(outlen, result.Length));
 				outlen = result.Length;
+
 				return pout;
 			}
 		}
@@ -146,7 +151,7 @@ namespace OpenSSL.Crypto.EC
 
 		#region Overrides
 		protected override void OnDispose() {
-			Native.EC_KEY_free(this.ptr);
+			Native.EC_KEY_free(ptr);
 		}
 
 		internal override CryptoLockTypes LockType {

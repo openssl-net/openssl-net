@@ -23,12 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
@@ -74,6 +72,7 @@ namespace OpenSSL.X509
 			{
 				if (raw.type == X509_LU_X509)
 					return new X509Certificate(raw.ptr, false);
+
 				return null;
 			}
 		}
@@ -87,6 +86,7 @@ namespace OpenSSL.X509
 			{
 				if (raw.type == X509_LU_PKEY)
 					return new CryptoKey(raw.ptr, false);
+
 				return null;
 			}
 		}
@@ -102,7 +102,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		internal override void AddRef()
 		{
-			Native.X509_OBJECT_up_ref_count(this.ptr);
+			Native.X509_OBJECT_up_ref_count(ptr);
 		}
 
 		/// <summary>
@@ -110,12 +110,12 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.X509_OBJECT_free_contents(this.ptr);
+			Native.X509_OBJECT_free_contents(ptr);
 		}
 
 		internal override void OnNewHandle(IntPtr ptr)
 		{
-			this.raw = (X509_OBJECT)Marshal.PtrToStructure(this.ptr, typeof(X509_OBJECT));
+			raw = (X509_OBJECT)Marshal.PtrToStructure(this.ptr, typeof(X509_OBJECT));
 		}
 
 		#endregion

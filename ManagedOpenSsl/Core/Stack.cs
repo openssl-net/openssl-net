@@ -26,7 +26,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
 
 namespace OpenSSL.Core
@@ -43,7 +42,7 @@ namespace OpenSSL.Core
 	}
 
 	/// <summary>
-	/// Encapsultes the sk_* functions
+	/// Encapsulates the sk_* functions
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public class Stack<T> : BaseValueType, IStack, IList<T> where T : Base, IStackable
@@ -72,7 +71,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public T Shift()
 		{
-			IntPtr ptr = Native.sk_shift(this.ptr);
+			var ptr = Native.sk_shift(this.ptr);
 			return CreateInstance(ptr);
 		}
 
@@ -94,14 +93,17 @@ namespace OpenSSL.Core
 			{
 				get
 				{
-					if (this.index < 0 || this.index >= this.parent.Count)
+					if (index < 0 || index >= parent.Count)
 						throw new InvalidOperationException();
 
-					IntPtr ptr = Native.ExpectNonNull(Native.sk_value(this.parent.Handle, index));
+					var ptr = Native.ExpectNonNull(Native.sk_value(parent.Handle, index));
+
 					// Create a new item
 					T item = parent.CreateInstance(ptr);
+
 					// Addref the item
 					item.AddRef();
+
 					// return it
 					return item;
 				}
@@ -117,22 +119,24 @@ namespace OpenSSL.Core
 
 			#region IEnumerator Members
 
-			object System.Collections.IEnumerator.Current
+			object IEnumerator.Current
 			{
-				get { return this.Current; }
+				get { return Current; }
 			}
 
 			public bool MoveNext()
 			{
-				this.index++;
-				if (this.index < this.parent.Count)
+				index++;
+
+				if (index < parent.Count)
 					return true;
+
 				return false;
 			}
 
 			public void Reset()
 			{
-				this.index = -1;
+				index = -1;
 			}
 
 			#endregion
@@ -148,7 +152,7 @@ namespace OpenSSL.Core
 			// Free the items
 			Clear();
 
-			Native.sk_free(this.ptr);
+			Native.sk_free(ptr);
 		}
 
 		/// <summary>
@@ -157,7 +161,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		internal override IntPtr DuplicateHandle()
 		{
-			return Native.sk_dup(this.ptr);
+			return Native.sk_dup(ptr);
 		}
 
 		#endregion
@@ -171,7 +175,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public int IndexOf(T item)
 		{
-			return Native.sk_find(this.ptr, item.Handle);
+			return Native.sk_find(ptr, item.Handle);
 		}
 
 		/// <summary>
@@ -182,7 +186,8 @@ namespace OpenSSL.Core
 		public void Insert(int index, T item)
 		{
 			// Insert the item into the stack
-			Native.ExpectSuccess(Native.sk_insert(this.ptr, item.Handle, index));
+			Native.ExpectSuccess(Native.sk_insert(ptr, item.Handle, index));
+
 			// Addref the item
 			item.AddRef();
 		}
@@ -193,7 +198,7 @@ namespace OpenSSL.Core
 		/// <param name="index"></param>
 		public void RemoveAt(int index)
 		{
-			Native.ExpectNonNull(Native.sk_delete(this.ptr, index));
+			Native.ExpectNonNull(Native.sk_delete(ptr, index));
 		}
 
 		/// <summary>
@@ -206,20 +211,25 @@ namespace OpenSSL.Core
 			get
 			{
 				// Get the native pointer from the stack
-				IntPtr ptr = Native.ExpectNonNull(Native.sk_value(this.ptr, index));
+				var ptr = Native.ExpectNonNull(Native.sk_value(this.ptr, index));
+
 				// Create a new object
-				T item = CreateInstance(ptr);
+				var item = CreateInstance(ptr);
+
 				// Addref the object
 				item.AddRef();
+
 				// Return the managed object
 				return item;
 			}
 			set
 			{
 				// Insert the item in the stack
-				int ret = Native.sk_insert(this.ptr, value.Handle, index);
+				var ret = Native.sk_insert(ptr, value.Handle, index);
+
 				if (ret < 0)
 					throw new OpenSslException();
+				
 				// Addref the native pointer
 				value.AddRef();
 			}
@@ -236,8 +246,9 @@ namespace OpenSSL.Core
 		public void Add(T item)
 		{
 			// Add the item to the stack
-			if (Native.sk_push(this.ptr, item.Handle) <= 0)
+			if (Native.sk_push(ptr, item.Handle) <= 0)
 				throw new OpenSslException();
+
 			// Addref the native pointer
 			item.AddRef();
 		}
@@ -247,12 +258,13 @@ namespace OpenSSL.Core
 		/// </summary>
 		public void Clear()
 		{
-			IntPtr value_ptr = Native.sk_shift(this.ptr);
+			var value_ptr = Native.sk_shift(ptr);
+
 			while (value_ptr != IntPtr.Zero)
 			{
-				T item = CreateInstance(value_ptr);
+				var item = CreateInstance(value_ptr);
 				item.Dispose();
-				value_ptr = Native.sk_shift(this.ptr);
+				value_ptr = Native.sk_shift(ptr);
 			}
 		}
 
@@ -263,7 +275,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public bool Contains(T item)
 		{
-			foreach (T element in this)
+			foreach (var element in this)
 			{
 				if (element.Equals(item))
 					return true;
@@ -292,9 +304,11 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				int ret = Native.sk_num(this.ptr);
+				var ret = Native.sk_num(ptr);
+
 				if (ret < 0)
 					throw new OpenSslException();
+
 				return ret;
 			}
 		}
@@ -314,11 +328,13 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public bool Remove(T item)
 		{
-			IntPtr ptr = Native.sk_delete_ptr(this.ptr, item.Handle);
+			var ptr = Native.sk_delete_ptr(this.ptr, item.Handle);
+
 			if (ptr != IntPtr.Zero)
 			{
 				return true;
 			}
+
 			return false;
 		}
 
@@ -339,7 +355,7 @@ namespace OpenSSL.Core
 
 		#region IEnumerable Members
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return new Enumerator(this);
 		}
@@ -350,15 +366,17 @@ namespace OpenSSL.Core
 
 		private T CreateInstance(IntPtr ptr)
 		{
-			object[] args = new object[] {
-				(IStack)this,
+			var args = new object[] {
+				this,
 				ptr
 			};
-			BindingFlags flags =
+
+			var flags =
 				BindingFlags.NonPublic |
 				BindingFlags.Public |
 				BindingFlags.Instance;
-			T item = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
+
+			var item = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
 			return item;
 		}
 

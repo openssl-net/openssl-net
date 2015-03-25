@@ -23,15 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using OpenSSL;
-using System.Reflection;
-using System.Security.Permissions;
-using System.IO;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
 
 namespace OpenSSL.CLI
 {
@@ -80,11 +74,11 @@ where options are
 				return;
 			}
 
-			string infile = this.options.GetString("infile");
-			BIO bin = Program.GetInFile(options.GetString("infile"));
+			var infile = this.options.GetString("infile");
+			var bin = Program.GetInFile(options.GetString("infile"));
 
 			DH dh;
-			string inform = this.options["inform"] as string;
+			var inform = this.options["inform"] as string;
 			if (inform == "PEM")
 				dh = DH.FromParametersPEM(bin);
 			else if (inform == "DER")
@@ -95,14 +89,14 @@ where options are
 				return;
 			}
 			
-			if (this.options.IsSet("text"))
+			if (options.IsSet("text"))
 			{
 				Console.WriteLine(dh);
 			}
 
-			if (this.options.IsSet("check"))
+			if (options.IsSet("check"))
 			{
-				DH.CheckCode check = dh.Check();
+				var check = dh.Check();
 				if ((check & DH.CheckCode.NotSuitableGenerator) != 0)
 					Console.WriteLine("the g value is not a generator");
 				if ((check & DH.CheckCode.CheckP_NotPrime) != 0)
@@ -115,16 +109,17 @@ where options are
 					Console.WriteLine("DH parameters appear to be ok");
 			}
 
-			if (this.options.IsSet("code"))
+			if (options.IsSet("code"))
 			{
 				Console.WriteLine("-code is currently not implemented.");
 			}
 
-			if (!this.options.IsSet("noout"))
+			if (!options.IsSet("noout"))
 			{
-				string outfile = this.options["outfile"] as string;
+				var outfile = options["outfile"] as string;
 				BIO bout;
-				bool outmem = false;
+				var outmem = false;
+
 				if (string.IsNullOrEmpty(outfile))
 				{
 					bout = BIO.MemoryBuffer();
@@ -133,7 +128,7 @@ where options are
 				else
 					bout = BIO.File(outfile, "w");
 
-				string outform = this.options["outform"] as string;
+				var outform = options["outform"] as string;
 				if (outform == "DER")
 					dh.WriteParametersDER(bout);
 				else if (outform == "PEM")
@@ -146,8 +141,8 @@ where options are
 
 				if (outmem)
 				{
-					Stream cout = Console.OpenStandardOutput();
-					ArraySegment<byte> segment = bout.ReadBytes((int)bout.NumberWritten);
+					var cout = Console.OpenStandardOutput();
+					var segment = bout.ReadBytes((int)bout.NumberWritten);
 					cout.Write(segment.Array, segment.Offset, segment.Count);
 				}
 			}

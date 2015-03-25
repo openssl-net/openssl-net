@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto
 {
@@ -90,15 +88,16 @@ namespace OpenSSL.Crypto
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
-				this.ptr,
+				ptr,
 				512,
 				null, 0,
-				out this.counter,
-				out this.h,
+				out counter,
+				out h,
 				null)
 			);
+
 			if (generateKeys)
-				this.GenerateKeys();
+				GenerateKeys();
 		}
 
 		/// <summary>
@@ -110,14 +109,15 @@ namespace OpenSSL.Crypto
 		public DSA(int bits, BigNumber.GeneratorHandler callback, object arg)
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
-			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
+			thunk = new BigNumber.GeneratorThunk(callback, arg);
+
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
-				this.ptr,
+				ptr,
 				bits,
 				null, 0,
-				out this.counter,
-				out this.h,
-				this.thunk.CallbackStruct)
+				out counter,
+				out h,
+				thunk.CallbackStruct)
 			);
 		}
 
@@ -133,14 +133,15 @@ namespace OpenSSL.Crypto
 			: base(Native.ExpectNonNull(Native.DSA_new()), true)
 		{
 			this.counter = counter;
-			this.thunk = new BigNumber.GeneratorThunk(callback, arg);
+			thunk = new BigNumber.GeneratorThunk(callback, arg);
+
 			Native.ExpectSuccess(Native.DSA_generate_parameters_ex(
-				this.ptr,
+				ptr,
 				bits,
 				seed, seed.Length,
 				out this.counter,
-				out this.h,
-				this.thunk.CallbackStruct)
+				out h,
+				thunk.CallbackStruct)
 			);
 		}
 
@@ -186,11 +187,11 @@ namespace OpenSSL.Crypto
 
 		#endregion
 
-		#region Properites
+		#region Properties
 		private dsa_st Raw
 		{
-			get { return (dsa_st)Marshal.PtrToStructure(this.ptr, typeof(dsa_st)); }
-			set { Marshal.StructureToPtr(value, this.ptr, false); }
+			get { return (dsa_st)Marshal.PtrToStructure(ptr, typeof(dsa_st)); }
+			set { Marshal.StructureToPtr(value, ptr, false); }
 		}
 
 		/// <summary>
@@ -198,7 +199,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber P
 		{
-			get { return new BigNumber(this.Raw.p, false); }
+			get { return new BigNumber(Raw.p, false); }
 		}
 
 		/// <summary>
@@ -206,7 +207,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber Q
 		{
-			get { return new BigNumber(this.Raw.q, false); }
+			get { return new BigNumber(Raw.q, false); }
 		}
 
 		/// <summary>
@@ -214,7 +215,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public BigNumber G
 		{
-			get { return new BigNumber(this.Raw.g, false); }
+			get { return new BigNumber(Raw.g, false); }
 		}
 
 		/// <summary>
@@ -222,7 +223,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Size
 		{
-			get { return Native.ExpectSuccess(Native.DSA_size(this.ptr)); }
+			get { return Native.ExpectSuccess(Native.DSA_size(ptr)); }
 		}
 
 		/// <summary>
@@ -246,16 +247,17 @@ namespace OpenSSL.Crypto
 		{
 			get 
 			{
-				IntPtr pKey = this.Raw.priv_key;
+				var pKey = Raw.priv_key;
 				if (pKey == IntPtr.Zero)
 					return null;
+
 				return new BigNumber(pKey, false); 
 			}
 			set
 			{
-				dsa_st raw = this.Raw;
+				var raw = Raw;
 				raw.priv_key = Native.BN_dup(value.Handle);
-				this.Raw = raw;
+				Raw = raw;
 			}
 		}
 
@@ -266,9 +268,9 @@ namespace OpenSSL.Crypto
 		{
 			get
 			{
-				using (BIO bio = BIO.MemoryBuffer())
+				using (var bio = BIO.MemoryBuffer())
 				{
-					this.WritePublicKey(bio);
+					WritePublicKey(bio);
 					return bio.ReadString();
 				}
 			}
@@ -281,9 +283,10 @@ namespace OpenSSL.Crypto
 		{
 			get
 			{
-				using (BIO bio = BIO.MemoryBuffer())
+				using (var bio = BIO.MemoryBuffer())
 				{
-					this.WritePrivateKey(bio, null, null, null);
+					WritePrivateKey(bio, null, null, null);
+
 					return bio.ReadString();
 				}
 			}
@@ -294,7 +297,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Counter
 		{
-			get { return this.counter; }
+			get { return counter; }
 		}
 
 		/// <summary>
@@ -302,7 +305,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public IntPtr H
 		{
-			get { return this.h; }
+			get { return h; }
 		}
 
 		/// <summary>
@@ -310,15 +313,17 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public bool ConstantTime
 		{
-			get { return (this.Raw.flags & FlagNoExpConstTime) != 0; }
+			get { return (Raw.flags & FlagNoExpConstTime) != 0; }
 			set
 			{
-				dsa_st raw = this.Raw;
+				var raw = Raw;
+
 				if (value)
 					raw.flags |= FlagNoExpConstTime;
 				else
 					raw.flags &= ~FlagNoExpConstTime;
-				this.Raw = raw;
+
+				Raw = raw;
 			}
 		}
 		#endregion
@@ -329,7 +334,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public void GenerateKeys()
 		{
-			Native.ExpectSuccess(Native.DSA_generate_key(this.ptr));
+			Native.ExpectSuccess(Native.DSA_generate_key(ptr));
 		}
 
 		/// <summary>
@@ -339,15 +344,17 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Sign(byte[] msg)
 		{
-			byte[] sig = new byte[this.Size];
+			var sig = new byte[Size];
 			uint siglen;
-			Native.ExpectSuccess(Native.DSA_sign(0, msg, msg.Length, sig, out siglen, this.ptr));
+			Native.ExpectSuccess(Native.DSA_sign(0, msg, msg.Length, sig, out siglen, ptr));
+
 			if (sig.Length != siglen)
 			{
-				byte[] ret = new byte[siglen];
+				var ret = new byte[siglen];
 				Buffer.BlockCopy(sig, 0, ret, 0, (int)siglen);
 				return ret;
 			}
+
 			return sig;
 		}
 
@@ -360,7 +367,7 @@ namespace OpenSSL.Crypto
 		public bool Verify(byte[] msg, byte[] sig)
 		{
 			return Native.ExpectSuccess(
-				Native.DSA_verify(0, msg, msg.Length, sig, sig.Length, this.ptr)
+				Native.DSA_verify(0, msg, msg.Length, sig, sig.Length, ptr)
 			) == 1;
 		}
 		
@@ -370,7 +377,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public void WritePublicKey(BIO bio)
 		{
-			Native.ExpectSuccess(Native.PEM_write_bio_DSA_PUBKEY(bio.Handle, this.ptr));
+			Native.ExpectSuccess(Native.PEM_write_bio_DSA_PUBKEY(bio.Handle, ptr));
 		}
 
 		/// <summary>
@@ -382,10 +389,11 @@ namespace OpenSSL.Crypto
 		/// <param name="arg"></param>
 		public void WritePrivateKey(BIO bio, Cipher enc, PasswordHandler passwd, object arg)
 		{
-			PasswordThunk thunk = new PasswordThunk(passwd, arg);
+			var thunk = new PasswordThunk(passwd, arg);
+
 			Native.ExpectSuccess(Native.PEM_write_bio_DSAPrivateKey(
 				bio.Handle,
-				this.ptr,
+				ptr,
 				enc == null ? IntPtr.Zero : enc.Handle,
 				null,
 				0,
@@ -403,7 +411,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			Native.ExpectSuccess(Native.DSA_print(bio.Handle, this.ptr, 0));
+			Native.ExpectSuccess(Native.DSA_print(bio.Handle, ptr, 0));
 		}
 
 		/// <summary>
@@ -411,7 +419,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		protected override void OnDispose() 
 		{
-			Native.DSA_free(this.ptr);
+			Native.DSA_free(ptr);
 		}
 
 		/// <summary>
@@ -422,24 +430,24 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public override bool Equals(object obj)
 		{
-			DSA rhs = obj as DSA;
+			var rhs = obj as DSA;
 			if (rhs == null)
 				return false;
 
-			bool paramsEqual = (
-				this.P == rhs.P &&
-				this.Q == rhs.Q &&
-				this.G == rhs.G
+			var paramsEqual = (
+				P == rhs.P &&
+				Q == rhs.Q &&
+				G == rhs.G
 			);
 
 			if (!paramsEqual)
 				return false;
 
-			if (this.PublicKey != rhs.PublicKey)
+			if (PublicKey != rhs.PublicKey)
 				return false;
 
-			BigNumber lhsPrivateKey = this.PrivateKey;
-			BigNumber rhsPrivateKey = rhs.PrivateKey;
+			var lhsPrivateKey = PrivateKey;
+			var rhsPrivateKey = rhs.PrivateKey;
 
 			if (lhsPrivateKey == null || rhsPrivateKey == null)
 				return true;
@@ -453,13 +461,15 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public override int GetHashCode()
 		{
-			int code = 
-				this.P.GetHashCode() ^ 
-				this.Q.GetHashCode() ^ 
-				this.G.GetHashCode() ^ 
-				this.PublicKey.GetHashCode();
-			if (this.PrivateKey != null)
-				code ^= this.PrivateKey.GetHashCode();
+			var code = 
+				P.GetHashCode() ^ 
+				Q.GetHashCode() ^ 
+				G.GetHashCode() ^ 
+				PublicKey.GetHashCode();
+			
+			if (PrivateKey != null)
+				code ^= PrivateKey.GetHashCode();
+			
 			return code;
 		}
 

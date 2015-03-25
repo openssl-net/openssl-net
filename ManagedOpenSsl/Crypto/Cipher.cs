@@ -23,12 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.IO;
 using OpenSSL.Core;
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenSSL.Crypto
 {
@@ -41,7 +40,7 @@ namespace OpenSSL.Crypto
 		private EVP_CIPHER raw;
 		internal Cipher(IntPtr ptr, bool owner) : base(ptr, owner) 
 		{
-			this.raw = (EVP_CIPHER)Marshal.PtrToStructure(this.ptr, typeof(EVP_CIPHER));
+			raw = (EVP_CIPHER)Marshal.PtrToStructure(this.ptr, typeof(EVP_CIPHER));
 		}
 
 		/// <summary>
@@ -50,7 +49,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			bio.Write(this.LongName);
+			bio.Write(LongName);
 		}
 
 		/// <summary>
@@ -67,10 +66,12 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public static Cipher CreateByName(string name)
 		{
-			byte[] buf = Encoding.ASCII.GetBytes(name);
-			IntPtr ptr = Native.EVP_get_cipherbyname(buf);
+			var buf = Encoding.ASCII.GetBytes(name);
+			var ptr = Native.EVP_get_cipherbyname(buf);
+
 			if(ptr == IntPtr.Zero)
 				return null;
+
 			return new Cipher(ptr, false);
 		}
 
@@ -417,7 +418,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int KeyLength
 		{
-			get { return this.raw.key_len; }
+			get { return raw.key_len; }
 		}
 
 		/// <summary>
@@ -425,7 +426,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int IVLength
 		{
-			get { return this.raw.iv_len; }
+			get { return raw.iv_len; }
 		}
 
 		/// <summary>
@@ -433,7 +434,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int BlockSize
 		{
-			get { return this.raw.block_size; }
+			get { return raw.block_size; }
 		}
 
 		/// <summary>
@@ -441,7 +442,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public uint Flags
 		{
-			get { return this.raw.flags; }
+			get { return raw.flags; }
 		}
 
 		/// <summary>
@@ -449,7 +450,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string LongName
 		{
-			get { return Native.OBJ_nid2ln(this.raw.nid); }
+			get { return Native.OBJ_nid2ln(raw.nid); }
 		}
 
 		/// <summary>
@@ -457,7 +458,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string Name
 		{
-			get { return Native.OBJ_nid2sn(this.raw.nid); }
+			get { return Native.OBJ_nid2sn(raw.nid); }
 		}
 
 		/// <summary>
@@ -465,7 +466,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Type
 		{
-			get { return Native.EVP_CIPHER_type(this.ptr); }
+			get { return Native.EVP_CIPHER_type(ptr); }
 		}
 
 		/// <summary>
@@ -473,7 +474,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string TypeName
 		{
-			get { return Native.OBJ_nid2ln(this.Type); }
+			get { return Native.OBJ_nid2ln(Type); }
 		}
 		#endregion
 	}
@@ -543,7 +544,7 @@ namespace OpenSSL.Crypto
 		public CipherContext(Cipher cipher)
 			: base(Native.OPENSSL_malloc(Marshal.SizeOf(typeof(EVP_CIPHER_CTX))), true)
 		{
-			Native.EVP_CIPHER_CTX_init(this.ptr);
+			Native.EVP_CIPHER_CTX_init(ptr);
 			this.cipher = cipher;
 		}
 
@@ -553,7 +554,7 @@ namespace OpenSSL.Crypto
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			bio.Write("CipherContext: " + this.cipher.LongName);
+			bio.Write("CipherContext: " + cipher.LongName);
 		}
 
 		#region Methods
@@ -569,16 +570,16 @@ namespace OpenSSL.Crypto
 		public byte[] Open(byte[] input, byte[] ekey, byte[] iv, CryptoKey pkey) 
 		{
 			Native.ExpectSuccess(Native.EVP_OpenInit(
-				this.ptr, this.cipher.Handle, ekey, ekey.Length, iv, pkey.Handle));
+				ptr, cipher.Handle, ekey, ekey.Length, iv, pkey.Handle));
 			
-			MemoryStream memory = new MemoryStream();
-			byte[] output = new byte[input.Length + this.Cipher.BlockSize]; 
+			var memory = new MemoryStream();
+			var output = new byte[input.Length + Cipher.BlockSize]; 
 			int len;
 			
-			Native.ExpectSuccess(Native.EVP_DecryptUpdate(this.ptr, output, out len, input, input.Length));
+			Native.ExpectSuccess(Native.EVP_DecryptUpdate(ptr, output, out len, input, input.Length));
 			memory.Write(output, 0, len);
 			
-			Native.ExpectSuccess(Native.EVP_OpenFinal(this.ptr, output, out len));
+			Native.ExpectSuccess(Native.EVP_OpenFinal(ptr, output, out len));
 			memory.Write(output, 0, len);
 
 			return memory.ToArray();
@@ -592,39 +593,40 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public Envelope Seal(CryptoKey[] pkeys, byte[] input)
 		{
-			Envelope env = new Envelope();
+			var env = new Envelope();
 			
 			var ptrs = new IntPtr[pkeys.Length];
+
 			try {
 				env.Keys = new byte[pkeys.Length][];
-				IntPtr[] pubkeys = new IntPtr[pkeys.Length];
-				int[] ekeylens =  new int[pkeys.Length];
+				var pubkeys = new IntPtr[pkeys.Length];
+				var ekeylens =  new int[pkeys.Length];
 
-				for (int i = 0; i < pkeys.Length; i++) {
+				for (var i = 0; i < pkeys.Length; i++) {
 					ptrs[i] = Marshal.AllocHGlobal(pkeys[i].Size);
 					pubkeys[i] = pkeys[i].Handle;
 				}
 				
-				if (this.Cipher.IVLength > 0) {
-					env.IV = new byte[this.Cipher.IVLength];
+				if (Cipher.IVLength > 0) {
+					env.IV = new byte[Cipher.IVLength];
 				}
 			
 				Native.ExpectSuccess(Native.EVP_SealInit(
-					this.ptr, this.Cipher.Handle, ptrs, ekeylens, env.IV, pubkeys, pubkeys.Length));
+					ptr, Cipher.Handle, ptrs, ekeylens, env.IV, pubkeys, pubkeys.Length));
 
-				for (int i = 0; i < pkeys.Length; i++) {
+				for (var i = 0; i < pkeys.Length; i++) {
 					env.Keys[i] = new byte[ekeylens[i]];
 					Marshal.Copy(ptrs[i], env.Keys[i], 0, ekeylens[i]);
 				}
 	
-				MemoryStream memory = new MemoryStream();
-				byte[] output = new byte[input.Length + this.Cipher.BlockSize];
+				var memory = new MemoryStream();
+				var output = new byte[input.Length + Cipher.BlockSize];
 	
 				int len;
-				Native.ExpectSuccess(Native.EVP_EncryptUpdate(this.ptr, output, out len, input, input.Length));
+				Native.ExpectSuccess(Native.EVP_EncryptUpdate(ptr, output, out len, input, input.Length));
 				memory.Write(output, 0, len);
 				
-				Native.ExpectSuccess(Native.EVP_SealFinal(this.ptr, output, out len));
+				Native.ExpectSuccess(Native.EVP_SealFinal(ptr, output, out len));
 				memory.Write(output, 0, len);
 				
 				env.Data = memory.ToArray();
@@ -648,36 +650,39 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Crypt(byte[] input, byte[] key, byte[] iv, bool doEncrypt)
 		{
-			return this.Crypt(input, key, iv, doEncrypt, -1);
+			return Crypt(input, key, iv, doEncrypt, -1);
 		}
 
 		private byte[] SetupKey(byte[] key)
 		{
 			if (key == null) {
-				key = new byte[this.Cipher.KeyLength];
+				key = new byte[Cipher.KeyLength];
 				key.Initialize();
 				return key;
 			}
 
-			if (this.Cipher.KeyLength == key.Length) {
+			if (Cipher.KeyLength == key.Length) {
 				return key;
 			}
 			
-			byte[] real_key = new byte[this.Cipher.KeyLength];
+			byte[] real_key = new byte[Cipher.KeyLength];
 			real_key.Initialize();
 			Buffer.BlockCopy(key, 0, real_key, 0, Math.Min(key.Length, real_key.Length));
+
 			return real_key;
 		}
 
 		private byte[] SetupIV(byte[] iv)
 		{
-			if (this.cipher.IVLength > iv.Length)
+			if (cipher.IVLength > iv.Length)
 			{
-				byte[] ret = new byte[this.cipher.IVLength];
+				var ret = new byte[cipher.IVLength];
 				ret.Initialize();
 				Buffer.BlockCopy(iv, 0, ret, 0, iv.Length);
+
 				return ret;
 			}
+
 			return iv;
 		}
 
@@ -692,21 +697,21 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Crypt(byte[] input, byte[] key, byte[] iv, bool doEncrypt, int padding)
 		{
-			int enc = doEncrypt ? 1 : 0;
+			var enc = doEncrypt ? 1 : 0;
 
-			int total = Math.Max(input.Length, this.cipher.BlockSize);
-			byte[] real_key = SetupKey(key);
-			byte[] real_iv = SetupIV(iv);
+			var total = Math.Max(input.Length, cipher.BlockSize);
+			var real_key = SetupKey(key);
+			var real_iv = SetupIV(iv);
 
-			byte[] buf = new byte[total];
-			MemoryStream memory = new MemoryStream(total);
+			var buf = new byte[total];
+			var memory = new MemoryStream(total);
 
 			Native.ExpectSuccess(Native.EVP_CipherInit_ex(
-				this.ptr, this.cipher.Handle, IntPtr.Zero, null, null, enc));
+				ptr, cipher.Handle, IntPtr.Zero, null, null, enc));
 			
-			Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_key_length(this.ptr, real_key.Length));
+			Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_key_length(ptr, real_key.Length));
 
-			if (this.IsStream)
+			if (IsStream)
 			{
 				for (int i = 0; i < Math.Min(real_key.Length, iv.Length); i++)
 				{
@@ -714,24 +719,24 @@ namespace OpenSSL.Crypto
 				}
 
 				Native.ExpectSuccess(Native.EVP_CipherInit_ex(
-					this.ptr, this.cipher.Handle, IntPtr.Zero, real_key, null, enc));
+					ptr, cipher.Handle, IntPtr.Zero, real_key, null, enc));
 			}
 			else
 			{
 				Native.ExpectSuccess(Native.EVP_CipherInit_ex(
-					this.ptr, this.cipher.Handle, IntPtr.Zero, real_key, real_iv, enc));
+					ptr, cipher.Handle, IntPtr.Zero, real_key, real_iv, enc));
 			}
 
 			if (padding >= 0)
-				Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_padding(this.ptr, padding));
+				Native.ExpectSuccess(Native.EVP_CIPHER_CTX_set_padding(ptr, padding));
 
-			int len = 0;
-			Native.ExpectSuccess(Native.EVP_CipherUpdate(this.ptr, buf, out len, input, input.Length));
+			var len = 0;
+			Native.ExpectSuccess(Native.EVP_CipherUpdate(ptr, buf, out len, input, input.Length));
 
 			memory.Write(buf, 0, len);
 
 			len = buf.Length;
-			Native.EVP_CipherFinal_ex(this.ptr, buf, ref len);
+			Native.EVP_CipherFinal_ex(ptr, buf, ref len);
 			
 			memory.Write(buf, 0, len);
 
@@ -747,7 +752,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Encrypt(byte[] input, byte[] key, byte[] iv)
 		{
-			return this.Crypt(input, key, iv, true);
+			return Crypt(input, key, iv, true);
 		}
 
 		/// <summary>
@@ -759,7 +764,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Decrypt(byte[] input, byte[] key, byte[] iv)
 		{
-			return this.Crypt(input, key, iv, false);
+			return Crypt(input, key, iv, false);
 		}
 
 		/// <summary>
@@ -772,7 +777,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Encrypt(byte[] input, byte[] key, byte[] iv, int padding)
 		{
-			return this.Crypt(input, key, iv, true, padding);
+			return Crypt(input, key, iv, true, padding);
 		}
 
 		/// <summary>
@@ -785,7 +790,7 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] Decrypt(byte[] input, byte[] key, byte[] iv, int padding)
 		{
-			return this.Crypt(input, key, iv, false, padding);
+			return Crypt(input, key, iv, false, padding);
 		}
 
 		/// <summary>
@@ -799,20 +804,20 @@ namespace OpenSSL.Crypto
 		/// <returns></returns>
 		public byte[] BytesToKey(MessageDigest md, byte[] salt, byte[] data, int count, out byte[] iv)
 		{
-			int keylen = this.Cipher.KeyLength;
+			var keylen = Cipher.KeyLength;
 			if (keylen == 0) {
 				keylen = 8;
 			}
-			byte[] key = new byte[keylen];
+			var key = new byte[keylen];
 			
-			int ivlen = this.Cipher.IVLength;
+			var ivlen = Cipher.IVLength;
 			if (ivlen == 0) {
 				ivlen = 8;
 			}
 			iv = new byte[ivlen];
 			
 			Native.ExpectSuccess(Native.EVP_BytesToKey(
-				this.cipher.Handle,
+				cipher.Handle,
 				md.Handle,
 				salt,
 				data,
@@ -831,18 +836,18 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public Cipher Cipher
 		{
-			get { return this.cipher; }
+			get { return cipher; }
 		}
 		
 		public bool IsStream
 		{
-			get { return (this.cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER; }
+			get { return (cipher.Flags & Native.EVP_CIPH_MODE) == Native.EVP_CIPH_STREAM_CIPHER; }
 		}
 
 		private EVP_CIPHER_CTX Raw
 		{
-			get { return (EVP_CIPHER_CTX)Marshal.PtrToStructure(this.ptr, typeof(EVP_CIPHER_CTX)); }
-			set { Marshal.StructureToPtr(value, this.ptr, false); }
+			get { return (EVP_CIPHER_CTX)Marshal.PtrToStructure(ptr, typeof(EVP_CIPHER_CTX)); }
+			set { Marshal.StructureToPtr(value, ptr, false); }
 		}
 		#endregion
 
@@ -852,8 +857,8 @@ namespace OpenSSL.Crypto
 		/// Calls EVP_CIPHER_CTX_clean() and then OPENSSL_free()
 		/// </summary>
 		protected override void OnDispose() {
-			Native.EVP_CIPHER_CTX_cleanup(this.ptr);
-			Native.OPENSSL_free(this.ptr);
+			Native.EVP_CIPHER_CTX_cleanup(ptr);
+			Native.OPENSSL_free(ptr);
 		}
 
 		#endregion

@@ -24,10 +24,8 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Core
 {
@@ -39,18 +37,18 @@ namespace OpenSSL.Core
 	public abstract class Base : IDisposable
 	{
 		/// <summary>
-		/// Constructor which takes the raw unmanged pointer. 
-		/// This is the only way to construct this object and all dervied types.
+		/// Constructor which takes the raw unmanaged pointer. 
+		/// This is the only way to construct this object and all derived types.
 		/// </summary>
 		/// <param name="ptr"></param>
 		/// <param name="takeOwnership"></param>
 		protected Base(IntPtr ptr, bool takeOwnership)
 		{
 			this.ptr = ptr;
-			this.owner = takeOwnership;
+			owner = takeOwnership;
 			if (this.ptr != IntPtr.Zero)
 			{
-				this.OnNewHandle(this.ptr);
+				OnNewHandle(this.ptr);
 			}
 		}
 
@@ -64,8 +62,8 @@ namespace OpenSSL.Core
 
 		/// <summary>
 		/// This method is used by the ToString() implementation. A great number of
-		/// openssl objects support printing, so this is a conveinence method.
-		/// Dervied types should override this method and not ToString().
+		/// openssl objects support printing, so this is a convenience method.
+		/// Derived types should override this method and not ToString().
 		/// </summary>
 		/// <param name="bio">The BIO stream object to print into</param>
 		public virtual void Print(BIO bio) { }
@@ -76,11 +74,11 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public override string ToString() {
 			try {
-				if (this.ptr == IntPtr.Zero)
+				if (ptr == IntPtr.Zero)
 					return "(null)";
 
-				using (BIO bio = BIO.MemoryBuffer()) {
-					this.Print(bio);
+				using (var bio = BIO.MemoryBuffer()) {
+					Print(bio);
 					return bio.ReadString();
 				}
 			}
@@ -110,11 +108,12 @@ namespace OpenSSL.Core
 		/// then call the virtual OnDispose() method.
 		/// </summary>
 		public void Dispose() {
-			if (!this.isDisposed && this.owner && this.ptr != IntPtr.Zero) {
-				this.OnDispose();
+			if (!isDisposed && owner && ptr != IntPtr.Zero) {
+				OnDispose();
 				DoAfterDispose();
 			}
-			this.isDisposed = true;
+
+			isDisposed = true;
 		}
 
 		#endregion
@@ -133,7 +132,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public virtual IntPtr Handle
 		{
-			get { return this.ptr; }
+			get { return ptr; }
 		}
 
 		/// <summary>
@@ -146,7 +145,7 @@ namespace OpenSSL.Core
 
 		private void DoAfterDispose()
 		{
-			this.ptr = IntPtr.Zero;
+			ptr = IntPtr.Zero;
 			GC.SuppressFinalize(this);
 		}
 
@@ -176,12 +175,12 @@ namespace OpenSSL.Core
 		internal BaseReferenceType(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
 		{
-			this.baseOffset = Marshal.OffsetOf(RawReferenceType, "references");
+			baseOffset = Marshal.OffsetOf(RawReferenceType, "references");
 		}
 
 		internal override void AddRef()
 		{
-			IntPtr offset = GetReferencesOffset();
+			var offset = GetReferencesOffset();
 			Native.CRYPTO_add_lock(offset, 1, LockType, "Base.cs", 0);
 		}
 
@@ -190,14 +189,14 @@ namespace OpenSSL.Core
 		/// </summary>
 		public void PrintRefCount()
 		{
-			IntPtr offset = GetReferencesOffset();
-			int count = Marshal.ReadInt32(offset);
+			var offset = GetReferencesOffset();
+			var count = Marshal.ReadInt32(offset);
 			Console.WriteLine("{0} ptr: {1}, ref_count: {2}", this.GetType().Name, this.ptr, count);
 		}
 
 		private IntPtr GetReferencesOffset()
 		{
-			return new IntPtr((long)this.ptr + (long)this.baseOffset);
+			return new IntPtr((long)ptr + (long)baseOffset);
 		}
 
 		/// <summary>
@@ -226,16 +225,19 @@ namespace OpenSSL.Core
 
 		internal T CopyRef()
 		{
-			object[] args = new object[] {
-				this.ptr,
+			object[] args = {
+				ptr,
 				true
 			};
-			BindingFlags flags =
+
+			var flags =
 				BindingFlags.NonPublic |
 				BindingFlags.Public |
 				BindingFlags.Instance;
-			T ret = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
+
+			var ret = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
 			ret.AddRef();
+
 			return ret;
 		}
 	}
@@ -252,11 +254,12 @@ namespace OpenSSL.Core
 
 		internal override void AddRef()
 		{
-			this.ptr = DuplicateHandle();
-			this.owner = true;
-			if (this.ptr != IntPtr.Zero)
+			ptr = DuplicateHandle();
+			owner = true;
+
+			if (ptr != IntPtr.Zero)
 			{
-				this.OnNewHandle(this.ptr);
+				OnNewHandle(ptr);
 			}
 		}
 

@@ -23,11 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenSSL.SSL
 {
@@ -82,7 +81,7 @@ namespace OpenSSL.SSL
 		/// </summary>
 		public string Name
 		{
-			get { return Native.SSL_CIPHER_name(this.ptr); }
+			get { return Native.SSL_CIPHER_name(ptr); }
 		}
 
 		/// <summary>
@@ -92,9 +91,10 @@ namespace OpenSSL.SSL
 		{
 			get
 			{
-				byte[] buf = new byte[512];
-				Native.SSL_CIPHER_description(this.ptr, buf, buf.Length);
-				string ret = Encoding.ASCII.GetString(buf);
+				var buf = new byte[512];
+				Native.SSL_CIPHER_description(ptr, buf, buf.Length);
+				var ret = Encoding.ASCII.GetString(buf);
+
 				return ret;
 			}
 		}
@@ -107,11 +107,13 @@ namespace OpenSSL.SSL
 			get
 			{
 				Initialize();
+
 				if (cipherStrength == 0)
 				{
-					int nAlgBits = 0;
-					return Native.SSL_CIPHER_get_bits(this.Handle, out nAlgBits);
+					var nAlgBits = 0;
+					return Native.SSL_CIPHER_get_bits(Handle, out nAlgBits);
 				}
+
 				return cipherStrength;
 			}
 		}
@@ -207,7 +209,7 @@ namespace OpenSSL.SSL
 
 		private void Initialize()
 		{
-			if (this.ptr == IntPtr.Zero || isInitialized)
+			if (ptr == IntPtr.Zero || isInitialized)
 			{
 				return;
 			}
@@ -217,9 +219,9 @@ namespace OpenSSL.SSL
 			// marshal the structure
 			raw = (SSL_CIPHER)Marshal.PtrToStructure(ptr, typeof(SSL_CIPHER));
 			// start picking the data out
-			bool isExport = IsExport(raw.algo_strength);
-			int privateKeyLength = ExportPrivateKeyLength(raw.algo_strength);
-			int keyLength = ExportKeyLength(raw.algorithms, raw.algo_strength);
+			var isExport = IsExport(raw.algo_strength);
+			var privateKeyLength = ExportPrivateKeyLength(raw.algo_strength);
+			var keyLength = ExportKeyLength(raw.algorithms, raw.algo_strength);
 
 			// Get the SSL Protocol version
 			if ((raw.algorithms & SSL_SSLV2) == SSL_SSLV2)
@@ -444,7 +446,7 @@ namespace OpenSSL.SSL
 
 		protected override void OnDispose()
 		{
-			Native.OPENSSL_free(this.ptr);
+			Native.OPENSSL_free(ptr);
 		}
 	}
 }

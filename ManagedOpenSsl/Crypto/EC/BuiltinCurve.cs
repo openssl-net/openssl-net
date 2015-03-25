@@ -22,9 +22,10 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+using OpenSSL.Core;
 using System;
 using System.Runtime.InteropServices;
-using OpenSSL.Core;
 
 namespace OpenSSL.Crypto.EC
 {
@@ -41,22 +42,25 @@ namespace OpenSSL.Crypto.EC
 		private string comment;
 		
 		private BuiltinCurve(int nid, string comment) {
-			this.obj = new Asn1Object(nid);
+			obj = new Asn1Object(nid);
 			this.comment = comment;
 		}
 		
-		public Asn1Object Object { get { return this.obj; } }
-		public string Comment { get { return this.comment; } }
+		public Asn1Object Object { get { return obj; } }
+
+		public string Comment { get { return comment; } }
 		
 		public static BuiltinCurve[] Get() {
-			int count = Native.EC_get_builtin_curves(IntPtr.Zero, 0);
-			BuiltinCurve[] curves = new BuiltinCurve[count];
-			IntPtr ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(EC_builtin_curve)) * count);
+			var count = Native.EC_get_builtin_curves(IntPtr.Zero, 0);
+			var curves = new BuiltinCurve[count];
+			var ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(EC_builtin_curve)) * count);
+
 			try {
 				Native.ExpectSuccess(Native.EC_get_builtin_curves(ptr, count));
-				IntPtr pItem = ptr;
-				for (int i = 0; i < count; i++) {
-					EC_builtin_curve raw = (EC_builtin_curve)Marshal.PtrToStructure(pItem, typeof(EC_builtin_curve));
+				var pItem = ptr;
+
+				for (var i = 0; i < count; i++) {
+					var raw = (EC_builtin_curve)Marshal.PtrToStructure(pItem, typeof(EC_builtin_curve));
 					curves[i] = new BuiltinCurve(raw.nid, raw.comment);
 					pItem = new IntPtr(pItem.ToInt64() + Marshal.SizeOf(typeof(EC_builtin_curve)));
 				}
@@ -64,6 +68,7 @@ namespace OpenSSL.Crypto.EC
 			finally {
 				Native.OPENSSL_free(ptr);
 			}
+
 			return curves;
 		}
 	}

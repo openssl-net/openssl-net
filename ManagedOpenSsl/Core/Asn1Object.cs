@@ -23,7 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace OpenSSL.Core
@@ -48,19 +47,19 @@ namespace OpenSSL.Core
 		}
 		
 		public Asn1Object(string sn) {
-			this.nid = Native.OBJ_sn2nid(sn);
+			nid = Native.OBJ_sn2nid(sn);
 		}
 
 		public int NID { 
-			get { return this.nid; } 
+			get { return nid; } 
 		}
 		
 		public string ShortName {
-			get { return Native.OBJ_nid2sn(this.nid); }
+			get { return Native.OBJ_nid2sn(nid); }
 		}
 		
 		public string LongName {
-			get { return Native.OBJ_nid2ln(this.nid); }
+			get { return Native.OBJ_nid2ln(nid); }
 		}
 		
 		public static Asn1Object FromShortName(string sn) {
@@ -72,14 +71,16 @@ namespace OpenSSL.Core
 		}
 		
 		public override bool Equals(object obj) {
-			Asn1Object rhs = obj as Asn1Object;
+			var rhs = obj as Asn1Object;
+
 			if (rhs == null)
 				return false;
-			return this.nid == rhs.nid;
+			
+			return nid == rhs.nid;
 		}
 		
 		public override int GetHashCode() {
-			return this.nid;
+			return nid;
 		}
 	}
 }

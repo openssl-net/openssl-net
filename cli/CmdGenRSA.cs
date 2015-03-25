@@ -23,13 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.IO;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.IO;
 
 namespace OpenSSL.CLI
 {
@@ -86,9 +83,9 @@ namespace OpenSSL.CLI
 				return;
 			}
 
-			int bits = 512;
-			if (this.options.Arguments.Count == 1)
-				bits = Convert.ToInt32(this.options.Arguments[0]);
+			var bits = 512;
+			if (options.Arguments.Count == 1)
+				bits = Convert.ToInt32(options.Arguments[0]);
 
 			BigNumber e = null;
 			if (options.IsSet("3"))
@@ -98,7 +95,7 @@ namespace OpenSSL.CLI
 
 			Console.Error.WriteLine("Generating RSA private key, {0} bit long modulus", bits);
 
-			RSA rsa = new RSA();
+			var rsa = new RSA();
 			rsa.GenerateKeys(bits, e, Program.OnGenerator, null);
 
 			Console.Error.WriteLine("e is {0} (0x{1})", e.ToDecimalString(), e.ToHexString());
@@ -117,11 +114,11 @@ namespace OpenSSL.CLI
 			else if (options.IsSet("aes256"))
 				enc = Cipher.AES_256_CBC;
 
-			using (BIO bio = BIO.MemoryBuffer())
+			using (var bio = BIO.MemoryBuffer())
 			{
-				rsa.WritePrivateKey(bio, enc, Program.OnPassword, this.options["passout"]);
+				rsa.WritePrivateKey(bio, enc, Program.OnPassword, options["passout"]);
 
-				string outfile = this.options["out"] as string;
+				var outfile = options["out"] as string;
 				if (string.IsNullOrEmpty(outfile))
 					Console.WriteLine(bio.ReadString());
 				else

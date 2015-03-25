@@ -24,9 +24,8 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenSSL.Core
 {
@@ -74,15 +73,16 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				if (this.OnPassword == null)
+				if (OnPassword == null)
 					return null;
-				return this.OnPasswordThunk;
+
+				return OnPasswordThunk;
 			}
 		}
 
 		public PasswordThunk(PasswordHandler client, object arg)
 		{
-			this.OnPassword = client;
+			OnPassword = client;
 			this.arg = arg;
 		}
 
@@ -90,13 +90,15 @@ namespace OpenSSL.Core
 		{
 			try
 			{
-				string ret = OnPassword(rwflag != 0, this.arg);
-				byte[] pass = Encoding.ASCII.GetBytes(ret);
-				int len = pass.Length;
+				var ret = OnPassword(rwflag != 0, arg);
+				var pass = Encoding.ASCII.GetBytes(ret);
+				var len = pass.Length;
+
 				if (len > size)
 					len = size;
 
 				Marshal.Copy(pass, 0, buf, len);
+
 				return len;
 			}
 			catch (Exception ex)
@@ -106,5 +108,4 @@ namespace OpenSSL.Core
 			}
 		}
 	}
-
 }

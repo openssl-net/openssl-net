@@ -22,10 +22,10 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenSSL.Core
 {
@@ -49,7 +49,7 @@ namespace OpenSSL.Core
 		/// <param name="seed"></param>
 		public static void Seed(string seed)
 		{
-			byte[] tmp = Encoding.ASCII.GetBytes(seed);
+			var tmp = Encoding.ASCII.GetBytes(seed);
 			Native.RAND_seed(tmp, tmp.Length);
 		}
 
@@ -60,8 +60,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static byte[] PseudoBytes(int len)
 		{
-			byte[] buf = new byte[len];
+			var buf = new byte[len];
 			Native.ExpectSuccess(Native.RAND_pseudo_bytes(buf, buf.Length));
+
 			return buf;
 		}
 
@@ -80,8 +81,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static byte[] Bytes(int len)
 		{
-			byte[] buf = new byte[len];
+			var buf = new byte[len];
 			Native.ExpectSuccess(Native.RAND_bytes(buf, len));
+
 			return buf;
 		}
 
@@ -120,7 +122,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static string GetFilename()
 		{
-			byte[] buf = new byte[1024];
+			var buf = new byte[1024];
 			return Native.RAND_file_name(buf, (uint)buf.Length);
 		}
 
@@ -178,8 +180,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber Next(int bits, int top, int bottom)
 		{
-			BigNumber bn = new BigNumber();
+			var bn = new BigNumber();
 			Native.ExpectSuccess(Native.BN_rand(bn.Handle, bits, top, bottom));
+
 			return bn;
 		}
 
@@ -220,7 +223,7 @@ namespace OpenSSL.Core
 			private rand_meth_st raw = new rand_meth_st();
 			#endregion
 			
-			#region Initialization			
+			#region Initialization
 			static Method() {
 				original = Native.ExpectNonNull(Native.RAND_get_rand_method());
 			}
@@ -243,40 +246,40 @@ namespace OpenSSL.Core
 			
 			#region Properties
 			public Delegates.Seed Seed {
-				get { return this.raw.seed; }
-				set { this.raw.seed = value; }
+				get { return raw.seed; }
+				set { raw.seed = value; }
 			}
 
 			public Delegates.Bytes Bytes {
-				get { return this.raw.bytes; }
-				set { this.raw.bytes = value; }
+				get { return raw.bytes; }
+				set { raw.bytes = value; }
 			}
 
 			public Delegates.Cleanup Cleanup {
-				get { return this.raw.cleanup; }
-				set { this.raw.cleanup = value; }
+				get { return raw.cleanup; }
+				set { raw.cleanup = value; }
 			}
 
 			public Delegates.Add Add {
-				get { return this.raw.add; }
-				set { this.raw.add = value; }
+				get { return raw.add; }
+				set { raw.add = value; }
 			}
 
 			public Delegates.Bytes PseudoRand {
-				get { return this.raw.pseudorand; }
-				set { this.raw.pseudorand = value; }
+				get { return raw.pseudorand; }
+				set { raw.pseudorand = value; }
 			}
 
 			public Delegates.Status Status {
-				get { return this.raw.status; }
-				set { this.raw.status = value; }
+				get { return raw.status; }
+				set { raw.status = value; }
 			}
 			#endregion
 			
 			#region Methods
 			public void Override() {
-				Marshal.StructureToPtr(this.raw, this.ptr, false);
-				Native.ExpectSuccess(Native.RAND_set_rand_method(this.ptr));
+				Marshal.StructureToPtr(raw, ptr, false);
+				Native.ExpectSuccess(Native.RAND_set_rand_method(ptr));
 			}
 						
 			private void Restore() {
@@ -287,11 +290,10 @@ namespace OpenSSL.Core
 			#region IDisposable implementation
 			protected override void OnDispose() {
 				Restore();
-				Marshal.FreeHGlobal(this.ptr);
+				Marshal.FreeHGlobal(ptr);
 			}
 			#endregion
 		};
-
 		#endregion
 	}
 }

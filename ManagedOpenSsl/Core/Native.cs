@@ -23,13 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Text;
 using System;
-using System.Security.Cryptography;
-using System.Runtime.InteropServices;
-using System.Globalization;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 namespace OpenSSL.Core
@@ -152,9 +151,9 @@ namespace OpenSSL.Core
 		#region Initialization
 		static Native()
 		{
-			Version lib = Version.Library;
-			Version wrapper = Version.Wrapper;
-			uint mmf = lib.Raw & 0xfffff000;
+			var lib = Version.Library;
+			var wrapper = Version.Wrapper;
+			var mmf = lib.Raw & 0xfffff000;
 			if (mmf != wrapper.Raw)
 				throw new Exception(string.Format("Invalid version of {0}, expecting {1}, got: {2}",
 					DLLNAME, wrapper, lib));
@@ -176,8 +175,8 @@ namespace OpenSSL.Core
 			// Initialize SSL library
 			Native.ExpectSuccess(SSL_library_init());
 
-			byte[] seed = new byte[128];
-			RandomNumberGenerator rng = RandomNumberGenerator.Create();
+			var seed = new byte[128];
+			var rng = RandomNumberGenerator.Create();
 			rng.GetBytes(seed);
 			RAND_seed(seed, seed.Length);
 		}
@@ -185,19 +184,23 @@ namespace OpenSSL.Core
 		public static void InitializeThreads()
 		{
 			// Initialize the threading locks
-			int nLocks = CRYPTO_num_locks();
+			var nLocks = CRYPTO_num_locks();
 			lock_objects = new List<object>(nLocks);
-			for (int i = 0; i < nLocks; i++)
+			
+			for (var i = 0; i < nLocks; i++)
 			{
-				object obj = new object();
+				var obj = new object();
 				lock_objects.Add(obj);
 			}
+
 			// Initialize the internal thread id stack
 			threadIDs = new System.Collections.Generic.Stack<uint>();
+			
 			// Initialize the delegate for the locking callback
 			CRYPTO_locking_callback_delegate = new CRYPTO_locking_callback(LockingCallback);
 			CRYPTO_set_locking_callback(CRYPTO_locking_callback_delegate);
-			// Initialze the thread id callback
+			
+			// Initialize the thread id callback
 			CRYPTO_id_callback_delegate = new CRYPTO_id_callback(ThreadIDCallback);
 			CRYPTO_set_id_callback(CRYPTO_id_callback_delegate);
 		}
@@ -208,10 +211,11 @@ namespace OpenSSL.Core
 			CRYPTO_set_locking_callback(null);
 			lock_objects.Clear();
 			CRYPTO_set_id_callback(null);
+			
 			// Clean up error state for each thread that was used by OpenSSL
 			if (threadIDs != null)
 			{
-				foreach (uint id in threadIDs)
+				foreach (var id in threadIDs)
 				{
 					Native.ERR_remove_state(id);
 				}
@@ -284,12 +288,12 @@ namespace OpenSSL.Core
 
 		public static uint ThreadIDCallback()
 		{
-			uint threadID = (uint)Thread.CurrentThread.ManagedThreadId;
-			if (!threadIDs.Contains(threadID))
+			var threadId = (uint)Thread.CurrentThread.ManagedThreadId;
+			if (!threadIDs.Contains(threadId))
 			{
-				threadIDs.Push(threadID);
+				threadIDs.Push(threadId);
 			}
-			return threadID;
+			return threadId;
 		}
 
 		#endregion
@@ -2118,7 +2122,8 @@ namespace OpenSSL.Core
 
 		public static IntPtr BIO_get_md(IntPtr bp)
 		{
-			IntPtr ptr = Marshal.AllocHGlobal(4);
+			var ptr = Marshal.AllocHGlobal(4);
+			
 			try
 			{
 				ExpectSuccess(BIO_ctrl(bp, BIO_C_GET_MD, 0, ptr));
@@ -2132,7 +2137,8 @@ namespace OpenSSL.Core
 
 		public static IntPtr BIO_get_md_ctx(IntPtr bp)
 		{
-			IntPtr ptr = Marshal.AllocHGlobal(4);
+			var ptr = Marshal.AllocHGlobal(4);
+			
 			try
 			{
 				ExpectSuccess(BIO_ctrl(bp, BIO_C_GET_MD_CTX, 0, ptr));
@@ -2589,13 +2595,13 @@ namespace OpenSSL.Core
 
 		#endregion
 
-		#region Utilties
+		#region Utilities
 		public static string PtrToStringAnsi(IntPtr ptr, bool hasOwnership)
 		{
-			int len = 0;
-			for (int i = 0; i < 1024; i++, len++)
+			var len = 0;
+			for (var i = 0; i < 1024; i++, len++)
 			{
-				byte octet = Marshal.ReadByte(ptr, i);
+				var octet = Marshal.ReadByte(ptr, i);
 				if (octet == 0)
 					break;
 			}
@@ -2603,10 +2609,11 @@ namespace OpenSSL.Core
 			if (len == 1024)
 				return "Invalid string";
 
-			byte[] buf = new byte[len];
+			var buf = new byte[len];
 			Marshal.Copy(ptr, buf, 0, len);
 			if (hasOwnership)
 				Native.OPENSSL_free(ptr);
+			
 			return Encoding.ASCII.GetString(buf, 0, len);
 		}
 
@@ -2614,6 +2621,7 @@ namespace OpenSSL.Core
 		{
 			if (ptr == IntPtr.Zero)
 				throw new OpenSslException();
+
 			return ptr;
 		}
 
@@ -2621,14 +2629,17 @@ namespace OpenSSL.Core
 		{
 			if (ret <= 0)
 				throw new OpenSslException();
+
 			return ret;
 		}
 
 		public static int TextToNID(string text)
 		{
-			int nid = Native.OBJ_txt2nid(text);
+			var nid = Native.OBJ_txt2nid(text);
+
 			if (nid == Native.NID_undef)
 				throw new OpenSslException();
+
 			return nid;
 		}
 		#endregion
@@ -2646,21 +2657,21 @@ namespace OpenSSL.Core
 		};
 
 		private List<string> list = new List<string>();
-		public List<string> Result { get { return this.list; } }
+		public List<string> Result { get { return list; } }
 
 		public NameCollector(int type, bool isSorted)
 		{
 			if (isSorted)
-				Native.OBJ_NAME_do_all_sorted(type, this.OnObjectName, IntPtr.Zero);
+				Native.OBJ_NAME_do_all_sorted(type, OnObjectName, IntPtr.Zero);
 			else
-				Native.OBJ_NAME_do_all(type, this.OnObjectName, IntPtr.Zero);
+				Native.OBJ_NAME_do_all(type, OnObjectName, IntPtr.Zero);
 		}
 
 		private void OnObjectName(IntPtr ptr, IntPtr arg)
 		{
-			OBJ_NAME name = (OBJ_NAME)Marshal.PtrToStructure(ptr, typeof(OBJ_NAME));
-			string str = Native.PtrToStringAnsi(name.name, false);
-			this.list.Add(str);
+			var name = (OBJ_NAME)Marshal.PtrToStructure(ptr, typeof(OBJ_NAME));
+			var str = Native.PtrToStringAnsi(name.name, false);
+			list.Add(str);
 		}
 	}
 }

@@ -23,9 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using OpenSSL.Crypto;
 
 namespace OpenSSL.X509
@@ -55,7 +52,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public CryptoKey PublicKey
 		{
-			get { return this.cert.PublicKey; }
+			get { return cert.PublicKey; }
 		}
 
 		/// <summary>
@@ -63,7 +60,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public CryptoKey PrivateKey
 		{
-			get { return this.key; }
+			get { return key; }
 		}
 
 		/// <summary>
@@ -71,7 +68,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public X509Certificate Certificate
 		{
-			get { return this.cert; }
+			get { return cert; }
 		}
 		#endregion
 
@@ -83,24 +80,24 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public X509Request CreateRequest(string name)
 		{
-            return CreateRequest(name, MessageDigest.DSS1);
+			return CreateRequest(name, MessageDigest.DSS1);
 		}
 
-        /// <summary>
-        /// Create a X509Request for this identity, using the specified name and digest.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="digest"></param>
-        /// <returns></returns>
-        public X509Request CreateRequest(string name, MessageDigest digest)
-        {
-            X509Name subject = new X509Name(name);
-            X509Request request = new X509Request(2, subject, this.key);
+		/// <summary>
+		/// Create a X509Request for this identity, using the specified name and digest.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="digest"></param>
+		/// <returns></returns>
+		public X509Request CreateRequest(string name, MessageDigest digest)
+		{
+			var subject = new X509Name(name);
+			var request = new X509Request(2, subject, key);
 
-            request.Sign(key, digest);
+			request.Sign(key, digest);
 
-            return request;
-        }
+			return request;
+		}
 
 		/// <summary>
 		/// Verify that the specified chain can be trusted.
@@ -110,8 +107,8 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public bool VerifyResponse(X509Chain chain, out string error)
 		{
-            this.cert = chain[0];
-			X509Store store = new X509Store(chain);
+			cert = chain[0];
+			var store = new X509Store(chain);
 			return store.Verify(cert, out error);
 		}
 		#endregion

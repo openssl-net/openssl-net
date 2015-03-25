@@ -23,10 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-	
+
 namespace OpenSSL.X509
 {
 	/// <summary>
@@ -203,5 +200,4 @@ namespace OpenSSL.X509
 		/// </summary>
 		X509_V_ERR_APPLICATION_VERIFICATION = 50
 	}
-
 }

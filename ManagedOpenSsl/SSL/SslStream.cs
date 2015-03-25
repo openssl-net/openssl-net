@@ -23,12 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using OpenSSL.X509;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Net.Security;
 using System.IO;
-using OpenSSL.X509;
+using System.Net.Security;
 
 namespace OpenSSL.SSL
 {
@@ -55,7 +54,7 @@ namespace OpenSSL.SSL
 	public delegate X509Certificate LocalCertificateSelectionHandler(Object sender, string targetHost, X509List localCerts, X509Certificate remoteCert, string[] acceptableIssuers);
 
 	/// <summary>
-	/// Implments an AuthenticatedStream and is the main interface to the SSL library.
+	/// Implements an AuthenticatedStream and is the main interface to the SSL library.
 	/// </summary>
 	public class SslStream : AuthenticatedStream
 	{
@@ -209,7 +208,7 @@ namespace OpenSSL.SSL
 		}
 
 		/// <summary>
-		/// Gets or sets a value, in miliseconds, that determines how long the stream will attempt to read before timing out.
+		/// Gets or sets a value, in milliseconds, that determines how long the stream will attempt to read before timing out.
 		/// </summary>
 		public override int ReadTimeout
 		{
@@ -218,7 +217,7 @@ namespace OpenSSL.SSL
 		}
 
 		/// <summary>
-		/// Gets or sets a value, in miliseconds, that determines how long the stream will attempt to write before timing out.
+		/// Gets or sets a value, in milliseconds, that determines how long the stream will attempt to write before timing out.
 		/// </summary>
 		public override int WriteTimeout
 		{
@@ -277,7 +276,7 @@ namespace OpenSSL.SSL
 		/// <param name="offset"></param>
 		/// <param name="origin"></param>
 		/// <returns></returns>
-		public override long Seek(long offset, System.IO.SeekOrigin origin)
+		public override long Seek(long offset, SeekOrigin origin)
 		{
 			throw new NotSupportedException();
 		}
@@ -372,6 +371,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return CipherAlgorithmType.None;
+
 				return sslStream.CipherAlgorithm;
 			}
 		}
@@ -385,6 +385,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return 0;
+
 				return sslStream.CipherStrength;
 			}
 		}
@@ -398,6 +399,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return HashAlgorithmType.None;
+
 				return sslStream.HashAlgorithm;
 			}
 		}
@@ -411,6 +413,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return 0;
+
 				return sslStream.HashStrength;
 			}
 		}
@@ -424,6 +427,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return ExchangeAlgorithmType.None;
+
 				return sslStream.KeyExchangeAlgorithm;
 			}
 		}
@@ -437,6 +441,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return 0;
+
 				return sslStream.KeyExchangeStrength;
 			}
 		}
@@ -450,6 +455,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return null;
+
 				return sslStream.LocalCertificate;
 			}
 		}
@@ -463,6 +469,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return null;
+
 				return sslStream.RemoteCertificate;
 			}
 		}
@@ -476,6 +483,7 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return SslProtocols.None;
+
 				return sslStream.SslProtocol;
 			}
 		}
@@ -560,9 +568,11 @@ namespace OpenSSL.SSL
 			}
 
 			// Create the stream
-			SslStreamClient client_stream = new SslStreamClient(InnerStream, false, targetHost, clientCertificates, caCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback, localCertificateSelectionCallback);
+			var client_stream = new SslStreamClient(InnerStream, false, targetHost, clientCertificates, caCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback, localCertificateSelectionCallback);
+			
 			// set the internal stream
 			sslStream = client_stream;
+			
 			// start the write operation
 			return BeginWrite(new byte[0], 0, 0, asyncCallback, asyncState);
 		}
@@ -650,9 +660,11 @@ namespace OpenSSL.SSL
 				throw new InvalidOperationException("SslStream is already authenticated");
 			}
 			// Initialize the server stream
-			SslStreamServer server_stream = new SslStreamServer(InnerStream, false, serverCertificate, clientCertificateRequired, caCerts, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback);
+			var server_stream = new SslStreamServer(InnerStream, false, serverCertificate, clientCertificateRequired, caCerts, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback);
+			
 			// Set the internal sslStream
 			sslStream = server_stream;
+			
 			// Start the read operation
 			return BeginRead(new byte[0], 0, 0, asyncCallback, asyncState);
 		}

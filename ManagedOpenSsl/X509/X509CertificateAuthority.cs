@@ -23,15 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using OpenSSL.Crypto;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using OpenSSL.Crypto;
 
 namespace OpenSSL.X509
 {
-    /// <summary>
+	/// <summary>
 	/// Used for generating sequence numbers by the CertificateAuthority
 	/// </summary>
 	public interface ISequenceNumber
@@ -107,14 +106,14 @@ namespace OpenSSL.X509
 		/// <summary>
 		/// Construct a SimpleSerialNumber with the initial sequence number set to 0.
 		/// </summary>
-		public SimpleSerialNumber() { this.seq = 0; }
+		public SimpleSerialNumber() { seq = 0; }
 
 		/// <summary>
 		/// Construct a SimpleSerialNumber with the initial sequence number
 		/// set to the value specified by the seed parameter.
 		/// </summary>
 		/// <param name="seed"></param>
-		public SimpleSerialNumber(int seed) { this.seq = seed; }
+		public SimpleSerialNumber(int seed) { seq = seed; }
 
 		#region ISequenceNumber Members
 
@@ -159,16 +158,17 @@ namespace OpenSSL.X509
 			TimeSpan validity)
 		{
 			CryptoKey key;
-			using (DSA dsa = new DSA(true))
+			using (var dsa = new DSA(true))
 			{
 				key = new CryptoKey(dsa);
 				// Dispose the DSA key, the CryptoKey assignment increments the reference count
 			}
-			X509Certificate cert = new X509Certificate(
+
+			var cert = new X509Certificate(
 				seq.Next(),
 				subject,
 				subject,
-                key,
+								key,
 				start,
 				start + validity);
 
@@ -180,86 +180,86 @@ namespace OpenSSL.X509
 			return new X509CertificateAuthority(cert, key, seq, cfg);
 		}
 
-        /// <summary>
-        /// Factory method that creates a X509CertificateAuthority instance with
-        /// an internal self signed certificate
-        /// </summary>
-        /// <param name="cfg"></param>
-        /// <param name="seq"></param>
-        /// <param name="key"></param>
-        /// <param name="digest"></param>
-        /// <param name="subject"></param>
-        /// <param name="start"></param>
-        /// <param name="validity"></param>
-        /// <returns></returns>
-        public static X509CertificateAuthority SelfSigned(
-            Configuration cfg,
-            ISequenceNumber seq,
-            CryptoKey key,
-            MessageDigest digest,
-            X509Name subject,
-            DateTime start,
-            TimeSpan validity)
-        {
-            X509Certificate cert = new X509Certificate(
-                seq.Next(),
-                subject,
-                subject,
-                key,
-                start,
-                start + validity);
+		/// <summary>
+		/// Factory method that creates a X509CertificateAuthority instance with
+		/// an internal self signed certificate
+		/// </summary>
+		/// <param name="cfg"></param>
+		/// <param name="seq"></param>
+		/// <param name="key"></param>
+		/// <param name="digest"></param>
+		/// <param name="subject"></param>
+		/// <param name="start"></param>
+		/// <param name="validity"></param>
+		/// <returns></returns>
+		public static X509CertificateAuthority SelfSigned(
+			Configuration cfg,
+			ISequenceNumber seq,
+			CryptoKey key,
+			MessageDigest digest,
+			X509Name subject,
+			DateTime start,
+			TimeSpan validity)
+		{
+			var cert = new X509Certificate(
+				seq.Next(),
+				subject,
+				subject,
+				key,
+				start,
+				start + validity);
 
-            if (cfg != null)
-                cfg.ApplyExtensions("v3_ca", cert, cert, null);
+			if (cfg != null)
+				cfg.ApplyExtensions("v3_ca", cert, cert, null);
 
-            cert.Sign(key, digest);
+			cert.Sign(key, digest);
 
-            return new X509CertificateAuthority(cert, key, seq, cfg);
-        }
+			return new X509CertificateAuthority(cert, key, seq, cfg);
+		}
 
-        /// <summary>
-        /// Factory method that creates a X509CertificateAuthority instance with
-        /// an internal self signed certificate. This method allows creation without
-        /// the need for the Configuration file, X509V3Extensions may be added
-        /// with the X509V3ExtensionList parameter
-        /// </summary>
-        /// <param name="seq"></param>
-        /// <param name="key"></param>
-        /// <param name="digest"></param>
-        /// <param name="subject"></param>
-        /// <param name="start"></param>
-        /// <param name="validity"></param>
-        /// <param name="extensions"></param>
-        /// <returns></returns>
-        public static X509CertificateAuthority SelfSigned(
-            ISequenceNumber seq,
-            CryptoKey key,
-            MessageDigest digest,
-            X509Name subject,
-            DateTime start,
-            TimeSpan validity,
-            X509V3ExtensionList extensions)
-        {
-            X509Certificate cert = new X509Certificate(
-                seq.Next(),
-                subject,
-                subject,
-                key,
-                start,
-                start + validity);
+		/// <summary>
+		/// Factory method that creates a X509CertificateAuthority instance with
+		/// an internal self signed certificate. This method allows creation without
+		/// the need for the Configuration file, X509V3Extensions may be added
+		/// with the X509V3ExtensionList parameter
+		/// </summary>
+		/// <param name="seq"></param>
+		/// <param name="key"></param>
+		/// <param name="digest"></param>
+		/// <param name="subject"></param>
+		/// <param name="start"></param>
+		/// <param name="validity"></param>
+		/// <param name="extensions"></param>
+		/// <returns></returns>
+		public static X509CertificateAuthority SelfSigned(
+			ISequenceNumber seq,
+			CryptoKey key,
+			MessageDigest digest,
+			X509Name subject,
+			DateTime start,
+			TimeSpan validity,
+			X509V3ExtensionList extensions)
+		{
+			var cert = new X509Certificate(
+				seq.Next(),
+				subject,
+				subject,
+				key,
+				start,
+				start + validity);
 
-            if (null != extensions)
-            {
-                foreach (X509V3ExtensionValue extValue in extensions)
-                {
-                    X509Extension ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value);
-                    cert.AddExtension(ext);
-                }
-            }
+			if (null != extensions)
+			{
+				foreach (var extValue in extensions)
+				{
+					var ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value);
+					cert.AddExtension(ext);
+				}
+			}
 
-            cert.Sign(key, digest);
+			cert.Sign(key, digest);
 
-            return new X509CertificateAuthority(cert, key, seq, null);
+			return new X509CertificateAuthority(cert, key, seq, null);
 		}
 
 		#endregion
@@ -277,6 +277,7 @@ namespace OpenSSL.X509
 		{
 			if (!caCert.CheckPrivateKey(caKey))
 				throw new Exception("The specified CA Private Key does match the specified CA Certificate");
+
 			this.caCert = caCert;
 			this.caKey = caKey;
 			this.serial = serial;
@@ -292,7 +293,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public X509Certificate Certificate
 		{
-			get { return this.caCert; }
+			get { return caCert; }
 		}
 
 		/// <summary>
@@ -300,7 +301,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public CryptoKey Key
 		{
-			get { return this.caKey; }
+			get { return caKey; }
 		}
 
 		#endregion
@@ -317,40 +318,40 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime)
 		{
-            return ProcessRequest(request, startTime, endTime, MessageDigest.DSS1);
+			return ProcessRequest(request, startTime, endTime, MessageDigest.DSS1);
 		}
 
-        /// <summary>
-        /// Process and X509Request. This includes creating a new X509Certificate
-        /// and signing this certificate with this CA's private key.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="startTime"></param>
-        /// <param name="endTime"></param>
-        /// <param name="digest"></param>
-        /// <returns></returns>
-        public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime, MessageDigest digest)
-        {
-            //using (CryptoKey pkey = request.PublicKey)
-            //{
-            //    if (!request.Verify(pkey))
-            //        throw new Exception("Request signature validation failed");
-            //}
+		/// <summary>
+		/// Process and X509Request. This includes creating a new X509Certificate
+		/// and signing this certificate with this CA's private key.
+		/// </summary>
+		/// <param name="request"></param>
+		/// <param name="startTime"></param>
+		/// <param name="endTime"></param>
+		/// <param name="digest"></param>
+		/// <returns></returns>
+		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime, MessageDigest digest)
+		{
+			//using (CryptoKey pkey = request.PublicKey)
+			//{
+			//    if (!request.Verify(pkey))
+			//        throw new Exception("Request signature validation failed");
+			//}
 
-            X509Certificate cert = new X509Certificate(
-                serial.Next(),
-                request.Subject,
-                this.caCert.Subject,
-                request.PublicKey,
-                startTime,
-                endTime);
+			var cert = new X509Certificate(
+				serial.Next(),
+				request.Subject,
+				this.caCert.Subject,
+				request.PublicKey,
+				startTime,
+				endTime);
 
-            if (this.cfg != null)
-                this.cfg.ApplyExtensions("v3_ca", this.caCert, cert, request);
+			if (cfg != null)
+				cfg.ApplyExtensions("v3_ca", caCert, cert, request);
 
-            cert.Sign(this.caKey, digest);
+			cert.Sign(caKey, digest);
 
-            return cert;
+			return cert;
 		}
 
 		#endregion
@@ -362,22 +363,22 @@ namespace OpenSSL.X509
 		/// </summary>
 		public void Dispose()
 		{
-			if (this.caKey != null)
+			if (caKey != null)
 			{
-				this.caKey.Dispose();
-				this.caKey = null;
+				caKey.Dispose();
+				caKey = null;
 			}
 
-			if (this.caCert != null)
+			if (caCert != null)
 			{
-				this.caCert.Dispose();
-				this.caCert = null;
+				caCert.Dispose();
+				caCert = null;
 			}
 
-			if (this.cfg != null)
+			if (cfg != null)
 			{
-				this.cfg.Dispose();
-				this.cfg = null;
+				cfg.Dispose();
+				cfg = null;
 			}
 		}
 

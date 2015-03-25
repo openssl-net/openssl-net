@@ -24,10 +24,7 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
 
 namespace OpenSSL.Core
 {
@@ -77,7 +74,7 @@ namespace OpenSSL.Core
 		public BigNumber(uint value)
 			: this()
 		{
-			Native.ExpectSuccess(Native.BN_set_word(this.ptr, value));
+			Native.ExpectSuccess(Native.BN_set_word(ptr, value));
 		}
 		#endregion
 
@@ -89,12 +86,14 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber FromDecimalString(string str)
 		{
-			byte[] buf = Encoding.ASCII.GetBytes(str);
+			var buf = Encoding.ASCII.GetBytes(str);
 			IntPtr ptr;
-            int ret = Native.BN_dec2bn(out ptr, buf);
-            if (ret <= 0)
-                throw new OpenSslException();
-            return new BigNumber(ptr, true);
+
+			var ret = Native.BN_dec2bn(out ptr, buf);
+			if (ret <= 0)
+					throw new OpenSslException();
+
+			return new BigNumber(ptr, true);
 		}
 
 		/// <summary>
@@ -104,11 +103,13 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber FromHexString(string str)
 		{
-			byte[] buf = Encoding.ASCII.GetBytes(str);
+			var buf = Encoding.ASCII.GetBytes(str);
 			IntPtr ptr;
-            int ret = Native.BN_hex2bn(out ptr, buf);
-            if (ret <= 0)
-                throw new OpenSslException();
+
+			var ret = Native.BN_hex2bn(out ptr, buf);
+			if (ret <= 0)
+					throw new OpenSslException();
+
 			return new BigNumber(ptr, true);
 		}
 
@@ -119,7 +120,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber FromArray(byte[] buf)
 		{
-			IntPtr ptr = Native.BN_bin2bn(buf, buf.Length, IntPtr.Zero);
+			var ptr = Native.BN_bin2bn(buf, buf.Length, IntPtr.Zero);
 			return new BigNumber(Native.ExpectNonNull(ptr), true);
 		}
 
@@ -129,7 +130,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public string ToDecimalString()
 		{
-			return Native.PtrToStringAnsi(Native.BN_bn2dec(this.ptr), true);
+			return Native.PtrToStringAnsi(Native.BN_bn2dec(ptr), true);
 		}
 
 		/// <summary>
@@ -138,7 +139,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public string ToHexString()
 		{
-			return Native.PtrToStringAnsi(Native.BN_bn2hex(this.ptr), true);
+			return Native.PtrToStringAnsi(Native.BN_bn2hex(ptr), true);
 		}
 
 		/// <summary>
@@ -168,8 +169,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static implicit operator byte[](BigNumber rhs)
 		{
-			byte[] bytes = new byte[rhs.Bytes];
+			var bytes = new byte[rhs.Bytes];
 			Native.ExpectSuccess(Native.BN_bn2bin(rhs.ptr, bytes));
+
 			return bytes;
 		}
 		
@@ -179,7 +181,7 @@ namespace OpenSSL.Core
 		/// <param name="bytes"></param>
 		public void ToBytes(byte[] bytes)
 		{
-			Native.ExpectSuccess(Native.BN_bn2bin(this.ptr, bytes));
+			Native.ExpectSuccess(Native.BN_bn2bin(ptr, bytes));
 		}
 
 		#endregion
@@ -190,7 +192,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public int Bits
 		{
-			get { return Native.BN_num_bits(this.ptr); }
+			get { return Native.BN_num_bits(ptr); }
 		}
 
 		/// <summary>
@@ -198,7 +200,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public int Bytes
 		{
-			get { return (this.Bits + 7) / 8; }
+			get { return (Bits + 7) / 8; }
 		}
 		#endregion
 
@@ -208,7 +210,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public void Clear()
 		{
-			Native.BN_clear(this.ptr);
+			Native.BN_clear(ptr);
 		}
 
 		/// <summary>
@@ -232,8 +234,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber PseudoNext(int bits, int top, int bottom)
 		{
-			BigNumber bn = new BigNumber();
+			var bn = new BigNumber();
 			Native.ExpectSuccess(Native.BN_pseudo_rand(bn.Handle, bits, top, bottom));
+
 			return bn;
 		}
 
@@ -244,12 +247,11 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber PseudoNextRange(BigNumber range)
 		{
-			BigNumber bn = new BigNumber();
+			var bn = new BigNumber();
 			Native.ExpectSuccess(Native.BN_pseudo_rand_range(bn.Handle, range.Handle));
+
 			return bn;
 		}
-		
-		
 		#endregion
 
 		#region Operators
@@ -261,8 +263,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber operator + (BigNumber lhs, BigNumber rhs)
 		{
-			BigNumber ret = new BigNumber();
+			var ret = new BigNumber();
 			Native.ExpectSuccess(Native.BN_add(ret.Handle, lhs.Handle, rhs.Handle));
+
 			return ret;
 		}
 
@@ -274,8 +277,9 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public static BigNumber operator -(BigNumber lhs, BigNumber rhs)
 		{
-			BigNumber ret = new BigNumber();
+			var ret = new BigNumber();
 			Native.ExpectSuccess(Native.BN_sub(ret.Handle, lhs.Handle, rhs.Handle));
+
 			return ret;
 		}
 
@@ -285,14 +289,15 @@ namespace OpenSSL.Core
 		/// <param name="lhs"></param>
 		/// <param name="rhs"></param>
 		/// <returns></returns>
-        public static bool operator ==(BigNumber lhs, BigNumber rhs)
-        {
-			if (object.ReferenceEquals(lhs, rhs))
+		public static bool operator ==(BigNumber lhs, BigNumber rhs)
+		{
+			if (ReferenceEquals(lhs, rhs))
 				return true;
 			if ((object)lhs == null || (object)rhs == null)
 				return false;
+
 			return lhs.Equals(rhs);
-        }
+		}
 
 		/// <summary>
 		/// Determines if lhs is by-value different than rhs
@@ -300,10 +305,10 @@ namespace OpenSSL.Core
 		/// <param name="lhs"></param>
 		/// <param name="rhs"></param>
 		/// <returns></returns>
-        public static bool operator !=(BigNumber lhs, BigNumber rhs)
-        {
+		public static bool operator !=(BigNumber lhs, BigNumber rhs)
+		{
 			return !(lhs == rhs);
-        }
+		}
 		#endregion
 
 		#region Overrides
@@ -314,10 +319,11 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public override bool Equals(object obj)
 		{
-			BigNumber rhs = obj as BigNumber;
+			var rhs = obj as BigNumber;
 			if ((object)rhs == null)
 				return false;
-			return Native.BN_cmp(this.ptr, rhs.ptr) == 0;
+
+			return Native.BN_cmp(ptr, rhs.ptr) == 0;
 		}
 
 		/// <summary>
@@ -336,7 +342,7 @@ namespace OpenSSL.Core
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			Native.ExpectSuccess(Native.BN_print(bio.Handle, this.ptr));
+			Native.ExpectSuccess(Native.BN_print(bio.Handle, ptr));
 		}
 		#endregion
 
@@ -346,7 +352,7 @@ namespace OpenSSL.Core
 		/// Calls BN_free()
 		/// </summary>
 		protected override void OnDispose() {
-			Native.BN_free(this.ptr);
+			Native.BN_free(ptr);
 		}
 
 		#endregion
@@ -360,7 +366,7 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public int CompareTo(BigNumber other)
 		{
-			return Native.BN_cmp(this.ptr, other.ptr);
+			return Native.BN_cmp(ptr, other.ptr);
 		}
 
 		#endregion
@@ -385,38 +391,38 @@ namespace OpenSSL.Core
 
 			public Native.bn_gencb_st CallbackStruct
 			{
-				get { return this.gencb; }
+				get { return gencb; }
 			}
 
 			public GeneratorThunk(GeneratorHandler client, object arg) 
 			{
-				this.OnGenerator = client;
+				OnGenerator = client;
 				this.arg = arg;
 
-				this.gencb.ver = 2;
-				this.gencb.arg = IntPtr.Zero;
-				this.gencb.cb = this.OnGeneratorThunk;
+				gencb.ver = 2;
+				gencb.arg = IntPtr.Zero;
+				gencb.cb = OnGeneratorThunk;
 			}
 
 			internal int OnGeneratorThunk(int p, int n, IntPtr arg)
 			{
-                if (OnGenerator != null)
-                {
-                    try
-                    {
-                        return OnGenerator(p, n, this.arg);
-                    }
-                    catch (Exception)
-                    {
-                        return 0;
-                    }
-                }
-                else
-                {
-                    // return 1 to allow generation to succeed with
-                    // no user callback
-                    return 1;
-                }
+				if (OnGenerator != null)
+				{
+					try
+					{
+							return OnGenerator(p, n, this.arg);
+					}
+					catch (Exception)
+					{
+							return 0;
+					}
+				}
+				else
+				{
+					// return 1 to allow generation to succeed with
+					// no user callback
+					return 1;
+				}
 			}
 		}
 
@@ -430,19 +436,19 @@ namespace OpenSSL.Core
 			}
 			
 			public BigNumber BigNumber {
-				get { return new BigNumber(Native.ExpectNonNull(Native.BN_CTX_get(this.ptr)), false); }
+				get { return new BigNumber(Native.ExpectNonNull(Native.BN_CTX_get(ptr)), false); }
 			}
 			
 			public void Start() {
-				Native.BN_CTX_start(this.ptr);
+				Native.BN_CTX_start(ptr);
 			}
 			
 			public void End() {
-				Native.BN_CTX_end(this.ptr);
+				Native.BN_CTX_end(ptr);
 			}
 			
 			protected override void OnDispose() {
-				Native.BN_CTX_free(this.ptr);
+				Native.BN_CTX_free(ptr);
 			}
 		}
 		#endregion

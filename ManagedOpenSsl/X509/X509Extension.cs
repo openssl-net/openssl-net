@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using OpenSSL.Core;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-using OpenSSL.Core;
 
 namespace OpenSSL.X509
 {
@@ -60,9 +58,9 @@ namespace OpenSSL.X509
 		public X509Extension(X509Certificate issuer, X509Certificate subject, string name, bool critical, string value)
 			: base(IntPtr.Zero, true)
 		{
-			using (X509V3Context ctx = new X509V3Context(issuer, subject, null))
+			using (var ctx = new X509V3Context(issuer, subject, null))
 			{
-				this.ptr = Native.ExpectNonNull(Native.X509V3_EXT_conf_nid(IntPtr.Zero, ctx.Handle, Native.TextToNID(name), value));
+				ptr = Native.ExpectNonNull(Native.X509V3_EXT_conf_nid(IntPtr.Zero, ctx.Handle, Native.TextToNID(name), value));
 			}
 		}
 
@@ -75,7 +73,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Name
 		{
-			get { return Native.OBJ_nid2ln(this.NID); }
+			get { return Native.OBJ_nid2ln(NID); }
 		}
 
 		/// <summary>
@@ -86,9 +84,11 @@ namespace OpenSSL.X509
 			get
 			{
 				// Don't free the obj_ptr
-				IntPtr obj_ptr = Native.X509_EXTENSION_get_object(this.ptr);
+				var obj_ptr = Native.X509_EXTENSION_get_object(ptr);
+
 				if (obj_ptr != IntPtr.Zero)
 					return Native.OBJ_obj2nid(obj_ptr);
+
 				return 0;
 			}
 		}
@@ -100,7 +100,7 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				int nCritical = Native.X509_EXTENSION_get_critical(this.ptr);
+				var nCritical = Native.X509_EXTENSION_get_critical(ptr);
 				return (nCritical == 1);
 			}
 		}
@@ -112,7 +112,7 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				using (Asn1String str = new Asn1String(Native.X509_EXTENSION_get_data(this.ptr), false))
+				using (var str = new Asn1String(Native.X509_EXTENSION_get_data(ptr), false))
 				{
 					return str.Data;
 				}
@@ -128,7 +128,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Native.X509_EXTENSION_free(this.ptr);
+			Native.X509_EXTENSION_free(ptr);
 		}
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		public override void Print(BIO bio)
 		{
-			Native.X509V3_EXT_print(bio.Handle, this.ptr, 0, 0);
+			Native.X509V3_EXT_print(bio.Handle, ptr, 0, 0);
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace OpenSSL.X509
 		/// <returns></returns>
 		internal override IntPtr DuplicateHandle()
 		{
-			return Native.X509_EXTENSION_dup(this.ptr);
+			return Native.X509_EXTENSION_dup(ptr);
 		}
 
 		#endregion
@@ -191,7 +191,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Value
 		{
-			get { return this.value; }
+			get { return value; }
 		}
 
 		#endregion

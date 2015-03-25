@@ -24,9 +24,8 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Text;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenSSL.Core
 {
@@ -52,7 +51,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public uint ErrorCode
 		{
-			get { return this.err; }
+			get { return err; }
 		}
 
 		/// <summary>
@@ -60,7 +59,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public string Library
 		{
-			get { return Native.PtrToStringAnsi(Native.ERR_lib_error_string(this.err), false); }
+			get { return Native.PtrToStringAnsi(Native.ERR_lib_error_string(err), false); }
 		}
 
 		/// <summary>
@@ -68,7 +67,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public string Reason
 		{
-			get { return Native.PtrToStringAnsi(Native.ERR_reason_error_string(this.err), false); }
+			get { return Native.PtrToStringAnsi(Native.ERR_reason_error_string(err), false); }
 		}
 
 		/// <summary>
@@ -76,7 +75,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public string Function
 		{
-			get { return Native.PtrToStringAnsi(Native.ERR_func_error_string(this.err), false); }
+			get { return Native.PtrToStringAnsi(Native.ERR_func_error_string(err), false); }
 		}
 
 		/// <summary>
@@ -86,15 +85,18 @@ namespace OpenSSL.Core
 		{
 			get
 			{
-				byte[] buf = new byte[1024];
+				var buf = new byte[1024];
+
 				buf.Initialize();
 				Native.ERR_error_string_n(err, buf, buf.Length);
+
 				int len;
 				for (len = 0; len < buf.Length; len++) 
 				{
 					if (buf[len] == 0)
 						break;
 				}
+
 				return Encoding.ASCII.GetString(buf, 0, len);
 			}
 		}
@@ -110,13 +112,13 @@ namespace OpenSSL.Core
 		private OpenSslException(List<OpenSslError> context)
 			: base(GetErrorMessage(context))
 		{
-			this.errors = context;
+			errors = context;
 		}
 
 		/// <summary>
 		/// When this class is instantiated, GetErrorMessage() is called automatically.
 		/// This will call ERR_get_error() on the native openssl interface, once for every
-		/// error that is in the current context. The exception message is the concatination
+		/// error that is in the current context. The exception message is the concatenation
 		/// of each of these errors turned into strings using ERR_error_string_n().
 		/// </summary>
 		public OpenSslException()
@@ -124,30 +126,35 @@ namespace OpenSSL.Core
 		{
 		}
 
-        private static List<OpenSslError> GetCurrentContext()
+		private static List<OpenSslError> GetCurrentContext()
 		{
-			List<OpenSslError> ret = new List<OpenSslError>();
+			var ret = new List<OpenSslError>();
+
 			while (true)
 			{
-				uint err = Native.ERR_get_error();
+				var err = Native.ERR_get_error();
+
 				if (err == 0)
 					break;
 
 				ret.Add(new OpenSslError(err));
 			}
+
 			return ret;
 		}
 
 		private static string GetErrorMessage(List<OpenSslError> context)
 		{
-			StringBuilder sb = new StringBuilder();
-			bool isFirst = true;
-			foreach (OpenSslError err in context)
+			var sb = new StringBuilder();
+			var isFirst = true;
+
+			foreach (var err in context)
 			{
 				if (isFirst)
 					isFirst = false;
 				else
 					sb.Append("\n");
+
 				sb.Append(err.Message);
 			}
 
@@ -159,7 +166,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public List<OpenSslError> Errors
 		{
-			get { return this.errors; }
+			get { return errors; }
 		}
 	}
 }

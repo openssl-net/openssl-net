@@ -23,22 +23,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using OpenSSL.Core;
+using System;
 
 namespace OpenSSL.SSL
 {
-    /// <summary>
-    /// Wraps the SSL_METHOD structure and methods
-    /// </summary>
-    public class SslMethod : Base
-    {
-        private SslMethod(IntPtr ptr, bool owner) :
-            base(ptr, owner)
-        {
-        }
+	/// <summary>
+	/// Wraps the SSL_METHOD structure and methods
+	/// </summary>
+	public class SslMethod : Base
+	{
+		private SslMethod(IntPtr ptr, bool owner) :
+				base(ptr, owner)
+		{
+		}
 
 		/// <summary>
 		/// Throws NotImplementedException()
@@ -47,80 +45,79 @@ namespace OpenSSL.SSL
 			throw new NotImplementedException();
 		}
 
-        /// <summary>
-        /// SSLv2_method()
-        /// </summary>
-        public static SslMethod SSLv2_method = new SslMethod(Native.SSLv2_method(), false);
+		/// <summary>
+		/// SSLv2_method()
+		/// </summary>
+		public static SslMethod SSLv2_method = new SslMethod(Native.SSLv2_method(), false);
 
-        /// <summary>
-        /// SSLv2_server_method()
-        /// </summary>
-        public static SslMethod SSLv2_server_method = new SslMethod(Native.SSLv2_server_method(), false);
+		/// <summary>
+		/// SSLv2_server_method()
+		/// </summary>
+		public static SslMethod SSLv2_server_method = new SslMethod(Native.SSLv2_server_method(), false);
 
-        /// <summary>
-        /// SSLv2_client_method()
-        /// </summary>
-        public static SslMethod SSLv2_client_method = new SslMethod(Native.SSLv2_client_method(), false);
-        
-        /// <summary>
-        /// SSLv3_method()
-        /// </summary>
-        public static SslMethod SSLv3_method = new SslMethod(Native.SSLv3_method(), false);
+		/// <summary>
+		/// SSLv2_client_method()
+		/// </summary>
+		public static SslMethod SSLv2_client_method = new SslMethod(Native.SSLv2_client_method(), false);
+				
+		/// <summary>
+		/// SSLv3_method()
+		/// </summary>
+		public static SslMethod SSLv3_method = new SslMethod(Native.SSLv3_method(), false);
 
-        /// <summary>
-        /// SSLv3_server_method()
-        /// </summary>
-        public static SslMethod SSLv3_server_method = new SslMethod(Native.SSLv3_server_method(), false);
+		/// <summary>
+		/// SSLv3_server_method()
+		/// </summary>
+		public static SslMethod SSLv3_server_method = new SslMethod(Native.SSLv3_server_method(), false);
 
-        /// <summary>
-        /// SSLv3_client_method()
-        /// </summary>
-        public static SslMethod SSLv3_client_method = new SslMethod(Native.SSLv3_client_method(), false);
+		/// <summary>
+		/// SSLv3_client_method()
+		/// </summary>
+		public static SslMethod SSLv3_client_method = new SslMethod(Native.SSLv3_client_method(), false);
 
-        /// <summary>
-        /// SSLv23_method()
-        /// </summary>
-        public static SslMethod SSLv23_method = new SslMethod(Native.SSLv23_method(), false);
+		/// <summary>
+		/// SSLv23_method()
+		/// </summary>
+		public static SslMethod SSLv23_method = new SslMethod(Native.SSLv23_method(), false);
 
-        /// <summary>
-        /// SSLv23_server_method()
-        /// </summary>
-        public static SslMethod SSLv23_server_method = new SslMethod(Native.SSLv23_server_method(), false);
+		/// <summary>
+		/// SSLv23_server_method()
+		/// </summary>
+		public static SslMethod SSLv23_server_method = new SslMethod(Native.SSLv23_server_method(), false);
 
-        /// <summary>
-        /// SSLv23_client_method()
-        /// </summary>
-        public static SslMethod SSLv23_client_method = new SslMethod(Native.SSLv23_client_method(), false);
+		/// <summary>
+		/// SSLv23_client_method()
+		/// </summary>
+		public static SslMethod SSLv23_client_method = new SslMethod(Native.SSLv23_client_method(), false);
 
-        /// <summary>
-        /// TLSv1_method()
-        /// </summary>
-        public static SslMethod TLSv1_method = new SslMethod(Native.TLSv1_method(), false);
+		/// <summary>
+		/// TLSv1_method()
+		/// </summary>
+		public static SslMethod TLSv1_method = new SslMethod(Native.TLSv1_method(), false);
 
-        /// <summary>
-        /// TLSv1_server_method()
-        /// </summary>
-        public static SslMethod TLSv1_server_method = new SslMethod(Native.TLSv1_server_method(), false);
+		/// <summary>
+		/// TLSv1_server_method()
+		/// </summary>
+		public static SslMethod TLSv1_server_method = new SslMethod(Native.TLSv1_server_method(), false);
 
-        /// <summary>
-        /// TLSv1_client_method()
-        /// </summary>
-        public static SslMethod TLSv1_client_method = new SslMethod(Native.TLSv1_client_method(), false);
+		/// <summary>
+		/// TLSv1_client_method()
+		/// </summary>
+		public static SslMethod TLSv1_client_method = new SslMethod(Native.TLSv1_client_method(), false);
 
-        /// <summary>
-        /// DTLSv1_method()
-        /// </summary>
-        public static SslMethod DTLSv1_method = new SslMethod(Native.DTLSv1_method(), false);
+		/// <summary>
+		/// DTLSv1_method()
+		/// </summary>
+		public static SslMethod DTLSv1_method = new SslMethod(Native.DTLSv1_method(), false);
 
-        /// <summary>
-        /// DTLSv1_server_method()
-        /// </summary>
-        public static SslMethod DTLSv1_server_method = new SslMethod(Native.DTLSv1_server_method(), false);
+		/// <summary>
+		/// DTLSv1_server_method()
+		/// </summary>
+		public static SslMethod DTLSv1_server_method = new SslMethod(Native.DTLSv1_server_method(), false);
 
-        /// <summary>
-        /// DTLSv1_client_method()
-        /// </summary>
-        public static SslMethod DTLSv1_client_method = new SslMethod(Native.DTLSv1_client_method(), false);
-
-    }
+		/// <summary>
+		/// DTLSv1_client_method()
+		/// </summary>
+		public static SslMethod DTLSv1_client_method = new SslMethod(Native.DTLSv1_client_method(), false);
+	}
 }

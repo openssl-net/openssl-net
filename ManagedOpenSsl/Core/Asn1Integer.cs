@@ -24,9 +24,6 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Globalization;
 
 namespace OpenSSL.Core
 {
@@ -43,18 +40,18 @@ namespace OpenSSL.Core
 		public Asn1Integer(int value)
 			: this()
 		{
-			this.Value = value;
+			Value = value;
 		}
 
 		protected override void OnDispose()
 		{
-			Native.ASN1_TIME_free(this.ptr);
+			Native.ASN1_TIME_free(ptr);
 		}
 
 		public int Value
 		{
-			get { return Native.ASN1_INTEGER_get(this.ptr); }
-			set { Native.ExpectSuccess(Native.ASN1_INTEGER_set(this.ptr, value)); }
+			get { return Native.ASN1_INTEGER_get(ptr); }
+			set { Native.ExpectSuccess(Native.ASN1_INTEGER_set(ptr, value)); }
 		}
 
 		public static int ToInt32(IntPtr ptr)

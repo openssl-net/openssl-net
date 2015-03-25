@@ -22,8 +22,9 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-using System;
+
 using OpenSSL.Core;
+using System;
 
 namespace OpenSSL.Crypto.EC
 {
@@ -45,11 +46,11 @@ namespace OpenSSL.Crypto.EC
 
 		#region Properties
 		public int Degree {
-			get { return Native.EC_GROUP_get_degree(this.ptr); }
+			get { return Native.EC_GROUP_get_degree(ptr); }
 		}
 		
 		public Method Method {
-			get { return new Method(Native.EC_GROUP_method_of(this.ptr), false); }
+			get { return new Method(Native.EC_GROUP_method_of(ptr), false); }
 		}
 		#endregion
 

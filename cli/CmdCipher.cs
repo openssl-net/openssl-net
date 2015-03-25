@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using OpenSSL.Core;
+﻿using OpenSSL.Core;
 using OpenSSL.Crypto;
+using System;
+using System.IO;
+using System.Text;
 
 namespace OpenSSL.CLI {
 	class CmdCipher : ICommand {
@@ -53,16 +52,21 @@ namespace OpenSSL.CLI {
 -bufsize <n>   buffer size
 -engine e      use engine e, possibly a hardware device.
 Cipher Types");
-			string[] types = Cipher.AllNamesSorted;
-			for (int i = 0; i < types.Length; i++) {
-				string name = types[i];
+
+			var types = Cipher.AllNamesSorted;
+
+			for (var i = 0; i < types.Length; i++) {
+				var name = types[i];
+
 				if (name == name.ToUpper())
 					continue;
 
 				Console.Error.Write("-{0}", name.PadRight(26));
+
 				if (i % 3 == 0)
 					Console.Error.WriteLine();
 			}
+
 			Console.Error.WriteLine();
 		}
 
@@ -80,6 +84,7 @@ Cipher Types");
 			MessageDigest md = null;
 			if (options.IsSet("md")) {
 				md = MessageDigest.CreateByName(options.GetString("md"));
+
 				if (md == null) {
 					Console.Error.WriteLine("{0} is an unsupported message digest type", options.GetString("md"));
 					return;
@@ -93,21 +98,26 @@ Cipher Types");
 			}
 
 			BIO bin = Program.GetInFile(options.GetString("infile"));
+
 			string password = null;
 			if (options.IsSet("password"))
 				password = options.GetString("password");
-			else if (options.IsSet("kfile")) {
-				string filename = options.GetString("kfile");
-				string[] lines = File.ReadAllLines(filename);
+			else if (options.IsSet("kfile"))
+			{
+				var filename = options.GetString("kfile");
+				var lines = File.ReadAllLines(filename);
+
 				if (lines.Length < 1 || lines[0].Length < 1) {
 					Console.Error.WriteLine("zero length password");
 					return;
 				}
+
 				password = lines[0];
 			}
 
 			if (password == null) {
 				password = Program.OnPassword(true, options["passarg"]);
+
 				if (password == null) {
 					Console.Error.WriteLine("error getting password");
 					return;
@@ -117,9 +127,10 @@ Cipher Types");
 			if (options.IsSet("base64")) {
 			}
 
-			string cipherName = options["cipher"] as string;
+			var cipherName = options["cipher"] as string;
 			if (!string.IsNullOrEmpty(cipherName)) {
-				Cipher cipher = Cipher.CreateByName(cipherName);
+				var cipher = Cipher.CreateByName(cipherName);
+
 				if (cipher == null) {
 					Console.Error.WriteLine("{0} is an unknown cipher", cipherName);
 					return;
@@ -133,10 +144,10 @@ Cipher Types");
 
 				byte[] iv;
 
-				CipherContext cc = new CipherContext(cipher);
+				var cc = new CipherContext(cipher);
 				if (password != null) {
-					byte[] bytes = Encoding.ASCII.GetBytes(password);
-					byte[] key = cc.BytesToKey(MessageDigest.MD5, salt, bytes, 1, out iv);
+					var bytes = Encoding.ASCII.GetBytes(password);
+					var key = cc.BytesToKey(MessageDigest.MD5, salt, bytes, 1, out iv);
 				}
 			}
 

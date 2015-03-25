@@ -23,11 +23,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using OpenSSL.Core;
+using System;
+using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto
 {
@@ -45,6 +43,7 @@ namespace OpenSSL.Crypto
 			public EVP_MD_CTX i_ctx;
 			public EVP_MD_CTX o_ctx;
 			public uint key_length;    //unsigned int key_length;
+
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.HMAC_MAX_MD_CBLOCK)]
 			public byte[] key;
 		}
@@ -57,9 +56,10 @@ namespace OpenSSL.Crypto
 		public HMAC()
 			: base(IntPtr.Zero, true) {
 			// Allocate the context
-			this.ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(HMAC_CTX)));
+			ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(HMAC_CTX)));
+
 			// Initialize the context
-			Native.HMAC_CTX_init(this.ptr);
+			Native.HMAC_CTX_init(ptr);
 		}
 		#endregion
 
@@ -73,9 +73,10 @@ namespace OpenSSL.Crypto
 		/// <param name="data"></param>
 		/// <returns></returns>
 		public static byte[] Digest(MessageDigest digest, byte[] key, byte[] data) {
-			byte[] hash_value = new byte[digest.Size];
+			var hash_value = new byte[digest.Size];
 			uint hash_value_length = Native.EVP_MAX_MD_SIZE;
 			Native.HMAC(digest.Handle, key, key.Length, data, data.Length, hash_value, ref hash_value_length);
+			
 			return hash_value;
 		}
 
@@ -85,9 +86,9 @@ namespace OpenSSL.Crypto
 		/// <param name="key"></param>
 		/// <param name="digest"></param>
 		public void Init(byte[] key, MessageDigest digest) {
-			Native.HMAC_Init_ex(this.ptr, key, key.Length, digest.Handle, IntPtr.Zero);
-			this.digest_size = digest.Size;
-			this.initialized = true;
+			Native.HMAC_Init_ex(ptr, key, key.Length, digest.Handle, IntPtr.Zero);
+			digest_size = digest.Size;
+			initialized = true;
 		}
 
 		/// <summary>
@@ -98,7 +99,8 @@ namespace OpenSSL.Crypto
 			if (!initialized) {
 				throw new Exception("Failed to call Initialize before calling Update");
 			}
-			Native.HMAC_Update(this.ptr, data, data.Length);
+
+			Native.HMAC_Update(ptr, data, data.Length);
 		}
 
 		/// <summary>
@@ -123,8 +125,9 @@ namespace OpenSSL.Crypto
 			if (data.Length < (count - offset)) {
 				throw new ArgumentException("invalid length specified.  Count is greater than buffer length.");
 			}
-			ArraySegment<byte> seg = new ArraySegment<byte>(data, offset, count);
-			Native.HMAC_Update(this.ptr, seg.Array, seg.Count);
+
+			var seg = new ArraySegment<byte>(data, offset, count);
+			Native.HMAC_Update(ptr, seg.Array, seg.Count);
 		}
 
 		/// <summary>
@@ -135,10 +138,11 @@ namespace OpenSSL.Crypto
 			if (!initialized) {
 				throw new Exception("Failed to call Initialize before calling DigestFinal");
 			}
-			byte[] hash_value = new byte[digest_size];
+
+			var hash_value = new byte[digest_size];
 			uint hash_value_length = Native.EVP_MAX_MD_SIZE;
 
-			Native.HMAC_Final(this.ptr, hash_value, ref hash_value_length);
+			Native.HMAC_Final(ptr, hash_value, ref hash_value_length);
 			return hash_value;
 		}
 
@@ -150,9 +154,10 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		protected override void OnDispose() {
 			// Clean up the context
-			Native.HMAC_CTX_cleanup(this.ptr);
+			Native.HMAC_CTX_cleanup(ptr);
+
 			// Free the structure allocation
-			Native.OPENSSL_free(this.ptr);
+			Native.OPENSSL_free(ptr);
 		}
 		#endregion
 
