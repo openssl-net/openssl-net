@@ -153,6 +153,14 @@
       <Link>libssl.1.0.0.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\native\linux\x86_64\libcrypto.so.1.0.0">
+      <Link>libcrypto.so.1.0.0</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\native\linux\x86_64\libssl.so.1.0.0">
+      <Link>libssl.so.1.0.0</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\native\windows\x86\libeay32.dll">
