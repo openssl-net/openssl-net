@@ -5,7 +5,7 @@ os:
  - osx
  - linux
 
-install:
+before_install:
  - wget https://www.openssl.org/source/openssl-1.0.2a.tar.gz
  - tar zxvf openssl-1.0.2a.tar.gz > /dev/null
  - cd openssl-1.0.2a
@@ -13,6 +13,9 @@ install:
  - sudo make > /dev/null
  - sudo make install > /dev/null
  - openssl version
+ - cd ..
+ 
+install:
  - nuget restore openssl.net.sln
  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 
