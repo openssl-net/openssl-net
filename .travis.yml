@@ -7,8 +7,10 @@ os:
 
 before_install:
  - wget https://www.openssl.org/source/openssl-1.0.2a.tar.gz
- - tar zxvf openssl-1.0.2a.tar.gz
- - ( cd openssl-1.0.2a && ./config && make -j4 && sudo make install )
+ - tar zxvf openssl-1.0.2a.tar.gz > /dev/null
+ - ./config --prefix=/usr > /dev/null
+ - sudo make > /dev/null
+ - sudo make install > /dev/null
 
 install:
   - nuget restore openssl.net.sln
