@@ -5,18 +5,17 @@ os:
  - osx
  - linux
 
-before_install:
+install:
  - wget https://www.openssl.org/source/openssl-1.0.2a.tar.gz
  - tar zxvf openssl-1.0.2a.tar.gz > /dev/null
  - cd openssl-1.0.2a
  - ./config --prefix=/usr > /dev/null
  - sudo make > /dev/null
  - sudo make install > /dev/null
-
-install:
-  - nuget restore openssl.net.sln
-  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+ - openssl version
+ - nuget restore openssl.net.sln
+ - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 
 script:
-  - xbuild /p:Configuration=Release openssl.net.sln
-  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./bin/Release/UnitTests.dll
+ - xbuild /p:Configuration=Release openssl.net.sln
+ - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./bin/Release/UnitTests.dll
