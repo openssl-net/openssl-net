@@ -197,6 +197,16 @@ namespace OpenSSL.Crypto
 			Native.ExpectSuccess(Native.EVP_PKEY_set1_RSA(ptr, rsa.Handle));
 		}
 
+        /// <summary>
+        /// Calls EVP_PKEY_set1_EC()
+        /// </summary>
+        /// <param name="ec"></param>
+        public CryptoKey(EC.Key ec)
+            : this()
+        {
+            Native.ExpectSuccess(Native.EVP_PKEY_set1_EC_KEY(ptr, ec.Handle));
+        }
+
 		/// <summary>
 		/// Calls EVP_PKEY_set1_DH()
 		/// </summary>
@@ -303,6 +313,19 @@ namespace OpenSSL.Crypto
 
 			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(ptr)), false);
 		}
+
+        /// <summary>
+        /// Returns EVP_PKEY_get1_EC()
+        /// </summary>
+        /// <returns></returns>
+        public EC.Key GetEC()
+        {
+            if (Type != KeyType.EC)
+                throw new InvalidOperationException();
+
+            return new EC.Key(Native.ExpectNonNull(Native.EVP_PKEY_get1_EC(ptr)), false);
+        }
+
 
 		/// <summary>
 		/// Calls PEM_write_bio_PKCS8PrivateKey
