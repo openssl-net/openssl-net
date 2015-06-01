@@ -314,17 +314,17 @@ namespace OpenSSL.Crypto
 			return new RSA(Native.ExpectNonNull(Native.EVP_PKEY_get1_RSA(ptr)), false);
 		}
 
-        /// <summary>
-        /// Returns EVP_PKEY_get1_EC()
-        /// </summary>
-        /// <returns></returns>
-        public EC.Key GetEC()
-        {
-            if (Type != KeyType.EC)
-                throw new InvalidOperationException();
+		/// <summary>
+		/// Returns EVP_PKEY_get1_EC()
+		/// </summary>
+		/// <returns></returns>
+		public EC.Key GetEC()
+		{
+			if (Type != KeyType.EC)
+				throw new InvalidOperationException();
 
-            return new EC.Key(Native.ExpectNonNull(Native.EVP_PKEY_get1_EC(ptr)), false);
-        }
+			return new EC.Key(Native.ExpectNonNull(Native.EVP_PKEY_get1_EC(ptr)), false);
+		}
 
 
 		/// <summary>
