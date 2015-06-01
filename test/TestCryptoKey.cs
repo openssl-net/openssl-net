@@ -134,23 +134,23 @@ namespace UnitTests
 			}
 		}
 
-        [Test]
-        public void CanCreateFromEC()
-        {
-            using (Key ec = new Key())
-            {
-                using (Group group = Group.FromCurveName(Objects.NID.X9_62_prime256v1))
-                {
-                    ec.Group = group;
-                }
-                ec.GenerateKey();
-                using (CryptoKey key = new CryptoKey(ec))
-                {
-                    Assert.AreEqual(CryptoKey.KeyType.EC, key.Type);
-                    Assert.AreEqual(ec.Size, key.Size);
-                }
-            }
-        }
+		[Test]
+		public void CanCreateFromEC()
+		{
+			using (Key ec = new Key())
+			{
+				using (Group group = Group.FromCurveName(Objects.NID.X9_62_prime256v1))
+				{
+					ec.Group = group;
+				}
+				ec.GenerateKey();
+				using (CryptoKey key = new CryptoKey(ec))
+				{
+					Assert.AreEqual(CryptoKey.KeyType.EC, key.Type);
+					Assert.AreEqual(ec.Size, key.Size);
+				}
+			}
+		}
 
 		[Test]
 		public void CanCreateFromDH()
