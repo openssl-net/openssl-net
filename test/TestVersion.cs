@@ -6,11 +6,11 @@ using Version = OpenSSL.Core.Version;
 namespace UnitTests
 {
 	[TestFixture]
-    public class TestVersion
-    {
+	public class TestVersion
+	{
 		[Test]
-        public void Zero()
-        {
+		public void Zero()
+		{
 			var version = new Version(0x00000000);
 			Assert.AreEqual(0, version.Major);
 			Assert.AreEqual(0, version.Minor);
@@ -19,7 +19,7 @@ namespace UnitTests
 			Assert.AreEqual(Version.StatusType.Development, version.Status);
 			Assert.AreEqual(0, version.Raw);
 			Assert.AreEqual("0.0.0 Development (0x00000000)", version.ToString());
-        }
+		}
 
 		[Test]
 		public void Basic1()
@@ -59,6 +59,5 @@ namespace UnitTests
 			Assert.AreEqual(0x1000201f, version.Raw);
 			Assert.AreEqual("1.0.2a Release (0x1000201f)", version.ToString());
 		}
-    }
+	}
 }
-
