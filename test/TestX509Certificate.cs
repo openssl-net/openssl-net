@@ -32,6 +32,7 @@ using OpenSSL.Crypto;
 using OpenSSL.X509;
 using System.Resources;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace UnitTests
 {
@@ -41,7 +42,8 @@ namespace UnitTests
 		[Test]
 		public void CanCreateAndDispose()
 		{
-			using (X509Certificate cert = new X509Certificate()) {
+			using (var cert = new X509Certificate())
+			{
 				cert.PrintRefCount();
 			}
 		}
@@ -49,8 +51,10 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPEM()
 		{
-			using (BIO bio = new BIO(LoadString(Resources.CaCrt))) {
-				using (X509Certificate cert = new X509Certificate(bio)) {
+			using (var bio = new BIO(LoadString(Resources.CaCrt)))
+			{
+				using (var cert = new X509Certificate(bio))
+				{
 					TestCert(cert, "CN=Root", "CN=Root", 1234);
 				}
 			}
@@ -59,8 +63,10 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromDER()
 		{
-			using (BIO bio = new BIO(LoadBytes(Resources.CaDer))) {
-				using (X509Certificate cert = X509Certificate.FromDER(bio)) {
+			using (var bio = new BIO(LoadBytes(Resources.CaDer)))
+			{
+				using (var cert = X509Certificate.FromDER(bio))
+				{
 					TestCert(cert, "CN=Root", "CN=Root", 1234);
 				}
 			}
@@ -69,8 +75,10 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPKCS7_PEM()
 		{
-			using (BIO bio = new BIO(LoadString(Resources.CaChainP7cPem))) {
-				using (X509Certificate cert = X509Certificate.FromPKCS7_PEM(bio)) {
+			using (var bio = new BIO(LoadString(Resources.CaChainP7cPem)))
+			{
+				using (var cert = X509Certificate.FromPKCS7_PEM(bio))
+				{
 					TestCert(cert, "CN=Root", "CN=Root", 1234);
 				}
 			}
@@ -79,8 +87,10 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPKCS7_DER()
 		{
-			using (BIO bio = new BIO(LoadBytes(Resources.CaChainP7c))) {
-				using (X509Certificate cert = X509Certificate.FromPKCS7_DER(bio)) {
+			using (var bio = new BIO(LoadBytes(Resources.CaChainP7c)))
+			{
+				using (var cert = X509Certificate.FromPKCS7_DER(bio))
+				{
 					TestCert(cert, "CN=Root", "CN=Root", 1234);
 				}
 			}
@@ -89,65 +99,65 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPCKS12()
 		{
-			using (BIO bio = new BIO(LoadBytes(Resources.ServerPfx))) {
-				using (X509Certificate cert = X509Certificate.FromPKCS12(bio, password)) {
+			using (var bio = new BIO(LoadBytes(Resources.ServerPfx)))
+			{
+				using (var cert = X509Certificate.FromPKCS12(bio, password))
+				{
 					TestCert(cert, "CN=localhost", "CN=Root", 1235);
 				}
 			}
 		}
 
 		[Test]
-		public void CanCreatePKCS12() {
-			using (BIO bio = new BIO(LoadBytes(Resources.ServerPfx))) {
-				using (var pfx = new PKCS12(bio, password)) {
-					using (var new_pfx = new PKCS12(password, pfx.PrivateKey, pfx.Certificate, pfx.CACertificates)) {
-						TestCert(new_pfx.Certificate, "CN=localhost", "CN=Root", 1235);
-					}
-				}
+		public void CanCreatePKCS12()
+		{
+			using (var bio = new BIO(LoadBytes(Resources.ServerPfx)))
+			using (var pfx = new PKCS12(bio, password))
+			using (var new_pfx = new PKCS12(password, pfx.PrivateKey, pfx.Certificate, pfx.CACertificates))
+			{
+				TestCert(new_pfx.Certificate, "CN=localhost", "CN=Root", 1235);
 			}
 		}
 
 		[Test]
 		public void CanCreateWithArgs()
 		{
-			int serial = 101;
-			using (X509Name subject = new X509Name("CN=localhost")) {
-				using (X509Name issuer = new X509Name("CN=Root")) {
-					using (CryptoKey key = new CryptoKey(new DSA(true))) {
-						DateTime start = DateTime.Now;
-						DateTime end = start + TimeSpan.FromMinutes(10);
+			var serial = 101;
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var subject = new X509Name("CN=localhost"))
+			using (var issuer = new X509Name("CN=Root"))
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(serial, subject, issuer, key, start, end))
+			{
+				Assert.AreEqual(subject, cert.Subject);
+				Assert.AreEqual(issuer, cert.Issuer);
+				Assert.AreEqual(serial, cert.SerialNumber);
 			
-						using (X509Certificate cert = new X509Certificate(serial, subject, issuer, key, start, end)) {
-							Assert.AreEqual(subject, cert.Subject);
-							Assert.AreEqual(issuer, cert.Issuer);
-							Assert.AreEqual(serial, cert.SerialNumber);
-			
-							// We compare short date/time strings here because the wrapper can't handle milliseconds
-							Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
-							Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
-						}
-					}
-				}
+				// We compare short date/time strings here because the wrapper can't handle milliseconds
+				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
+				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
 			}
 		}
 
 		[Test]
 		public void CanGetAndSetProperties()
 		{
-			int serial = 101;
-			X509Name subject = new X509Name("CN=localhost");
-			X509Name issuer = new X509Name("CN=Root");
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
+			var serial = 101;
+			var subject = new X509Name("CN=localhost");
+			var issuer = new X509Name("CN=Root");
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
 
-			CryptoKey key = new CryptoKey(new DSA(true));
-			int bits = key.Bits;
+			var key = new CryptoKey(new DSA(true));
+			var bits = key.Bits;
 
 			X509Name saveIssuer = null;
 			X509Name saveSubject = null;
 			CryptoKey savePublicKey = null;
 			CryptoKey savePrivateKey = null;
-			using (X509Certificate cert = new X509Certificate()) {
+			using (var cert = new X509Certificate())
+			{
 				cert.Subject = subject;
 				cert.Issuer = issuer;
 				cert.SerialNumber = serial;
@@ -182,21 +192,36 @@ namespace UnitTests
 			}
 
 			// make sure that a property torn-off from the cert is still valid
-			Assert.AreEqual(subject, saveSubject);
-			Assert.AreEqual(issuer, saveIssuer);
-			Assert.AreEqual(bits, savePublicKey.Bits);
-			Assert.AreEqual(bits, savePrivateKey.Bits);
+			using (subject)
+			using (saveSubject)
+			{
+				Assert.AreEqual(subject, saveSubject);
+			}
+			using (issuer)
+			using (saveIssuer)
+			{
+				Assert.AreEqual(issuer, saveIssuer);
+			}
+			using (savePublicKey)
+			{
+				Assert.AreEqual(bits, savePublicKey.Bits);
+			}
+			using (savePrivateKey)
+			{
+				Assert.AreEqual(bits, savePrivateKey.Bits);
+			}
 		}
 
 		[Test]
 		[ExpectedException(typeof(ArgumentException))]
 		public void CannotSetUnmatchedPrivateKey()
 		{
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
-				CryptoKey other = new CryptoKey(new DSA(true));
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
+				var other = new CryptoKey(new DSA(true));
 				cert.PrivateKey = other;
 			}
 		}
@@ -204,26 +229,31 @@ namespace UnitTests
 		[Test]
 		public void CanCompare()
 		{
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
 				Assert.AreEqual(cert, cert);
-				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
+				using (var cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+				{
 					Assert.AreEqual(cert, cert2);
 				}
 
-				using (X509Certificate cert2 = new X509Certificate(101, "CN=other", "CN=Root", key, start, end)) {
-					Assert.IsFalse(cert == cert2);
+				using (var cert2 = new X509Certificate(101, "CN=other", "CN=Root", key, start, end))
+				{
+					Assert.AreNotEqual(cert, cert2);
 				}
 
-				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=other", key, start, end)) {
-					Assert.IsFalse(cert == cert2);
+				using (var cert2 = new X509Certificate(101, "CN=localhost", "CN=other", key, start, end))
+				{
+					Assert.AreNotEqual(cert, cert2);
 				}
 
-				CryptoKey otherKey = new CryptoKey(new DSA(true));
-				using (X509Certificate cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", otherKey, start, end)) {
-					Assert.IsFalse(cert == cert2);
+				using (var otherKey = new CryptoKey(new DSA(true)))
+				using (var cert2 = new X509Certificate(101, "CN=localhost", "CN=Root", otherKey, start, end))
+				{
+					Assert.AreNotEqual(cert, cert2);
 				}
 			}
 		}
@@ -231,28 +261,30 @@ namespace UnitTests
 		[Test]
 		public void CanGetAsPEM()
 		{
-			string data = LoadString(Resources.CaCrt);
-			using (BIO bio = new BIO(data)) {
-				string expected = data.Replace("\r\n", "\n");
-				using (X509Certificate cert = new X509Certificate(bio)) {
-					string pem = cert.PEM;
-					string text = cert.ToString();
+			var data = LoadString(Resources.CaCrt);
+			var expected = data.Replace("\r\n", "\n");
+			using (var bio = new BIO(data))
+			using (var cert = new X509Certificate(bio))
+			{
+				var pem = cert.PEM;
+				var text = cert.ToString();
 
-					Assert.AreEqual(expected, text + pem);
-				}
+				Assert.AreEqual(expected, text + pem);
 			}
 		}
 
 		[Test]
-		public void CanSaveAsDER() {
-			byte[] data = LoadBytes(Resources.CaDer);
-			using (BIO bio = new BIO(data)) {
-				using (var cert = X509Certificate.FromDER(bio)) {
-					byte[] der = cert.DER;
-					Assert.AreEqual(data.Length, der.Length);
-					for (int i = 0; i < data.Length; i++) {
-						Assert.AreEqual(data[i], der[i]);
-					}
+		public void CanSaveAsDER()
+		{
+			var data = LoadBytes(Resources.CaDer);
+			using (var bio = new BIO(data))
+			using (var cert = X509Certificate.FromDER(bio))
+			{
+				var der = cert.DER;
+				Assert.AreEqual(data.Length, der.Length);
+				for (var i = 0; i < data.Length; i++)
+				{
+					Assert.AreEqual(data[i], der[i]);
 				}
 			}
 		}
@@ -260,10 +292,11 @@ namespace UnitTests
 		[Test]
 		public void CanSign()
 		{
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
 				cert.Sign(key, MessageDigest.DSS1);
 			}
 		}
@@ -271,14 +304,17 @@ namespace UnitTests
 		[Test]
 		public void CanCheckPrivateKey()
 		{
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
 				Assert.AreEqual(true, cert.CheckPrivateKey(key));
 
-				CryptoKey other = new CryptoKey(new DSA(true));
-				Assert.AreEqual(false, cert.CheckPrivateKey(other));
+				using (var other = new CryptoKey(new DSA(true)))
+				{
+					Assert.AreEqual(false, cert.CheckPrivateKey(other));
+				}
 			}
 		}
 
@@ -291,15 +327,18 @@ namespace UnitTests
 		[Test]
 		public void CanVerify()
 		{
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			{
 				cert.Sign(key, MessageDigest.DSS1);
 				Assert.AreEqual(true, cert.Verify(key));
 
-				CryptoKey other = new CryptoKey(new DSA(true));
-				Assert.AreEqual(false, cert.Verify(other));
+				using (var other = new CryptoKey(new DSA(true)))
+				{
+					Assert.AreEqual(false, cert.Verify(other));
+				}
 			}
 		}
 
@@ -318,11 +357,12 @@ namespace UnitTests
 		[Test]
 		public void CanCreateRequest()
 		{
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end)) {
-				X509Request request = cert.CreateRequest(key, MessageDigest.DSS1);
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+			using (var request = cert.CreateRequest(key, MessageDigest.DSS1))
+			{
 				Assert.AreEqual(true, request.Verify(key));
 			}
 		}
@@ -330,23 +370,28 @@ namespace UnitTests
 		[Test]
 		public void CanAddExtensions()
 		{
-			X509V3ExtensionList extList = new X509V3ExtensionList();
-			extList.Add(new X509V3ExtensionValue("subjectKeyIdentifier", false, "hash"));
-			extList.Add(new X509V3ExtensionValue("authorityKeyIdentifier", false, "keyid:always,issuer:always"));
-			extList.Add(new X509V3ExtensionValue("basicConstraints", true, "critical,CA:true"));
-			extList.Add(new X509V3ExtensionValue("keyUsage", false, "cRLSign,keyCertSign"));
+			var extList = new List<X509V3ExtensionValue> {
+				new X509V3ExtensionValue("subjectKeyIdentifier", false, "hash"),
+				new X509V3ExtensionValue("authorityKeyIdentifier", false, "keyid:always,issuer:always"),
+				new X509V3ExtensionValue("basicConstraints", true, "critical,CA:true"),
+				new X509V3ExtensionValue("keyUsage", false, "cRLSign,keyCertSign"),
+			};
 
-			DateTime start = DateTime.Now;
-			DateTime end = start + TimeSpan.FromMinutes(10);
-			CryptoKey key = new CryptoKey(new DSA(true));
-			using (X509Certificate cert = new X509Certificate(101, "CN=Root", "CN=Root", key, start, end)) {
-				foreach (X509V3ExtensionValue extValue in extList) {
-					using (X509Extension ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value)) {
+			var start = DateTime.Now;
+			var end = start + TimeSpan.FromMinutes(10);
+			using (var key = new CryptoKey(new DSA(true)))
+			using (var cert = new X509Certificate(101, "CN=Root", "CN=Root", key, start, end))
+			{
+				foreach (var extValue in extList)
+				{
+					using (var ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value))
+					{
 						cert.AddExtension(ext);
 					}
 				}
 
-				foreach (X509Extension ext in cert.Extensions) {
+				foreach (var ext in cert.Extensions)
+				{
 					Console.WriteLine(ext);
 				}
 
@@ -360,20 +405,22 @@ namespace UnitTests
 			Assert.AreEqual(issuer, cert.Issuer.ToString());
 			Assert.AreEqual(serial, cert.SerialNumber); 
 		}
-		
-		private string LoadString(string resourceId) {
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId)) {
-				using (StreamReader reader = new StreamReader(stream)) {
-					return reader.ReadToEnd();
-				}
+
+		private string LoadString(string resourceId)
+		{
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId))
+			using (var reader = new StreamReader(stream))
+			{
+				return reader.ReadToEnd();
 			}
 		}
-		
-		private byte[] LoadBytes(string resourceId) {
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId)) {
-				using (BinaryReader reader = new BinaryReader(stream)) {
-					return reader.ReadBytes((int)stream.Length);
-				}
+
+		private byte[] LoadBytes(string resourceId)
+		{
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId))
+			using (var reader = new BinaryReader(stream))
+			{
+				return reader.ReadBytes((int)stream.Length);
 			}
 		}
 

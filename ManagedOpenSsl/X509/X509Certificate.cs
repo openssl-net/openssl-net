@@ -36,28 +36,29 @@ namespace OpenSSL.X509
 	public class X509Certificate : BaseCopyableRef<X509Certificate>, IComparable<X509Certificate>, IStackable
 	{
 		#region Initialization
-		internal X509Certificate(IStack stack, IntPtr ptr)
-			: base(ptr, true)
-		{ }
 
-		internal X509Certificate(IntPtr ptr, bool owner)
-			: base(ptr, owner)
-		{ }
+		internal X509Certificate(IStack stack, IntPtr ptr) : base(ptr, true)
+		{
+		}
+
+		internal X509Certificate(IntPtr ptr, bool owner) : base(ptr, owner)
+		{
+		}
 
 		/// <summary>
 		/// Calls X509_new()
 		/// </summary>
-		public X509Certificate()
-			: base(Native.ExpectNonNull(Native.X509_new()), true)
-		{ }
+		public X509Certificate() : base(Native.ExpectNonNull(Native.X509_new()), true)
+		{
+		}
 
 		/// <summary>
 		/// Calls PEM_read_bio_X509()
 		/// </summary>
 		/// <param name="bio"></param>
-		public X509Certificate(BIO bio)
-			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
-		{ }
+		public X509Certificate(BIO bio) : base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
+		{
+		}
 
 		/// <summary>
 		/// Factory method that returns a X509 using d2i_X509_bio()
@@ -138,8 +139,7 @@ namespace OpenSSL.X509
 			X509Name issuer,
 			CryptoKey pubkey,
 			DateTime start,
-			DateTime end)
-			: this()
+			DateTime end) : this()
 		{
 			Version = 2;
 			SerialNumber = serial;
@@ -155,15 +155,18 @@ namespace OpenSSL.X509
 		#region Raw Structures
 
 		#region X509_VAL
+
 		[StructLayout(LayoutKind.Sequential)]
 		private struct X509_VAL
 		{
 			public IntPtr notBefore;
 			public IntPtr notAfter;
 		}
+
 		#endregion
 
 		#region X509_CINF
+
 		[StructLayout(LayoutKind.Sequential)]
 		private struct X509_CINF
 		{
@@ -177,10 +180,13 @@ namespace OpenSSL.X509
 			public IntPtr issuerUID;
 			public IntPtr subjectUID;
 			public IntPtr extensions;
+			public Asn1Encoding enc;
 		}
+
 		#endregion
 
 		#region X509
+
 		[StructLayout(LayoutKind.Sequential)]
 		private struct X509
 		{
@@ -190,10 +196,14 @@ namespace OpenSSL.X509
 			public int valid;
 			public int references;
 			public IntPtr name;
+
 			#region CRYPTO_EX_DATA ex_data
+
 			public IntPtr ex_data_sk;
 			public int ex_data_dummy;
+
 			#endregion
+
 			public int ex_pathlen;
 			public int ex_pcpathlen;
 			public uint ex_flags;
@@ -203,17 +213,22 @@ namespace OpenSSL.X509
 			public IntPtr skid;
 			public IntPtr akid;
 			public IntPtr policy_cache;
+			public IntPtr crldp;
+			public IntPtr altname;
+			public IntPtr nc;
 			public IntPtr rfc3779_addr;
 			public IntPtr rfc3779_asid;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.SHA_DIGEST_LENGTH)]
 			public byte[] sha1_hash;
 			public IntPtr aux;
 		}
+
 		#endregion
 
 		#endregion
 
 		#region Properties
+
 		private X509 Raw
 		{
 			get { return (X509)Marshal.PtrToStructure(ptr, typeof(X509)); }
@@ -237,8 +252,8 @@ namespace OpenSSL.X509
 			get
 			{
 				// Get the native pointer for the subject name
-				IntPtr name_ptr = Native.ExpectNonNull(Native.X509_get_subject_name(this.ptr));
-				X509Name ret = new X509Name(name_ptr, true);
+				var name_ptr = Native.ExpectNonNull(Native.X509_get_subject_name(this.ptr));
+				var ret = new X509Name(name_ptr, true);
 				// Duplicate the native pointer, as the X509_get_subject_name returns a pointer
 				// that is owned by the X509 object
 				ret.AddRef();
@@ -252,7 +267,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public X509Name Issuer
 		{
-			get 
+			get
 			{
 				var name_ptr = Native.ExpectNonNull(Native.X509_get_issuer_name(ptr));
 				var name = new X509Name(name_ptr, true);
@@ -322,7 +337,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public CryptoKey PublicKey
 		{
-			get 
+			get
 			{
 				// X509_get_pubkey() will increment the refcount internally
 				var key_ptr = Native.ExpectNonNull(Native.X509_get_pubkey(ptr));
@@ -377,17 +392,22 @@ namespace OpenSSL.X509
 		/// <summary>
 		/// Returns the DER formatted byte array for this object
 		/// </summary>
-		public byte[] DER {
-			get {
-				using (var bio = BIO.MemoryBuffer()) {
+		public byte[] DER
+		{
+			get
+			{
+				using (var bio = BIO.MemoryBuffer())
+				{
 					Write_DER(bio);
 					return bio.ReadBytes((int)bio.NumberWritten).Array;
 				}
 			}
 		}
+
 		#endregion
 
 		#region Methods
+
 		/// <summary>
 		/// Calls X509_sign()
 		/// </summary>
@@ -478,7 +498,8 @@ namespace OpenSSL.X509
 		/// Calls i2d_X509_bio()
 		/// </summary>
 		/// <param name="bio"></param>
-		public void Write_DER(BIO bio) {
+		public void Write_DER(BIO bio)
+		{
 			Native.ExpectSuccess(Native.i2d_X509_bio(bio.Handle, ptr));
 		}
 
@@ -534,7 +555,7 @@ namespace OpenSSL.X509
 				{
 					return new Core.Stack<X509Extension>(RawCertInfo.extensions, false);
 				}
-				return null;
+				return new Core.Stack<X509Extension>();
 			}
 		}
 
@@ -553,6 +574,7 @@ namespace OpenSSL.X509
 		#endregion
 
 		#region Overrides
+
 		/// <summary>
 		/// Calls X509_free()
 		/// </summary>
@@ -618,7 +640,9 @@ namespace OpenSSL.X509
 		#endregion
 
 		#region Fields
+
 		private CryptoKey privateKey;
+
 		#endregion
 	}
 }

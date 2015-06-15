@@ -281,10 +281,6 @@ namespace OpenSSL.Core
 					return true;
 			}
 			return false;
-			//int ret = Native.sk_find(this.ptr, item.Handle);
-			//if (ret >= 0 && ret < this.Count)
-			//    return true;
-			//return false;
 		}
 
 		/// <summary>

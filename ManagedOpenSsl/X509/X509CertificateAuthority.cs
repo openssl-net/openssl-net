@@ -27,6 +27,7 @@ using OpenSSL.Crypto;
 using System;
 using System.IO;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace OpenSSL.X509
 {
@@ -50,6 +51,7 @@ namespace OpenSSL.X509
 	public class FileSerialNumber : ISequenceNumber
 	{
 		private string path;
+
 		/// <summary>
 		/// Constructs a FileSerialNumber. The path specifies where 
 		/// the serial number should be read and written to.
@@ -61,6 +63,7 @@ namespace OpenSSL.X509
 		}
 
 		#region ISequenceNumber Members
+
 		/// <summary>
 		/// Implements the Next() method of the ISequenceNumber interface.
 		/// The sequence number is read from a file, incremented, 
@@ -85,7 +88,7 @@ namespace OpenSSL.X509
 					}
 				}
 
-				using(StreamWriter sr = new StreamWriter(serialFile.FullName))
+				using (StreamWriter sr = new StreamWriter(serialFile.FullName))
 				{
 					sr.Write(serial.ToString());
 				}
@@ -93,6 +96,7 @@ namespace OpenSSL.X509
 				return serial;
 			}
 		}
+
 		#endregion
 	}
 
@@ -106,14 +110,20 @@ namespace OpenSSL.X509
 		/// <summary>
 		/// Construct a SimpleSerialNumber with the initial sequence number set to 0.
 		/// </summary>
-		public SimpleSerialNumber() { seq = 0; }
+		public SimpleSerialNumber()
+		{
+			seq = 0;
+		}
 
 		/// <summary>
 		/// Construct a SimpleSerialNumber with the initial sequence number
 		/// set to the value specified by the seed parameter.
 		/// </summary>
 		/// <param name="seed"></param>
-		public SimpleSerialNumber(int seed) { seq = seed; }
+		public SimpleSerialNumber(int seed)
+		{
+			seq = seed;
+		}
 
 		#region ISequenceNumber Members
 
@@ -165,14 +175,14 @@ namespace OpenSSL.X509
 			}
 
 			var cert = new X509Certificate(
-				seq.Next(),
-				subject,
-				subject,
-								key,
-				start,
-				start + validity);
+				           seq.Next(),
+				           subject,
+				           subject,
+				           key,
+				           start,
+				           start + validity);
 
-			if(cfg != null)
+			if (cfg != null)
 				cfg.ApplyExtensions("v3_ca", cert, cert, null);
 
 			cert.Sign(key, MessageDigest.DSS1);
@@ -202,12 +212,12 @@ namespace OpenSSL.X509
 			TimeSpan validity)
 		{
 			var cert = new X509Certificate(
-				seq.Next(),
-				subject,
-				subject,
-				key,
-				start,
-				start + validity);
+				           seq.Next(),
+				           subject,
+				           subject,
+				           key,
+				           start,
+				           start + validity);
 
 			if (cfg != null)
 				cfg.ApplyExtensions("v3_ca", cert, cert, null);
@@ -238,22 +248,24 @@ namespace OpenSSL.X509
 			X509Name subject,
 			DateTime start,
 			TimeSpan validity,
-			X509V3ExtensionList extensions)
+			IEnumerable<X509V3ExtensionValue> extensions)
 		{
 			var cert = new X509Certificate(
-				seq.Next(),
-				subject,
-				subject,
-				key,
-				start,
-				start + validity);
+				           seq.Next(),
+				           subject,
+				           subject,
+				           key,
+				           start,
+				           start + validity);
 
-			if (null != extensions)
+			if (extensions != null)
 			{
 				foreach (var extValue in extensions)
 				{
-					var ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value);
-					cert.AddExtension(ext);
+					using (var ext = new X509Extension(cert, cert, extValue.Name, extValue.IsCritical, extValue.Value))
+					{
+						cert.AddExtension(ext);
+					}
 				}
 			}
 
@@ -330,7 +342,11 @@ namespace OpenSSL.X509
 		/// <param name="endTime"></param>
 		/// <param name="digest"></param>
 		/// <returns></returns>
-		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime, MessageDigest digest)
+		public X509Certificate ProcessRequest(
+			X509Request request,
+			DateTime startTime,
+			DateTime endTime,
+			MessageDigest digest)
 		{
 			//using (CryptoKey pkey = request.PublicKey)
 			//{
@@ -339,12 +355,12 @@ namespace OpenSSL.X509
 			//}
 
 			var cert = new X509Certificate(
-				serial.Next(),
-				request.Subject,
-				this.caCert.Subject,
-				request.PublicKey,
-				startTime,
-				endTime);
+				           serial.Next(),
+				           request.Subject,
+				           this.caCert.Subject,
+				           request.PublicKey,
+				           startTime,
+				           endTime);
 
 			if (cfg != null)
 				cfg.ApplyExtensions("v3_ca", caCert, cert, request);
@@ -385,10 +401,12 @@ namespace OpenSSL.X509
 		#endregion
 
 		#region Fields
+
 		private X509Certificate caCert;
 		private CryptoKey caKey;
 		private ISequenceNumber serial;
 		private Configuration cfg;
+
 		#endregion
 	}
 }

@@ -149,6 +149,7 @@
     <Compile Include="SSL\Extensions\SNI.cs" />
     <Compile Include="SSL\Protocols.cs" />
     <Compile Include="SSL\ConnectionEnd.cs" />
+    <Compile Include="Core\Asn1Encoding.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
