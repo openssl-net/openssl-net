@@ -45,7 +45,7 @@ namespace OpenSSL.Core
 
 		protected override void OnDispose()
 		{
-			Native.ASN1_TIME_free(ptr);
+			Native.ASN1_INTEGER_free(ptr);
 		}
 
 		public int Value
