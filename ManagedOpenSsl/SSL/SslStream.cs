@@ -64,8 +64,7 @@ namespace OpenSSL.SSL
 		/// Create an SslStream based on an existing stream.
 		/// </summary>
 		/// <param name="stream"></param>
-		public SslStream(Stream stream)
-			: this(stream, false)
+		public SslStream(Stream stream) : this(stream, false)
 		{
 		}
 
@@ -74,8 +73,7 @@ namespace OpenSSL.SSL
 		/// </summary>
 		/// <param name="stream"></param>
 		/// <param name="leaveInnerStreamOpen"></param>
-		public SslStream(Stream stream, bool leaveInnerStreamOpen)
-			: base(stream, leaveInnerStreamOpen)
+		public SslStream(Stream stream, bool leaveInnerStreamOpen) : base(stream, leaveInnerStreamOpen)
 		{
 			remoteCertificateValidationCallback = null;
 			localCertificateSelectionCallback = null;
@@ -87,8 +85,11 @@ namespace OpenSSL.SSL
 		/// <param name="stream"></param>
 		/// <param name="leaveInnerStreamOpen"></param>
 		/// <param name="remote_callback"></param>
-		public SslStream(Stream stream, bool leaveInnerStreamOpen, RemoteCertificateValidationHandler remote_callback)
-			: this(stream, leaveInnerStreamOpen, remote_callback, null)
+		public SslStream(Stream stream, bool leaveInnerStreamOpen, RemoteCertificateValidationHandler remote_callback) : this(
+				stream,
+				leaveInnerStreamOpen,
+				remote_callback,
+				null)
 		{
 		}
 
@@ -99,15 +100,20 @@ namespace OpenSSL.SSL
 		/// <param name="leaveInnerStreamOpen"></param>
 		/// <param name="remote_callback"></param>
 		/// <param name="local_callback"></param>
-		public SslStream(Stream stream, bool leaveInnerStreamOpen, RemoteCertificateValidationHandler remote_callback, LocalCertificateSelectionHandler local_callback)
-			: base(stream, leaveInnerStreamOpen)
+		public SslStream(
+			Stream stream,
+			bool leaveInnerStreamOpen,
+			RemoteCertificateValidationHandler remote_callback,
+			LocalCertificateSelectionHandler local_callback) : base(stream, leaveInnerStreamOpen)
 		{
 			remoteCertificateValidationCallback = remote_callback;
 			localCertificateSelectionCallback = local_callback;
 		}
+
 		#endregion
 
 		#region AuthenticatedStream Members
+
 		/// <summary>
 		/// Returns whether authentication was successful.
 		/// </summary>
@@ -158,6 +164,7 @@ namespace OpenSSL.SSL
 		#endregion
 
 		#region Stream Members
+
 		/// <summary>
 		/// Gets a value indicating whether the current stream supports reading.
 		/// </summary>
@@ -260,7 +267,7 @@ namespace OpenSSL.SSL
 
 		/// <summary>
 		/// Waits for the pending asynchronous read to complete.
-				/// </summary>
+		/// </summary>
 		/// <param name="asyncResult"></param>
 		/// <returns></returns>
 		public override int EndRead(IAsyncResult asyncResult)
@@ -345,9 +352,15 @@ namespace OpenSSL.SSL
 			base.Close();
 			sslStream.Close();
 		}
+
 		#endregion
 
 		#region Properties
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public string AlpnSelectedProtocol { get; private set; }
 
 		/// <summary>
 		/// 
@@ -371,7 +384,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return CipherAlgorithmType.None;
-
 				return sslStream.CipherAlgorithm;
 			}
 		}
@@ -385,7 +397,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return 0;
-
 				return sslStream.CipherStrength;
 			}
 		}
@@ -399,7 +410,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return HashAlgorithmType.None;
-
 				return sslStream.HashAlgorithm;
 			}
 		}
@@ -413,7 +423,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return 0;
-
 				return sslStream.HashStrength;
 			}
 		}
@@ -427,7 +436,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return ExchangeAlgorithmType.None;
-
 				return sslStream.KeyExchangeAlgorithm;
 			}
 		}
@@ -441,7 +449,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return 0;
-
 				return sslStream.KeyExchangeStrength;
 			}
 		}
@@ -455,7 +462,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return null;
-
 				return sslStream.LocalCertificate;
 			}
 		}
@@ -469,7 +475,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return null;
-
 				return sslStream.RemoteCertificate;
 			}
 		}
@@ -483,7 +488,6 @@ namespace OpenSSL.SSL
 			{
 				if (!IsAuthenticated)
 					return SslProtocols.None;
-
 				return sslStream.SslProtocol;
 			}
 		}
@@ -499,13 +503,14 @@ namespace OpenSSL.SSL
 		#endregion //Properties
 
 		#region Methods
+
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="targetHost"></param>
 		public virtual void AuthenticateAsClient(string targetHost)
 		{
-			AuthenticateAsClient(targetHost, null, null, SslProtocols.Default, SslStrength.Medium, false);
+			AuthenticateAsClient(targetHost, null, null, SslProtocols.Tls, SslStrength.All, false);
 		}
 
 		/// <summary>
@@ -535,9 +540,12 @@ namespace OpenSSL.SSL
 		/// <param name="asyncCallback"></param>
 		/// <param name="asyncState"></param>
 		/// <returns></returns>
-		public virtual IAsyncResult BeginAuthenticateAsClient(string targetHost, AsyncCallback asyncCallback, Object asyncState)
+		public virtual IAsyncResult BeginAuthenticateAsClient(
+			string targetHost,
+			AsyncCallback asyncCallback,
+			Object asyncState)
 		{
-			return BeginAuthenticateAsClient(targetHost, null, null, SslProtocols.Default, SslStrength.Medium, false, asyncCallback, asyncState);
+			return BeginAuthenticateAsClient(targetHost, null, null, SslProtocols.Tls, SslStrength.All, false, asyncCallback, asyncState);
 		}
 
 		/// <summary>
@@ -567,12 +575,12 @@ namespace OpenSSL.SSL
 				throw new InvalidOperationException("SslStream is already authenticated");
 			}
 
+			End = ConnectionEnd.Client;
+
 			// Create the stream
 			var client_stream = new SslStreamClient(InnerStream, false, targetHost, clientCertificates, caCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback, localCertificateSelectionCallback);
-			
 			// set the internal stream
 			sslStream = client_stream;
-			
 			// start the write operation
 			return BeginWrite(new byte[0], 0, 0, asyncCallback, asyncState);
 		}
@@ -587,6 +595,8 @@ namespace OpenSSL.SSL
 
 			// Finish the async authentication.  The EndRead/EndWrite will complete successfully, or throw exception
 			EndWrite(ar);
+
+			AlpnSelectedProtocol = sslStream.ssl.AlpnSelectedProtocol;
 		}
 
 		/// <summary>
@@ -595,7 +605,7 @@ namespace OpenSSL.SSL
 		/// <param name="serverCertificate"></param>
 		public virtual void AuthenticateAsServer(X509Certificate serverCertificate)
 		{
-			AuthenticateAsServer(serverCertificate, false, null, SslProtocols.Default, SslStrength.Medium, false);
+			AuthenticateAsServer(serverCertificate, false, null, SslProtocols.Tls, SslStrength.All, false);
 		}
 
 		/// <summary>
@@ -630,7 +640,7 @@ namespace OpenSSL.SSL
 			AsyncCallback asyncCallback,
 			Object asyncState)
 		{
-			return BeginAuthenticateAsServer(serverCertificate, false, null, SslProtocols.Default, SslStrength.Medium, false, asyncCallback, asyncState);
+			return BeginAuthenticateAsServer(serverCertificate, false, null, SslProtocols.Tls, SslStrength.All, false, asyncCallback, asyncState);
 		}
 
 		/// <summary>
@@ -659,12 +669,13 @@ namespace OpenSSL.SSL
 			{
 				throw new InvalidOperationException("SslStream is already authenticated");
 			}
+
+			End = ConnectionEnd.Server;
+		    
 			// Initialize the server stream
 			var server_stream = new SslStreamServer(InnerStream, false, serverCertificate, clientCertificateRequired, caCerts, enabledSslProtocols, sslStrength, checkCertificateRevocation, remoteCertificateValidationCallback);
-			
 			// Set the internal sslStream
 			sslStream = server_stream;
-			
 			// Start the read operation
 			return BeginRead(new byte[0], 0, 0, asyncCallback, asyncState);
 		}
@@ -679,6 +690,8 @@ namespace OpenSSL.SSL
 
 			// Finish the async AuthenticateAsServer call - EndRead/Write call will throw exception on error
 			EndRead(ar);
+
+			AlpnSelectedProtocol = sslStream.ssl.AlpnSelectedProtocol;
 		}
 
 		/// <summary>
@@ -707,10 +720,8 @@ namespace OpenSSL.SSL
 			{
 				return BeginWrite(new byte[0], 0, 0, callback, state);
 			}
-			else
-			{
-				return BeginRead(new byte[0], 0, 0, callback, state);
-			}
+
+			return BeginRead(new byte[0], 0, 0, callback, state);
 		}
 
 		/// <summary>
@@ -734,6 +745,7 @@ namespace OpenSSL.SSL
 		#endregion
 
 		#region Helpers
+
 		private void TestConnectionIsValid()
 		{
 			if (sslStream == null)
@@ -741,13 +753,25 @@ namespace OpenSSL.SSL
 				throw new InvalidOperationException("SslStream has not been authenticated");
 			}
 		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public ConnectionEnd End { get; private set; }
+
 		#endregion
 
 		#region Fields
+
 		SslStreamBase sslStream;
 		internal RemoteCertificateValidationHandler remoteCertificateValidationCallback = null;
 		internal LocalCertificateSelectionHandler localCertificateSelectionCallback = null;
 		internal bool m_bCheckCertRevocationStatus = false;
+
 		#endregion
 	}
 }

@@ -142,6 +142,13 @@
     <Compile Include="Crypto\EC\DSASignature.cs" />
     <Compile Include="Crypto\EC\Point.cs" />
     <Compile Include="Core\BigNumber.cs" />
+    <Compile Include="SSL\SSL_CTX.cs" />
+    <Compile Include="SSL\AlpnException.cs" />
+    <Compile Include="SSL\Extensions\Alpn.cs" />
+    <Compile Include="SSL\Extensions\Errors.cs" />
+    <Compile Include="SSL\Extensions\SNI.cs" />
+    <Compile Include="SSL\Protocols.cs" />
+    <Compile Include="SSL\ConnectionEnd.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -182,4 +189,7 @@
   </Target>
   -->
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="SSL\Extensions\" />
+  </ItemGroup>
 </Project>

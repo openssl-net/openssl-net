@@ -29,10 +29,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using OpenSSL.Extensions;
 
 namespace OpenSSL.SSL
 {
-	internal abstract class SslStreamBase : Stream, IDisposable
+	internal abstract class SslStreamBase : Stream
 	{
 		internal Stream innerStream;
 		internal bool ownStream;
@@ -41,20 +42,30 @@ namespace OpenSSL.SSL
 		internal Ssl ssl;
 		internal BIO read_bio;
 		internal BIO write_bio;
-		private byte[] read_buffer; // for reading from the stream
-		private MemoryStream decrypted_data_stream; // decrypted data from Ssl.Read
+		// for reading from the stream
+		private byte[] read_buffer;
+		// decrypted data from Ssl.Read
+		private MemoryStream decrypted_data_stream;
 		//private volatile bool inHandshakeLoop;
 		private const int SSL3_RT_HEADER_LENGTH = 5;
 		private const int SSL3_RT_MAX_PLAIN_LENGTH = 16384;
 		private const int SSL3_RT_MAX_COMPRESSED_LENGTH = (1024 + SSL3_RT_MAX_PLAIN_LENGTH);
 		private const int SSL3_RT_MAX_ENCRYPTED_LENGTH = (1024 + SSL3_RT_MAX_COMPRESSED_LENGTH);
 		private const int SSL3_RT_MAX_PACKET_SIZE = (SSL3_RT_MAX_ENCRYPTED_LENGTH + SSL3_RT_HEADER_LENGTH);
-		private const int WaitTimeOut = 300 * 1000; // 5 minutes
+		// 5 minutes
+		private const int WaitTimeOut = 300 * 1000;
 		protected LocalCertificateSelectionHandler localCertificateSelectionCallback;
 		protected RemoteCertificateValidationHandler remoteCertificateSelectionCallback;
 		protected bool checkCertificateRevocationStatus = false;
 		protected HandshakeState handShakeState = HandshakeState.None;
 		protected OpenSslException handshakeException = null;
+
+		protected SniCallback sniCb;
+		protected Sni sniExt;
+
+		protected string srvName = "localhost";
+
+		public string AlpnSelectedProtocol { get; protected set; }
 
 		/// <summary>
 		/// Override to implement client/server specific handshake processing
@@ -80,7 +91,14 @@ namespace OpenSSL.SSL
 			private int offset;
 			private int count;
 
-			public InternalAsyncResult(AsyncCallback userCallback, object userState, byte[] buffer, int offset, int count, bool isWriteOperation, bool continueAfterHandshake)
+			public InternalAsyncResult(
+				AsyncCallback userCallback,
+				object userState,
+				byte[] buffer,
+				int offset,
+				int count,
+				bool isWriteOperation,
+				bool continueAfterHandshake)
 			{
 				this.userCallback = userCallback;
 				this.userState = userState;
@@ -124,7 +142,7 @@ namespace OpenSSL.SSL
 
 			public object AsyncState
 			{
-				get { return this.userState; }
+				get { return userState; }
 			}
 
 			public Exception AsyncException
@@ -140,7 +158,6 @@ namespace OpenSSL.SSL
 					{
 						return false;
 					}
-
 					return (null != asyncException);
 				}
 			}
@@ -218,6 +235,7 @@ namespace OpenSSL.SSL
 				SetComplete(null, 0);
 			}
 		}
+
 		#endregion
 
 		public SslStreamBase(Stream stream, bool ownStream)
@@ -230,12 +248,13 @@ namespace OpenSSL.SSL
 			{
 				throw new ArgumentException("Stream must allow read and write capabilities", "stream");
 			}
-
 			innerStream = stream;
+            
 			this.ownStream = ownStream;
 			read_buffer = new byte[16384];
 			//inHandshakeLoop = false;
 			decrypted_data_stream = new MemoryStream();
+			sniExt = new Sni(srvName);
 		}
 
 		public bool HandshakeComplete
@@ -297,12 +316,12 @@ namespace OpenSSL.SSL
 			{
 				switch (HashAlgorithm)
 				{
-					case HashAlgorithmType.Md5:
-						return 128;
-					case HashAlgorithmType.Sha1:
-						return 160;
-					default:
-						return 0;
+				case HashAlgorithmType.Md5:
+					return 128;
+				case HashAlgorithmType.Sha1:
+					return 160;
+				default:
+					return 0;
 				}
 			}
 		}
@@ -328,6 +347,7 @@ namespace OpenSSL.SSL
 		}
 
 		#region Stream methods
+
 		public override bool CanRead
 		{
 			get { return innerStream.CanRead; }
@@ -390,109 +410,12 @@ namespace OpenSSL.SSL
 		{
 			throw new NotImplementedException();
 		}
-		/*
-		public override int Read(byte[] buffer, int offset, int count)
-		{
-			// Check to see if we need to reset the decrypted data stream
-			if (decrypted_data_stream.Position == decrypted_data_stream.Length)
-			{
-				// reset the stream
-				decrypted_data_stream.Seek(0, SeekOrigin.Begin);
-				decrypted_data_stream.SetLength(0);
-			}
-			// Check to see if we have data in the decrypted memory stream, if so return it
-			if (decrypted_data_stream.Position > 0 && (decrypted_data_stream.Position != decrypted_data_stream.Length))
-			{
-				return decrypted_data_stream.Read(buffer, offset, count);
-			}
-            
-			// No pre-existing data in the stream, read from the innerStream
-			int bytesRead = 0;
-			bool haveDataToReturn = false;
-
-			while (! haveDataToReturn)
-			{
-				try
-				{
-					bytesRead = innerStream.Read(read_buffer, 0, read_buffer.Length);
-				}
-				catch(System.IO.IOException ex)
-				{
-					//!!TODO - log exception
-					return 0;
-				}
-				// if we have data, let's process it
-				if (bytesRead > 0)
-				{
-					// Copy encrypted data into the SSL read_bio
-					read_bio.Write(read_buffer, bytesRead);
-					if (inHandshakeLoop)
-					{
-						if (ProcessHandshake())
-						{
-							inHandshakeLoop = false;
-						}
-					}
-					//!!else -- Process data in read_bio after handshake if there is any
-					{
-						uint nBytesPending = read_bio.BytesPending;
-						byte[] decrypted_buf = new byte[SSL3_RT_MAX_PACKET_SIZE];
-						while (nBytesPending > 0)
-						{
-							int decryptedBytesRead = ssl.Read(decrypted_buf, decrypted_buf.Length);
-							if (decryptedBytesRead <= 0)
-							{
-								SslError lastError = ssl.GetError(decryptedBytesRead);
-								if (lastError == SslError.SSL_ERROR_WANT_READ)
-								{
-									// Renogiated requested by the client
-									if (write_bio.BytesPending > 0)
-									{
-										inHandshakeLoop = true;
-										if (ProcessHandshake())
-										{
-											inHandshakeLoop = false;
-										}
-									}
-									//!!break; -- continue processing the handshake data
-								}
-								else if (lastError == SslError.SSL_ERROR_WANT_WRITE)
-								{
-									// unexpected error!
-									//!!TODO debug log
-								}
-								else if (lastError == SslError.SSL_ERROR_ZERO_RETURN)
-								{
-									// Shutdown alert
-									SendShutdownAlert();
-									break;
-								}
-								else
-								{
-									//!!TODO - log last error, throw expection
-									break;
-								}
-							}
-							// Write decrypted data to memory stream
-							long pos = decrypted_data_stream.Position;
-							decrypted_data_stream.Seek(0, SeekOrigin.End);
-							decrypted_data_stream.Write(decrypted_buf, 0, decrypted_buf.Length);
-							decrypted_data_stream.Seek(pos, SeekOrigin.Begin);
-							haveDataToReturn = true;
-
-							// See if we have more data to process
-							nBytesPending = read_bio.BytesPending;
-						}
-					}
-				}
-			}
-			// Read data from the decrypted data stream into the user buffer
-			return decrypted_data_stream.Read(buffer, offset, count);
-		}
-		*/
 
 		public void SendShutdownAlert()
 		{
+			if (disposed)
+				return;
+
 			int nShutdownRet = ssl.Shutdown();
 			if (nShutdownRet == 0)
 			{
@@ -544,8 +467,7 @@ namespace OpenSSL.SSL
 				throw new ArgumentOutOfRangeException("count", "count is greater than buffer length - offset");
 			}
 
-			bool proceedAfterHandshake = true;
-			if (count == 0) proceedAfterHandshake = false;
+			bool proceedAfterHandshake = count != 0;
 
 			InternalAsyncResult internalAsyncResult = new InternalAsyncResult(asyncCallback, asyncState, buffer, offset, count, false, proceedAfterHandshake);
 
@@ -564,6 +486,9 @@ namespace OpenSSL.SSL
 
 		private void InternalBeginRead(InternalAsyncResult asyncResult)
 		{
+			if (disposed)
+				return;
+
 			// Check to see if the decrypted data stream should be reset
 			if (decrypted_data_stream.Position == decrypted_data_stream.Length)
 			{
@@ -584,6 +509,9 @@ namespace OpenSSL.SSL
 
 		private void InternalReadCallback(IAsyncResult asyncResult)
 		{
+			if (disposed)
+				return;
+
 			InternalAsyncResult internalAsyncResult = (InternalAsyncResult)asyncResult.AsyncState;
 			bool haveDataToReturn = false;
 
@@ -603,14 +531,14 @@ namespace OpenSSL.SSL
 				{
 					// Zero byte read most likely indicates connection closed (if it's a network stream)
 					internalAsyncResult.SetComplete(0);
-					return;
+					throw new IOException("Connection was closed by the remote endpoint");
 				}
 				else
 				{
 					// Copy encrypted data into the SSL read_bio
 					read_bio.Write(read_buffer, bytesRead);
 					if (handShakeState == HandshakeState.InProcess ||
-						handShakeState == HandshakeState.RenegotiateInProcess)
+					    handShakeState == HandshakeState.RenegotiateInProcess)
 					{
 						// We are in the handshake, complete the async operation to fire the async
 						// handshake callback for processing
@@ -634,7 +562,9 @@ namespace OpenSSL.SSL
 									// Start the renegotiation by writing the write_bio data, and use the RenegotiationWriteCallback
 									// to handle the rest of the renegotiation
 									ArraySegment<byte> buf = write_bio.ReadBytes((int)write_bio.BytesPending);
-									innerStream.BeginWrite(buf.Array, 0, buf.Count, new AsyncCallback(RenegotiationWriteCallback), internalAsyncResult);
+									innerStream.BeginWrite(buf.Array, 0, buf.Count,
+										new AsyncCallback(RenegotiationWriteCallback),
+										internalAsyncResult);
 									return;
 								}
 								// no data in the out bio, we just need more data to complete the record
@@ -653,7 +583,7 @@ namespace OpenSSL.SSL
 							}
 							else
 							{
-								throw new OpenSslException();
+								//throw new OpenSslException();
 							}
 						}
 						if (decryptedBytesRead > 0)
@@ -672,14 +602,17 @@ namespace OpenSSL.SSL
 					// Check to see if we have data to return, if not, fire the async read again
 					if (!haveDataToReturn)
 					{
-						innerStream.BeginRead(read_buffer, 0, read_buffer.Length, new AsyncCallback(InternalReadCallback), internalAsyncResult);
+						innerStream.BeginRead(read_buffer, 0, read_buffer.Length, new AsyncCallback(InternalReadCallback),
+							internalAsyncResult);
 					}
 					else
 					{
 						int bytesReadIntoUserBuffer = 0;
 
 						// Read the data into the buffer provided by the user (now hosted in the InternalAsyncResult)
-						bytesReadIntoUserBuffer = decrypted_data_stream.Read(internalAsyncResult.Buffer, internalAsyncResult.Offset, internalAsyncResult.Count);
+						bytesReadIntoUserBuffer = decrypted_data_stream.Read(internalAsyncResult.Buffer,
+							internalAsyncResult.Offset,
+							internalAsyncResult.Count);
 
 						internalAsyncResult.SetComplete(bytesReadIntoUserBuffer);
 					}
@@ -693,6 +626,9 @@ namespace OpenSSL.SSL
 
 		public override int EndRead(IAsyncResult asyncResult)
 		{
+			if (disposed)
+				return 0;
+
 			InternalAsyncResult internalAsyncResult = asyncResult as InternalAsyncResult;
 			if (internalAsyncResult == null)
 			{
@@ -722,57 +658,6 @@ namespace OpenSSL.SSL
 		{
 			throw new NotImplementedException();
 		}
-		/*
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException("buffer");
-			}
-			if (offset < 0)
-			{
-				throw new ArgumentOutOfRangeException("offset", "Offset must be greater than or equal to 0");
-			}
-			if (offset > buffer.Length)
-			{
-				throw new ArgumentOutOfRangeException("offset", "Offset is greater than length of the buffer");
-			}
-			if (count < 0)
-			{
-				throw new ArgumentOutOfRangeException("count", "Count must be greater than 0");    
-			}
-			if (count > (buffer.Length - offset))
-			{
-				throw new ArgumentOutOfRangeException("count", "Count is greater than buffer length - offset");
-			}
-
-			byte[] new_buffer = buffer;
-			if (offset != 0)
-			{
-				byte[] temp = new byte[count];
-				Array.Copy(buffer, offset, temp, 0, count);
-				new_buffer = temp;
-			}
-
-			int bytesWritten = ssl.Write(new_buffer, count);
-			if (bytesWritten <= 0)
-			{
-				SslError lastError = ssl.GetError(bytesWritten);
-				if (lastError == SslError.SSL_ERROR_WANT_READ)
-				{
-					//!!TODO - Log - unexpected renogiation request
-				}
-				throw new OpenSslException((uint)lastError);
-			}
-			uint bytesPending = write_bio.BytesPending;
-			while (bytesPending > 0)
-			{
-				ArraySegment<byte> buf = write_bio.ReadBytes((int)bytesPending);
-				innerStream.Write(buf.Array, 0, buf.Count);
-				bytesPending = write_bio.BytesPending;
-			}
-		}
-		*/
 
 		public override IAsyncResult BeginWrite(
 			byte[] buffer,
@@ -781,6 +666,9 @@ namespace OpenSSL.SSL
 			AsyncCallback asyncCallback,
 			object asyncState)
 		{
+			if (disposed)
+				return null;
+
 			if (buffer == null)
 			{
 				throw new ArgumentNullException("buffer", "buffer can't be null");
@@ -802,8 +690,7 @@ namespace OpenSSL.SSL
 				throw new ArgumentOutOfRangeException("count", "count is greater than buffer length - offset");
 			}
 
-			bool proceedAfterHandshake = true;
-			if (count == 0) proceedAfterHandshake = false;
+			bool proceedAfterHandshake = count != 0;
 
 			InternalAsyncResult asyncResult = new InternalAsyncResult(asyncCallback, asyncState, buffer, offset, count, true, proceedAfterHandshake);
 
@@ -823,6 +710,9 @@ namespace OpenSSL.SSL
 
 		private void InternalBeginWrite(InternalAsyncResult asyncResult)
 		{
+			if (disposed)
+				return;
+
 			byte[] new_buffer = asyncResult.Buffer;
 
 			if (asyncResult.Offset != 0 && asyncResult.Count != 0)
@@ -849,8 +739,11 @@ namespace OpenSSL.SSL
 			//!!while (bytesPending > 0)
 			{
 				ArraySegment<byte> buf = write_bio.ReadBytes((int)bytesPending);
+
+				if (buf.Array == null)
+					return;
+
 				innerStream.BeginWrite(buf.Array, 0, buf.Count, new AsyncCallback(InternalWriteCallback), asyncResult);
-				//!!bytesPending = write_bio.BytesPending;
 			}
 		}
 
@@ -871,6 +764,9 @@ namespace OpenSSL.SSL
 
 		public override void EndWrite(IAsyncResult asyncResult)
 		{
+			if (disposed)
+				return;
+
 			InternalAsyncResult internalAsyncResult = asyncResult as InternalAsyncResult;
 
 			if (internalAsyncResult == null)
@@ -902,48 +798,10 @@ namespace OpenSSL.SSL
 			InternalBeginRead(readwriteAsyncResult);
 		}
 
-		/*
-		public abstract virtual bool ProcessRenegotiation();
-
-		private IAsyncResult BeginRenegotiate(InternalAsyncResult readwriteAsyncResult)
-		{
-			Console.WriteLine("BeginRenegotiate");
-
-			handShakeState = HandshakeState.Renegotiate;
-
-			// Wrap the readwriteAsyncResult in the renegotiateAsyncResult
-			InternalAsyncResult renegotiateAsyncResult = new InternalAsyncResult(new AsyncCallback(RenegotiateComplete), readwriteAsyncResult, null, 0, 0, readwriteAsyncResult.IsWriteOperation, readwriteAsyncResult.ContinueAfterHandshake);
-
-			if (ProcessRenegotiation())
-			{
-				handShakeState = HandshakeState.Complete;
-				renegotiateAsyncResult.SetComplete();
-			}
-			else
-			{
-				//!! if (readwriteAsyncResult.IsWriteOperation)
-				if (write_bio.BytesPending > 0)
-				{
-					renegotiateAsyncResult.IsWriteOperation = true;
-					BeginWrite(new byte[0], 0, 0, new AsyncCallback(RenegotiateCallback), renegotiateAsyncResult);
-				}
-				else
-				{
-					renegotiateAsyncResult.IsWriteOperation = false;
-					BeginRead(new byte[0], 0, 0, new AsyncCallback(RenegotiateCallback), renegotiateAsyncResult);
-				}
-			}
-			return renegotiateAsyncResult;
-		}
-
-		private void RenegotiateCallback(IAsyncResult asyncResult)
-		{
-			InternalAsyncResult renegotiateAsyncResult = asyncResult.AsyncState as InternalAsyncResult;
-		}
-		*/
-
 		private IAsyncResult BeginHandshake(InternalAsyncResult readwriteAsyncResult)
 		{
+			if (disposed)
+				return null;
 			//!!
 			// Move the handshake state to the next state
 			//if (handShakeState == HandshakeState.Renegotiate)
@@ -1057,11 +915,17 @@ namespace OpenSSL.SSL
 
 		private void AsyncHandshakeComplete(IAsyncResult asyncResult)
 		{
+			if (disposed)
+				return;
+
 			EndHandshake(asyncResult);
 		}
 
 		private void EndHandshake(IAsyncResult asyncResult)
 		{
+			if (disposed)
+				return;
+
 			InternalAsyncResult handshakeAsyncResult = asyncResult as InternalAsyncResult;
 			InternalAsyncResult readwriteAsyncResult = asyncResult.AsyncState as InternalAsyncResult;
 
@@ -1096,7 +960,9 @@ namespace OpenSSL.SSL
 
 		public override void Close()
 		{
-			//base.Close();
+			if (disposed)
+				return;
+
 			if (ssl != null)
 			{
 				ssl.Dispose();
@@ -1107,6 +973,9 @@ namespace OpenSSL.SSL
 				sslContext.Dispose();
 				sslContext = null;
 			}
+
+			base.Close();
+			Dispose();
 		}
 
 		#endregion
@@ -1127,18 +996,24 @@ namespace OpenSSL.SSL
 
 		#region IDisposable Members
 
-		void IDisposable.Dispose()
+		protected override void Dispose(bool disposing)
 		{
-			if (!disposed)
+			if (disposed)
 			{
+				return;
 			}
+
+			disposed = true;
+			base.Dispose();
 		}
 
 		#endregion
 
+		// see https://www.openssl.org/docs/apps/ciphers.html
+		// for details about OpenSSL cipher string
 		internal string GetCipherString(bool FIPSmode, SslProtocols sslProtocols, SslStrength sslStrength)
 		{
-			var str = "";
+			string str = "";
 
 			if (FIPSmode || ((sslStrength & SslStrength.High) == SslStrength.High))
 			{
@@ -1167,8 +1042,8 @@ namespace OpenSSL.SSL
 				}
 			}
 			if ((sslProtocols == SslProtocols.Default) ||
-				(sslProtocols == SslProtocols.Tls) ||
-				(sslProtocols == SslProtocols.Ssl3))
+			    (sslProtocols == SslProtocols.Tls) ||
+			    (sslProtocols == SslProtocols.Ssl3))
 			{
 				if (String.IsNullOrEmpty(str))
 				{

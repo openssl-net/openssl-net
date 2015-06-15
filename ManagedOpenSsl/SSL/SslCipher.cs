@@ -94,7 +94,6 @@ namespace OpenSSL.SSL
 				var buf = new byte[512];
 				Native.SSL_CIPHER_description(ptr, buf, buf.Length);
 				var ret = Encoding.ASCII.GetString(buf);
-
 				return ret;
 			}
 		}
@@ -107,13 +106,11 @@ namespace OpenSSL.SSL
 			get
 			{
 				Initialize();
-
 				if (cipherStrength == 0)
 				{
 					var nAlgBits = 0;
 					return Native.SSL_CIPHER_get_bits(Handle, out nAlgBits);
 				}
-
 				return cipherStrength;
 			}
 		}

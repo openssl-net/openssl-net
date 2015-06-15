@@ -25,12 +25,14 @@
 
 using OpenSSL.Core;
 using OpenSSL.Crypto;
+using OpenSSL.Extensions;
 using OpenSSL.X509;
 using System.IO;
+using OpenSSL;
 
 namespace OpenSSL.SSL
 {
-	class SslStreamClient : SslStreamBase
+	internal class SslStreamClient : SslStreamBase
 	{
 		string targetHost;
 		X509List clientCertificates;
@@ -47,8 +49,7 @@ namespace OpenSSL.SSL
 			SslStrength sslStrength,
 			bool checkCertificateRevocationStatus,
 			RemoteCertificateValidationHandler remoteCallback,
-			LocalCertificateSelectionHandler localCallback)
-			: base(stream, ownStream)
+			LocalCertificateSelectionHandler localCallback) : base(stream, ownStream)
 		{
 			this.targetHost = targetHost;
 			this.clientCertificates = clientCertificates;
@@ -60,56 +61,61 @@ namespace OpenSSL.SSL
 			InitializeClientContext(clientCertificates, enabledSslProtocols, sslStrength, checkCertificateRevocationStatus);
 		}
 
-		protected void InitializeClientContext(X509List certificates, SslProtocols enabledSslProtocols, SslStrength sslStrength, bool checkCertificateRevocation)
+		protected void InitializeClientContext(
+			X509List certificates,
+			SslProtocols enabledSslProtocols,
+			SslStrength sslStrength,
+			bool checkCertificateRevocation)
 		{
-			// Initialize the context with the specified SSL version
-			// Initialize the context
-			sslContext = new SslContext(SslMethod.SSLv23_client_method);
-
+			// Initialize the context with specified TLS version
+			sslContext = new SslContext(SslMethod.TLSv12_client_method, ConnectionEnd.Client, true, new[] {
+				Protocols.Http2,
+				Protocols.Http1
+			});
+            
 			// Remove support for protocols not specified in the enabledSslProtocols
 			if ((enabledSslProtocols & SslProtocols.Ssl2) != SslProtocols.Ssl2)
 			{
 				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv2;
 			}
 			if ((enabledSslProtocols & SslProtocols.Ssl3) != SslProtocols.Ssl3 &&
-				((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
+			    ((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
 			{
 				// no SSLv3 support
 				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv3;
 			}
 			if ((enabledSslProtocols & SslProtocols.Tls) != SslProtocols.Tls &&
-				(enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
+			    (enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
 			{
 				sslContext.Options |= SslOptions.SSL_OP_NO_TLSv1;
 			}
 
 			// Set the Local certificate selection callback
 			sslContext.SetClientCertCallback(internalCertificateSelectionCallback);
-
 			// Set the enabled cipher list
 			sslContext.SetCipherList(GetCipherString(false, enabledSslProtocols, sslStrength));
-
 			// Set the callbacks for remote cert verification and local cert selection
 			if (remoteCertificateSelectionCallback != null)
 			{
 				sslContext.SetVerify(VerifyMode.SSL_VERIFY_PEER | VerifyMode.SSL_VERIFY_FAIL_IF_NO_PEER_CERT, remoteCertificateSelectionCallback);
 			}
-
 			// Set the CA list into the store
 			if (caCertificates != null)
 			{
 				var store = new X509Store(caCertificates);
 				sslContext.SetCertificateStore(store);
 			}
-
 			// Set up the read/write bio's
 			read_bio = BIO.MemoryBuffer(false);
 			write_bio = BIO.MemoryBuffer(false);
 			ssl = new Ssl(sslContext);
+
+			sniCb = sniExt.ClientSniCb;
+			sniExt.AttachSniExtensionClient(ssl.Handle, sslContext.Handle, sniCb);
+
 			ssl.SetBIO(read_bio, write_bio);
 			read_bio.SetClose(BIO.CloseOption.Close);
 			write_bio.SetClose(BIO.CloseOption.Close);
-
 			// Set the Ssl object into Client mode
 			ssl.SetConnectState();
 		}
@@ -130,12 +136,11 @@ namespace OpenSSL.SSL
 				nRet = ssl.Connect();
 			}
 			else if (handShakeState == HandshakeState.RenegotiateInProcess ||
-					 handShakeState == HandshakeState.Renegotiate)
+			         handShakeState == HandshakeState.Renegotiate)
 			{
 				handShakeState = HandshakeState.RenegotiateInProcess;
 				nRet = ssl.DoHandshake();
 			}
-
 			if (nRet <= 0)
 			{
 				var lastError = ssl.GetError(nRet);
@@ -195,11 +200,9 @@ namespace OpenSSL.SSL
 				{
 					x509_cert = cert;
 					key = cert.PrivateKey;
-
 					// Addref the cert and private key
 					x509_cert.AddRef();
 					key.AddRef();
-
 					// return success
 					nRet = 1;
 				}
