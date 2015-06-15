@@ -44,7 +44,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public static string Options
 		{
-			get { return Native.BN_options(); }
+			get { return Native.StaticString(Native.BN_options()); }
 		}
 		#endregion
 

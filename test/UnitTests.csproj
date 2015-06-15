@@ -93,6 +93,7 @@
     <Compile Include="TestServer.cs" />
     <Compile Include="TestCipher.cs" />
     <Compile Include="TestVersion.cs" />
+    <Compile Include="TestBigNumber.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ManagedOpenSsl\ManagedOpenSsl.csproj">

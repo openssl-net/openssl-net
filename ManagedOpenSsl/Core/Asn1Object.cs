@@ -27,6 +27,9 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL.Core
 {
+	/// <summary>
+	/// Asn1 object.
+	/// </summary>
 	public class Asn1Object
 	{
 		[StructLayout(LayoutKind.Sequential)]
@@ -41,36 +44,80 @@ namespace OpenSSL.Core
 		}
 		
 		private int nid;
-		
-		public Asn1Object(int nid) {
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OpenSSL.Core.Asn1Object"/> class.
+		/// </summary>
+		/// <param name="nid">Nid.</param>
+		public Asn1Object(int nid) 
+		{
 			this.nid = nid;
 		}
-		
-		public Asn1Object(string sn) {
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OpenSSL.Core.Asn1Object"/> class.
+		/// </summary>
+		/// <param name="sn">Sn.</param>
+		public Asn1Object(string sn) 
+		{
 			nid = Native.OBJ_sn2nid(sn);
 		}
 
-		public int NID { 
+		/// <summary>
+		/// Gets the NID.
+		/// </summary>
+		/// <value>The NID.</value>
+		public int NID 
+		{ 
 			get { return nid; } 
 		}
-		
-		public string ShortName {
-			get { return Native.OBJ_nid2sn(nid); }
+
+		/// <summary>
+		/// Gets the short name.
+		/// </summary>
+		/// <value>The short name.</value>
+		public string ShortName 
+		{
+			get { return Native.StaticString(Native.OBJ_nid2sn(nid)); }
 		}
-		
-		public string LongName {
-			get { return Native.OBJ_nid2ln(nid); }
+
+		/// <summary>
+		/// Gets the long name.
+		/// </summary>
+		/// <value>The long name.</value>
+		public string LongName 
+		{
+			get { return Native.StaticString(Native.OBJ_nid2ln(nid)); }
 		}
-		
-		public static Asn1Object FromShortName(string sn) {
+
+		/// <summary>
+		/// Froms the short name.
+		/// </summary>
+		/// <returns>The short name.</returns>
+		/// <param name="sn">Sn.</param>
+		public static Asn1Object FromShortName(string sn) 
+		{
 			return new Asn1Object(sn);
 		}
 
-		public static Asn1Object FromLongName(string sn) {
+		/// <summary>
+		/// Froms the long name.
+		/// </summary>
+		/// <returns>The long name.</returns>
+		/// <param name="sn">Sn.</param>
+		public static Asn1Object FromLongName(string sn) 
+		{
 			return new Asn1Object(Native.OBJ_ln2nid(sn));
 		}
-		
-		public override bool Equals(object obj) {
+
+		/// <summary>
+		/// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="OpenSSL.Core.Asn1Object"/>.
+		/// </summary>
+		/// <param name="obj">The <see cref="System.Object"/> to compare with the current <see cref="OpenSSL.Core.Asn1Object"/>.</param>
+		/// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
+		/// <see cref="OpenSSL.Core.Asn1Object"/>; otherwise, <c>false</c>.</returns>
+		public override bool Equals(object obj) 
+		{
 			var rhs = obj as Asn1Object;
 
 			if (rhs == null)
@@ -78,8 +125,13 @@ namespace OpenSSL.Core
 			
 			return nid == rhs.nid;
 		}
-		
-		public override int GetHashCode() {
+
+		/// <summary>
+		/// Serves as a hash function for a <see cref="OpenSSL.Core.Asn1Object"/> object.
+		/// </summary>
+		/// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a hash table.</returns>
+		public override int GetHashCode() 
+		{
 			return nid;
 		}
 	}

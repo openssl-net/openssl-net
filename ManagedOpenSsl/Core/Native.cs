@@ -227,28 +227,28 @@ namespace OpenSSL.Core
 		public const uint Wrapper = 0x1000201F; //1.0.2a Release
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string SSLeay_version(int type);
+		public extern static IntPtr SSLeay_version(int type);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static uint SSLeay();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string BN_options();
+		public extern static IntPtr BN_options();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string MD2_options();
+		public extern static IntPtr MD2_options();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string RC4_options();
+		public extern static IntPtr RC4_options();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string DES_options();
+		public extern static IntPtr DES_options();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string idea_options();
+		public extern static IntPtr idea_options();
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string BF_options();
+		public extern static IntPtr BF_options();
 
 		#endregion
 
@@ -428,10 +428,10 @@ namespace OpenSSL.Core
 		public extern static IntPtr OBJ_nid2obj(int n);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string OBJ_nid2ln(int n);
+		public extern static IntPtr OBJ_nid2ln(int n);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
-		public extern static string OBJ_nid2sn(int n);
+		public extern static IntPtr OBJ_nid2sn(int n);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static int OBJ_obj2nid(IntPtr o);
@@ -1661,6 +1661,21 @@ namespace OpenSSL.Core
 
 		#region EVP_MD
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_MD_type(IntPtr md);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_MD_pkey_type(IntPtr md);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_MD_size(IntPtr md);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static int EVP_MD_block_size(IntPtr md);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
+		public extern static uint EVP_MD_flags(IntPtr md);
+
+		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_get_digestbyname(byte[] name);
 
 		[DllImport(DLLNAME, CallingConvention=CallingConvention.Cdecl)]
@@ -2601,6 +2616,11 @@ namespace OpenSSL.Core
 		#endregion
 
 		#region Utilities
+		public static string StaticString(IntPtr ptr)
+		{
+			return Marshal.PtrToStringAnsi(ptr);
+		}
+
 		public static string PtrToStringAnsi(IntPtr ptr, bool hasOwnership)
 		{
 			var len = 0;

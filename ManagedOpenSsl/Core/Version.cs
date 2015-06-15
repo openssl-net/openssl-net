@@ -205,7 +205,7 @@ namespace OpenSSL.Core
 		/// <param name="format"></param>
 		public static string GetText(Format format)
 		{
-			return Native.SSLeay_version((int)format);
+			return Native.StaticString(Native.SSLeay_version((int)format));
 		}
 	}
 }

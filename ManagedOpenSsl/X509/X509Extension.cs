@@ -73,7 +73,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Name
 		{
-			get { return Native.OBJ_nid2ln(NID); }
+			get { return Native.StaticString(Native.OBJ_nid2ln(NID)); }
 		}
 
 		/// <summary>
