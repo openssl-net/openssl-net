@@ -11,3 +11,4 @@ dist
 *.eto
 .DS_Store
 test-results
+TestResult.xml
