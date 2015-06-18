@@ -27,6 +27,8 @@ using OpenSSL.Core;
 using OpenSSL.X509;
 using System;
 using System.Runtime.InteropServices;
+using OpenSSL.Extensions;
+using OpenSSL.Exceptions;
 
 namespace OpenSSL.SSL
 {
@@ -43,7 +45,7 @@ namespace OpenSSL.SSL
 		SSL_ERROR_WANT_ACCEPT = 8
 	}
 
-	class Ssl : Base, IDisposable
+	internal class Ssl : Base
 	{
 		internal const int SSL_ST_CONNECT = 0x1000;
 		internal const int SSL_ST_ACCEPT = 0x2000;
@@ -236,6 +238,9 @@ namespace OpenSSL.SSL
 			/* RFC4507 session ticket expected to be received or sent */
 			public int tlsext_ticket_expected;
 			public IntPtr initial_ctx;  //SSL_CTX * initial_ctx; /* initial ctx, used to store sessions */
+
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 164)]
+			public byte[] str;
 #endif //! OPENSSL_NO_TLSEXT
 		}
 
@@ -249,7 +254,10 @@ namespace OpenSSL.SSL
 		/// <param name="ctx"></param>
 		public Ssl(SslContext ctx) :
 			base(Native.ExpectNonNull(Native.SSL_new(ctx.Handle)), true)
-		{ }
+		{
+		    SslCtx = ctx;
+		    alpnSelectedProtocol = null;
+		}
 
 		internal Ssl(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
@@ -283,9 +291,7 @@ namespace OpenSSL.SSL
 		{
 			get
 			{
-				var ptr = Native.SSL_get_client_CA_list(this.ptr);
-				var name_stack = new Core.Stack<X509Name>(ptr, false);
-				return name_stack;
+				return new Core.Stack<X509Name>(Native.SSL_get_client_CA_list(ptr), false);
 			}
 			set
 			{
@@ -374,17 +380,17 @@ namespace OpenSSL.SSL
 
 		public int DoHandshake()
 		{
-			return Native.SSL_do_handshake(this.ptr);
+			return Native.SSL_do_handshake(ptr);
 		}
 
 		public void SetAcceptState()
 		{
-			Native.SSL_set_accept_state(this.ptr);
+			Native.SSL_set_accept_state(ptr);
 		}
 
 		public void SetConnectState()
 		{
-			Native.SSL_set_connect_state(this.ptr);
+			Native.SSL_set_connect_state(ptr);
 		}
 
 		public void SetBIO(BIO read, BIO write)
@@ -399,13 +405,49 @@ namespace OpenSSL.SSL
 
 		public int UsePrivateKeyFile(string filename, SslFileType type)
 		{
-			return Native.ExpectSuccess(Native.SSL_use_PrivateKey_file(this.ptr, filename, (int)type));
+			return Native.ExpectSuccess(Native.SSL_use_PrivateKey_file(ptr, filename, (int)type));
 		}
 
 		public int Clear()
 		{
 			return Native.ExpectSuccess(Native.SSL_clear(ptr));
 		}
+
+		public SslContext SslCtx { get; private set; }
+
+		private string alpnSelectedProtocol;
+
+		public string AlpnSelectedProtocol
+		{
+			get
+			{
+				//TODO Refactor: create exception for it. 
+				if (!AlpnIncluded)
+					throw new Exception("alpn was not included");
+
+				if (alpnSelectedProtocol != null)
+					return alpnSelectedProtocol;
+
+				var data = new IntPtr();
+				var len = new IntPtr();
+
+				Native.SSL_get0_alpn_selected(Handle, ref data, ref len);
+
+				if (data == IntPtr.Zero)
+				{
+					throw new AlpnException("Cant get selected protocol. See if ALPN was included into client/server hello");
+				}
+
+				string proto = Marshal.PtrToStringAnsi(data);
+				int protoLen = len.ToInt32();
+
+				alpnSelectedProtocol = proto.Substring(0, protoLen);
+
+				return alpnSelectedProtocol;
+			}
+		}
+
+		public bool AlpnIncluded { get { return SslCtx.AlpnIncluded; } }
 
 		#endregion
 

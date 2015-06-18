@@ -107,14 +107,16 @@ namespace OpenSSL.Core
 		/// <summary>
 		/// Patch portion of the Version. These should start at 'a' and continue to 'z'.
 		/// </summary>
-		public char Patch
+		public char? Patch
 		{
 			get
 			{
-				var patch = (raw & 0x00000ff0) >> 5;
+				var patch = (raw & 0x00000ff0) >> 4;
+				if (patch == 0)
+					return null;
 
 				var a = Encoding.ASCII.GetBytes("a")[0];
-				var x = a + patch;
+				var x = a + (patch - 1);
 				var ch = Encoding.ASCII.GetString(new[] { (byte)x })[0];
 
 				return ch;
@@ -161,12 +163,13 @@ namespace OpenSSL.Core
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return string.Format("{0}.{1}.{2}{3} {4}",
+			return string.Format("{0}.{1}.{2}{3} {4} (0x{5:x8})",
 				Major,
 				Minor,
 				Fix,
 				Patch,
-				Status);
+				Status,
+				Raw);
 		}
 
 		/// <summary>
@@ -202,7 +205,7 @@ namespace OpenSSL.Core
 		/// <param name="format"></param>
 		public static string GetText(Format format)
 		{
-			return Native.SSLeay_version((int)format);
+			return Native.StaticString(Native.SSLeay_version((int)format));
 		}
 	}
 }

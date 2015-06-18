@@ -23,6 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 
 namespace OpenSSL.SSL
 {
@@ -146,7 +147,8 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// 
 	/// </summary>
-	public enum SslProtocols
+	[Flags]
+	public enum SslProtocols : long
 	{
 		/// <summary>
 		/// 
@@ -228,6 +230,7 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// Options enumeration for Options property
 	/// </summary>
+	[Flags]
 	enum SslOptions
 	{
 		SSL_OP_MICROSOFT_SESS_ID_BUG = 0x00000001,
@@ -296,6 +299,7 @@ namespace OpenSSL.SSL
 		SSL_MODE_NO_AUTO_CHAIN = 0x00000008
 	}
 
+	[Flags]
 	enum VerifyMode
 	{
 		SSL_VERIFY_NONE = 0x00,
@@ -303,4 +307,5 @@ namespace OpenSSL.SSL
 		SSL_VERIFY_FAIL_IF_NO_PEER_CERT = 0x02,
 		SSL_VERIFY_CLIENT_ONCE = 0x04,
 	}
+
 }

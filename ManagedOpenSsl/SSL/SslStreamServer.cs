@@ -28,10 +28,11 @@ using OpenSSL.X509;
 using System;
 using System.IO;
 using System.Text;
+using OpenSSL;
 
 namespace OpenSSL.SSL
 {
-	class SslStreamServer : SslStreamBase
+	internal class SslStreamServer : SslStreamBase
 	{
 		public SslStreamServer(
 			Stream stream, 
@@ -42,27 +43,27 @@ namespace OpenSSL.SSL
 			SslProtocols enabledSslProtocols,
 			SslStrength sslStrength,
 			bool checkCertificateRevocation,
-			RemoteCertificateValidationHandler remote_callback)
-			: base(stream, ownStream)
+			RemoteCertificateValidationHandler remote_callback) : base(stream, ownStream)
 		{
 			checkCertificateRevocationStatus = checkCertificateRevocation;
 			remoteCertificateSelectionCallback = remote_callback;
 
 			// Initialize the SslContext object
 			InitializeServerContext(serverCertificate, clientCertificateRequired, caCerts, enabledSslProtocols, sslStrength, checkCertificateRevocation);
-						
+            
 			// Initalize the Ssl object
 			ssl = new Ssl(sslContext);
+
+			sniCb = sniExt.ServerSniCb;
+			sniExt.AttachSniExtensionServer(ssl.Handle, sslContext.Handle, sniCb);
 
 			// Initialze the read/write bio
 			read_bio = BIO.MemoryBuffer(false);
 			write_bio = BIO.MemoryBuffer(false);
-
 			// Set the read/write bio's into the the Ssl object
 			ssl.SetBIO(read_bio, write_bio);
 			read_bio.SetClose(BIO.CloseOption.Close);
 			write_bio.SetClose(BIO.CloseOption.Close);
-
 			// Set the Ssl object into server mode
 			ssl.SetAcceptState();
 		}
@@ -71,7 +72,7 @@ namespace OpenSSL.SSL
 		{
 			var bRet = false;
 			var nRet = 0;
-						
+            
 			if (handShakeState == HandshakeState.InProcess)
 			{
 				nRet = ssl.Accept();
@@ -86,7 +87,6 @@ namespace OpenSSL.SSL
 				ssl.State = Ssl.SSL_ST_ACCEPT;
 				handShakeState = HandshakeState.RenegotiateInProcess;
 			}
-
 			var lastError = ssl.GetError(nRet);
 			if (lastError == SslError.SSL_ERROR_WANT_READ || lastError == SslError.SSL_ERROR_WANT_WRITE || lastError == SslError.SSL_ERROR_NONE)
 			{
@@ -131,44 +131,29 @@ namespace OpenSSL.SSL
 				throw new ArgumentException("Server certificate must have a private key", "serverCertificate");
 			}
 
-			// Initialize the context
-			sslContext = new SslContext(SslMethod.SSLv23_server_method);
-						
+			// Initialize the context with specified TLS version
+			sslContext = new SslContext(SslMethod.TLSv12_server_method, ConnectionEnd.Server, true, new[] {
+				Protocols.Http2,
+				Protocols.Http1
+			});
+            
 			// Remove support for protocols not specified in the enabledSslProtocols
 			if ((enabledSslProtocols & SslProtocols.Ssl2) != SslProtocols.Ssl2)
 			{
 				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv2;
 			}
 			if ((enabledSslProtocols & SslProtocols.Ssl3) != SslProtocols.Ssl3 &&
-				((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
+			    ((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
 			{
 				// no SSLv3 support
 				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv3;
 			}
 			if ((enabledSslProtocols & SslProtocols.Tls) != SslProtocols.Tls &&
-				(enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
+			    (enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
 			{
 				sslContext.Options |= SslOptions.SSL_OP_NO_TLSv1;
 			}
-			/*
-			// Initialize the context with the specified ssl version
-			switch (enabledSslProtocols)
-			{
-					case SslProtocols.None:
-							throw new ArgumentException("SslProtocol.None is not supported", "enabledSslProtocols");
-							break;
-					case SslProtocols.Ssl2:
-							sslContext = new SslContext(SslMethod.SSLv2_server_method);
-							break;
-					case SslProtocols.Ssl3:
-					case SslProtocols.Default:
-							sslContext = new SslContext(SslMethod.SSLv3_server_method);
-							break;
-					case SslProtocols.Tls:
-							sslContext = new SslContext(SslMethod.TLSv1_server_method);
-							break;
-			}
-			*/
+
 			// Set the context mode
 			sslContext.Mode = SslMode.SSL_MODE_AUTO_RETRY;
 			// Set the workaround options
@@ -185,7 +170,6 @@ namespace OpenSSL.SSL
 
 			// Set the client certificate max verification depth
 			sslContext.SetVerifyDepth(10);
-
 			// Set the certificate store and ca list
 			if (caCerts != null)
 			{
@@ -202,7 +186,6 @@ namespace OpenSSL.SSL
 				// Assign the stack to the context
 				sslContext.CAList = name_stack;
 			}
-
 			// Set the cipher string
 			sslContext.SetCipherList(GetCipherString(false, enabledSslProtocols, sslStrength));
 			// Set the certificate

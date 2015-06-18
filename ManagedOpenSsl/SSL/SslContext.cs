@@ -29,134 +29,60 @@ using OpenSSL.X509;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using OpenSSL.Extensions;
 
 namespace OpenSSL.SSL
 {
-	delegate int ClientCertCallbackHandler(Ssl ssl, out X509Certificate cert, out CryptoKey key);
+	internal delegate int ClientCertCallbackHandler(Ssl ssl, out X509Certificate cert, out CryptoKey key);
 
 	/// <summary>
-	/// Wraps the SST_CTX structure and methods
+	///     Wraps the SST_CTX structure and methods
 	/// </summary>
-	internal class SslContext : Base, IDisposable
+	internal sealed class SslContext : Base
 	{
-		#region SSL_CTX
-		[StructLayout(LayoutKind.Sequential)]
-		private struct SSL_CTX
-		{
-			public IntPtr method; //SSL_METHOD
-			public IntPtr cipher_list;  // STACK_OF(SSL_CIPHER)
-			public IntPtr cipher_list_by_id; // STACK_OF(SSL_CIPHER)
-			public IntPtr cert_store; //X509_STORE
-			public IntPtr sessions; //lhash_st of SSL_SESSION
-			public int session_cache_size;
-			public IntPtr session_cache_head; //ssl_session_st
-			public IntPtr session_cache_tail; // ssl_session_st
-			public int session_cache_mode;
-			public int session_timeout;
-			public IntPtr new_session_cb; // int (*new_session_cb)(SSL*, SSL_SESSION*)
-			public IntPtr remove_session_cb; // void (*remove_session_cb)(SSL*,SSL_SESSION*)
-			public IntPtr get_session_cb; // SSL_SESSION*(*get_session_cb)(SSL*, uchar* data, int len, int* copy)
-			#region stats
-			public int stats_sess_connect;	/* SSL new conn - started */
-			public int stats_sess_connect_renegotiate;/* SSL reneg - requested */
-			public int stats_sess_connect_good;	/* SSL new conne/reneg - finished */
-			public int stats_sess_accept;	/* SSL new accept - started */
-			public int stats_sess_accept_renegotiate;/* SSL reneg - requested */
-			public int stats_sess_accept_good;	/* SSL accept/reneg - finished */
-			public int stats_sess_miss;		/* session lookup misses  */
-			public int stats_sess_timeout;	/* reuse attempt on timeouted session */
-			public int stats_sess_cache_full;	/* session removed due to full cache */
-			public int stats_sess_hit;		/* session reuse actually done */
-			public int stats_sess_cb_hit;	/* session-id that was not in the cache was passed back via the callback.  This
-					         * indicates that the application is supplying session-id's from other processes - spooky :-) */
-			#endregion
-			public int references;
-			public IntPtr app_verify_callback; //int (*app_verify_callback)(X509_STORE_CTX *, void *)
-			public IntPtr app_verify_arg;
-			public IntPtr default_passwd_callback; //pem_password_cb
-			public IntPtr default_passwd_callback_userdata;
-			public IntPtr client_cert_cb; //int (*client_cert_cb)(SSL *ssl, X509 **x509, EVP_PKEY **pkey)
-			public IntPtr app_gen_cookie_cb; //int (*app_gen_cookie_cb)(SSL *ssl, unsigned char *cookie, unsigned int *cookie_len);
-			public IntPtr app_verify_cookie_cb; //int (*app_verify_cookie_cb)(SSL *ssl, unsigned char *cookie, unsigned int cookie_len); 
-			#region CRYPTO_EX_DATA ex_data;
-			public IntPtr ex_data_sk;
-			public int ex_data_dummy;
-			#endregion
-			public IntPtr rsa_md5; //EVP_MD
-			public IntPtr md5; //EVP_MD
-			public IntPtr sha1; //EVP_MD
-			public IntPtr extra_certs; //STACK_OF(X509)
-			public IntPtr comp_methods; //STACK_OF(SSL_COMP)
-			public IntPtr info_callback; //void (*info_callback)(const SSL *ssl,int type,int val)
-			public IntPtr client_CA; //STACK_OF(X509_NAME)
-			public uint options;
-			public uint mode;
-			public int max_cert_list;
-			public IntPtr cert; //cert_st
-			public int read_ahead;
-			public IntPtr msg_callback; //void (*msg_callback)(int write_p, int version, int content_type, const void *buf, size_t len, SSL *ssl, void *arg);
-			public IntPtr msg_callback_arg;
-			public int verify_mode;
-			public uint sid_ctx_length;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.SSL_MAX_SID_CTX_LENGTH)]
-			public byte[] sid_ctx;
-			public IntPtr default_verify_callback; //int (*default_verify_callback)(int ok,X509_STORE_CTX *ctx)
-			public IntPtr generate_session_id; //typedef int (*GEN_SESSION_CB)(const SSL *ssl, unsigned char *id,unsigned int *id_len);
-			#region X509_VERIFY_PARAM
-			public IntPtr x509_verify_param_name;
-			public long x509_verify_param_check_time;
-			public int x509_verify_param_inh_flags;
-			public int x509_verify_param_flags;
-			public int x509_verify_param_purpose;
-			public int x509_verify_param_trust;
-			public int x509_verify_param_depth;
-			public IntPtr x509_verify_param_policies;
-			#endregion
-#if __UNUSED__
-	            int purpose;		/* Purpose setting */
-	            int trust;		/* Trust setting */
-#endif
-			public int quiet_shutdown;
-			//#if (! OPENSSL_ENGINE)
-			// Engine to pass requests for client certs to
-			public IntPtr client_cert_engine;
-			//#endif
-			//#if (! OPENSSL_NO_TLSEXT)
-			public IntPtr tlsext_servername_callback; //int (*tlsext_servername_callback)(SSL*, int *, void *)
-			public IntPtr tlsext_servername_arg;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-			public byte[] tlsext_tick_key_name;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-			public byte[] tlsext_tick_hmac_key;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-			public byte[] tlsext_tick_aes_key;
-			public IntPtr tlsext_ticket_key_cb; //int (*tlsext_ticket_key_cb)(SSL *ssl,unsigned char *name, unsigned char *iv,EVP_CIPHER_CTX *ectx,HMAC_CTX *hctx, int enc);
-			public IntPtr tlsext_status_cb; //int (*tlsext_status_cb)(SSL *ssl, void *arg);
-			public IntPtr tlsext_status_arg;
-			//#endif
-		}
-		#endregion
-
 		#region Members
 
 		//private SSL_CTX raw;
-		private VerifyCertCallbackThunk _verifyCertCallbackThunk;
 		private ClientCertCallbackThunk _clientCertCallbackThunk;
+		private VerifyCertCallbackThunk _verifyCertCallbackThunk;
+
 		#endregion
 
+		private static AlpnCallback alpnCb;
+		private static AlpnExtension alpnExt;
+
 		/// <summary>
-		/// Calls SSL_CTX_new()
+		///     Calls SSL_CTX_new()
 		/// </summary>
 		/// <param name="sslMethod"></param>
-		public SslContext(SslMethod sslMethod) :
+		/// <param name="end"></param>
+		/// <param name="includeAlpn"></param>
+		/// <param name="protoList"></param>
+		public SslContext(
+			SslMethod sslMethod,
+			ConnectionEnd end,
+			bool includeAlpn,
+			IEnumerable<string> protoList = null) :
 			base(Native.ExpectNonNull(Native.SSL_CTX_new(sslMethod.Handle)), true)
 		{
+			if (!includeAlpn)
+				return;
+
+			alpnExt = new AlpnExtension(Handle, protoList);
+
+			if (end == ConnectionEnd.Server)
+			{
+				alpnCb = alpnExt.AlpnCb;
+				var alpnCbPtr = Marshal.GetFunctionPointerForDelegate(alpnCb);
+				var arg = new IntPtr();
+				Native.SSL_CTX_set_alpn_select_cb(Handle, alpnCbPtr, arg);
+			}
 		}
 
 		#region Properties
 
 		/// <summary>
-		/// Calls SSL_CTX_set_options
+		///     Calls SSL_CTX_set_options
 		/// </summary>
 		public SslOptions Options
 		{
@@ -172,10 +98,20 @@ namespace OpenSSL.SSL
 
 		#endregion
 
+		internal bool AlpnIncluded
+		{
+			get { return alpnExt != null; }
+		}
+
 		internal class ClientCertCallbackThunk
 		{
 			private ClientCertCallbackHandler OnClientCertCallback;
 			private Native.client_cert_cb nativeCallback;
+
+			public ClientCertCallbackThunk(ClientCertCallbackHandler callback)
+			{
+				OnClientCertCallback = callback;
+			}
 
 			public Native.client_cert_cb Callback
 			{
@@ -189,29 +125,21 @@ namespace OpenSSL.SSL
 					{
 						return nativeCallback;
 					}
-					else
-					{
-						nativeCallback = OnClientCertThunk;
-						return nativeCallback;
-					}
-				}
-			}
 
-			public ClientCertCallbackThunk(ClientCertCallbackHandler callback)
-			{
-				OnClientCertCallback = callback;
+					nativeCallback = OnClientCertThunk;
+					return nativeCallback;
+				}
 			}
 
 			internal int OnClientCertThunk(IntPtr ssl_ptr, out IntPtr cert_ptr, out IntPtr key_ptr)
 			{
-				X509Certificate cert;
-				CryptoKey key;
+				X509Certificate cert = null;
+				CryptoKey key = null;
 				var ssl = new Ssl(ssl_ptr, false);
 				cert_ptr = IntPtr.Zero;
 				key_ptr = IntPtr.Zero;
 
 				var nRet = OnClientCertCallback(ssl, out cert, out key);
-
 				if (nRet != 0)
 				{
 					if (cert != null)
@@ -232,6 +160,11 @@ namespace OpenSSL.SSL
 			private RemoteCertificateValidationHandler OnVerifyCert;
 			private Native.VerifyCertCallback nativeCallback;
 
+			public VerifyCertCallbackThunk(RemoteCertificateValidationHandler callback)
+			{
+				OnVerifyCert = callback;
+			}
+
 			public Native.VerifyCertCallback Callback
 			{
 				get
@@ -244,17 +177,9 @@ namespace OpenSSL.SSL
 					{
 						return nativeCallback;
 					}
-					else
-					{
-						nativeCallback = OnVerifyCertThunk;
-						return nativeCallback;
-					}
+					nativeCallback = OnVerifyCertThunk;
+					return nativeCallback;
 				}
-			}
-
-			public VerifyCertCallbackThunk(RemoteCertificateValidationHandler callback)
-			{
-				OnVerifyCert = callback;
 			}
 
 			internal int OnVerifyCertThunk(int ok, IntPtr store_ctx)
@@ -263,7 +188,6 @@ namespace OpenSSL.SSL
 				var cert = ctx.CurrentCert;
 				var depth = ctx.ErrorDepth;
 				var result = (VerifyResult)ctx.Error;
-
 				// build the X509Chain from the store
 				var store = ctx.Store;
 				var objStack = store.Objects;
@@ -277,26 +201,18 @@ namespace OpenSSL.SSL
 						chain.Add(objCert);
 					}
 				}
-
 				// Call the managed delegate
-				if (OnVerifyCert(this, cert, chain, depth, result))
-				{
-					return 1;
-				}
-				else
-				{
-					return 0;
-				}
+				return OnVerifyCert(this, cert, chain, depth, result) ? 1 : 0;
 			}
 		}
 
 		#region Methods
 
 		/// <summary>
-		/// Sets the certificate store for the context - calls SSL_CTX_set_cert_store
-		/// The X509Store object and contents will be freed when the context is disposed.
-		/// Ensure that the store object and it's contents have IsOwner set to false
-		/// before assigning them into the context.
+		///     Sets the certificate store for the context - calls SSL_CTX_set_cert_store
+		///     The X509Store object and contents will be freed when the context is disposed.
+		///     Ensure that the store object and it's contents have IsOwner set to false
+		///     before assigning them into the context.
 		/// </summary>
 		/// <param name="store"></param>
 		public void SetCertificateStore(X509Store store)
@@ -309,7 +225,7 @@ namespace OpenSSL.SSL
 		}
 
 		/// <summary>
-		/// Sets the certificate verification mode and callback - calls SSL_CTX_set_verify
+		///     Sets the certificate verification mode and callback - calls SSL_CTX_set_verify
 		/// </summary>
 		/// <param name="mode"></param>
 		/// <param name="callback"></param>
@@ -320,7 +236,7 @@ namespace OpenSSL.SSL
 		}
 
 		/// <summary>
-		/// Sets the certificate verification depth - calls SSL_CTX_set_verify_depth
+		///     Sets the certificate verification depth - calls SSL_CTX_set_verify_depth
 		/// </summary>
 		/// <param name="depth"></param>
 		public void SetVerifyDepth(int depth)
@@ -332,16 +248,15 @@ namespace OpenSSL.SSL
 		{
 			var stack = Native.SSL_load_client_CA_file(filename);
 			var name_stack = new Core.Stack<X509Name>(stack, true);
-			
 			return name_stack;
 		}
 
 		/// <summary>
-		/// Calls SSL_CTX_set_client_CA_list/SSL_CTX_get_client_CA_list
-		/// The Stack and the X509Name objects contained within them
-		/// are freed when the context is disposed.  Make sure that
-		/// the Stack and X509Name objects have set IsOwner to false
-		/// before assigning them to the context.
+		///     Calls SSL_CTX_set_client_CA_list/SSL_CTX_get_client_CA_list
+		///     The Stack and the X509Name objects contined within them
+		///     are freed when the context is disposed.  Make sure that
+		///     the Stack and X509Name objects have set IsOwner to false
+		///     before assigning them to the context.
 		/// </summary>
 		public Core.Stack<X509Name> CAList
 		{
@@ -349,7 +264,6 @@ namespace OpenSSL.SSL
 			{
 				var ptr = Native.SSL_CTX_get_client_CA_list(this.ptr);
 				var name_stack = new Core.Stack<X509Name>(ptr, false);
-				
 				return name_stack;
 			}
 			set
@@ -416,7 +330,6 @@ namespace OpenSSL.SSL
 			var ret = new List<string>();
 			var raw = (SSL_CTX)Marshal.PtrToStructure(ptr, typeof(SSL_CTX));
 			var stack = new Core.Stack<SslCipher>(raw.cipher_list, false);
-
 			foreach (var cipher in stack)
 			{
 				var cipher_ptr = Native.SSL_CIPHER_description(cipher.Handle, null, 0);
@@ -427,7 +340,6 @@ namespace OpenSSL.SSL
 					Native.OPENSSL_free(cipher_ptr);
 				}
 			}
-
 			return ret;
 		}
 
@@ -436,7 +348,7 @@ namespace OpenSSL.SSL
 		#region IDisposable Members
 
 		/// <summary>
-		/// base override - calls SSL_CTX_free()
+		///     base override - calls SSL_CTX_free()
 		/// </summary>
 		protected override void OnDispose()
 		{

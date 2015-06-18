@@ -48,7 +48,7 @@ namespace UnitTests
 			ArraySegment<byte> result = mb.ReadBytes(0);
 			Assert.AreEqual(0, result.Count);
 		}
-		
+
 		/// <summary>
 		/// WritePrivateKey fails with null Cipher type
 		/// </summary>
@@ -72,7 +72,7 @@ namespace UnitTests
 		public void Bug3018093_1()
 		{
 			FileSerialNumber fsn = new FileSerialNumber("/does/not/exist");
-			int serial = fsn.Next();
+			fsn.Next();
 		}
 
 		/// <summary>
@@ -96,20 +96,22 @@ namespace UnitTests
 			Assert.AreEqual(1, fsn2.Next());
 			Assert.AreEqual(2, fsn2.Next());
 		}
-		
+
 		[Test]
 		/// <summary>
 		/// Exception in encrypting less than 8 bytes with Blowfish_CBC
 		/// </summary>
 		public void Bug3066497()
 		{
-			CipherContext cc = new CipherContext(Cipher.Blowfish_CBC);
-			byte[] inputData = Encoding.UTF8.GetBytes("1234567");
-			byte[] key = Encoding.UTF8.GetBytes("secret!!");
-			byte[] iv = Encoding.UTF8.GetBytes("secret!!");
-			byte[] outputData = cc.Encrypt(inputData, key, iv);
+			using (var cc = new CipherContext(Cipher.Blowfish_CBC))
+			{
+				byte[] inputData = Encoding.UTF8.GetBytes("1234567");
+				byte[] key = Encoding.UTF8.GetBytes("secret!!");
+				byte[] iv = Encoding.UTF8.GetBytes("secret!!");
+				cc.Encrypt(inputData, key, iv);
+			}
 		}
-		
+
 		/// <summary>
 		/// The BIO class, if initialized with byte[] or string, uses BIO_new_mem_buf.
 		/// http://linux.die.net/man/3/bio_new_mem_buf states 
@@ -124,7 +126,8 @@ namespace UnitTests
 		{
 			byte[] pattern = { 1, 2, 3 };
 			byte[] buf = (byte[])pattern.Clone();
-			using(BIO bio = new BIO(buf)) {
+			using (BIO bio = new BIO(buf))
+			{
 				buf[1] = 1;
 				Assert.AreEqual(pattern, bio.ReadBytes(3).Array);
 			}

@@ -90,7 +90,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public static string MD2_Options
 		{
-			get { return Native.MD2_options(); }
+			get { return Native.StaticString(Native.MD2_options()); }
 		}
 
 		/// <summary>
@@ -98,7 +98,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public static string RC4_Options
 		{
-			get { return Native.RC4_options(); }
+			get { return Native.StaticString(Native.RC4_options()); }
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public static string DES_Options
 		{
-			get { return Native.DES_options(); }
+			get { return Native.StaticString(Native.DES_options()); }
 		}
 
 		/// <summary>
@@ -114,7 +114,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public static string Idea_Options
 		{
-			get { return Native.idea_options(); }
+			get { return Native.StaticString(Native.idea_options()); }
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace OpenSSL.Core
 		/// </summary>
 		public static string Blowfish_Options
 		{
-			get { return Native.BF_options(); }
+			get { return Native.StaticString(Native.BF_options()); }
 		}
 
 		/// <summary>

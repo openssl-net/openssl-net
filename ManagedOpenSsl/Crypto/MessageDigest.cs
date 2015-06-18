@@ -36,7 +36,6 @@ namespace OpenSSL.Crypto
 	/// </summary>
 	public class MessageDigest : Base
 	{
-		private EVP_MD raw;
 		/// <summary>
 		/// Creates a EVP_MD struct
 		/// </summary>
@@ -44,7 +43,6 @@ namespace OpenSSL.Crypto
 		/// <param name="owner"></param>
 		internal MessageDigest(IntPtr ptr, bool owner) : base(ptr, owner) 
 		{
-			raw = (EVP_MD)Marshal.PtrToStructure(this.ptr, typeof(EVP_MD));
 		}
 
 		/// <summary>
@@ -93,28 +91,6 @@ namespace OpenSSL.Crypto
 		{
 			get { return new NameCollector(Native.OBJ_NAME_TYPE_MD_METH, false).Result.ToArray(); }
 		}
-
-		#region EVP_MD
-		[StructLayout(LayoutKind.Sequential)]
-		struct EVP_MD
-		{
-			public int type;
-			public int pkey_type;
-			public int md_size;
-			public uint flags;
-			public IntPtr init;
-			public IntPtr update;
-			public IntPtr final;
-			public IntPtr copy;
-			public IntPtr cleanup;
-			public IntPtr sign;
-			public IntPtr verify;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
-			public int[] required_pkey_type;
-			public int block_size;
-			public int ctx_size;
-		}
-		#endregion
 
 		#region MessageDigests
 		/// <summary>
@@ -189,7 +165,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int BlockSize
 		{
-			get { return raw.block_size; }
+			get { return Native.EVP_MD_block_size(ptr); }
 		}
 
 		/// <summary>
@@ -197,7 +173,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public int Size
 		{
-			get { return this.raw.md_size; }
+			get { return Native.EVP_MD_size(ptr); }
 		}
 
 		/// <summary>
@@ -205,7 +181,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string LongName
 		{
-			get { return Native.OBJ_nid2ln(raw.type); }
+			get { return Native.StaticString(Native.OBJ_nid2ln(Native.EVP_MD_type(ptr))); }
 		}
 
 		/// <summary>
@@ -213,7 +189,7 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public string Name
 		{
-			get { return Native.OBJ_nid2sn(raw.type); }
+			get { return Native.StaticString(Native.OBJ_nid2sn(Native.EVP_MD_type(ptr))); }
 		}
 
 		#endregion

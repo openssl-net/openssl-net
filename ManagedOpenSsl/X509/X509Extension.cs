@@ -73,7 +73,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string Name
 		{
-			get { return Native.OBJ_nid2ln(NID); }
+			get { return Native.StaticString(Native.OBJ_nid2ln(NID)); }
 		}
 
 		/// <summary>
@@ -202,12 +202,4 @@ namespace OpenSSL.X509
 		private string name;
 		#endregion
 	}
-
-	/// <summary>
-	/// Dictionary for X509 v3 extensions - Name, Value 
-	/// </summary>
-	public class X509V3ExtensionList : List<X509V3ExtensionValue>
-	{
-	}
-
 }
