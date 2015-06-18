@@ -195,7 +195,7 @@ namespace OpenSSL.SSL
 		All = High | Medium | Low
 	}
 
-	enum SslFileType
+	public enum SslFileType
 	{
 		/// <summary>
 		/// SSL_FILETYPE_PEM

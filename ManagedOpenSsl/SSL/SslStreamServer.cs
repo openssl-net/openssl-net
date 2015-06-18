@@ -36,20 +36,25 @@ namespace OpenSSL.SSL
 	{
 		public SslStreamServer(
 			Stream stream, 
-			bool ownStream,
 			X509Certificate serverCertificate,
 			bool clientCertificateRequired,
 			X509Chain caCerts,
 			SslProtocols enabledSslProtocols,
 			SslStrength sslStrength,
 			bool checkCertificateRevocation,
-			RemoteCertificateValidationHandler remote_callback) : base(stream, ownStream)
+			RemoteCertificateValidationHandler remote_callback) : base(stream)
 		{
 			checkCertificateRevocationStatus = checkCertificateRevocation;
-			remoteCertificateSelectionCallback = remote_callback;
+			OnRemoteCertificate = remote_callback;
 
 			// Initialize the SslContext object
-			InitializeServerContext(serverCertificate, clientCertificateRequired, caCerts, enabledSslProtocols, sslStrength, checkCertificateRevocation);
+			InitializeServerContext(
+				serverCertificate, 
+				clientCertificateRequired, 
+				caCerts, 
+				enabledSslProtocols, 
+				sslStrength, 
+				checkCertificateRevocation);
             
 			// Initalize the Ssl object
 			ssl = new Ssl(sslContext);
@@ -70,7 +75,6 @@ namespace OpenSSL.SSL
 
 		internal protected override bool ProcessHandshake()
 		{
-			var bRet = false;
 			var nRet = 0;
             
 			if (handShakeState == HandshakeState.InProcess)
@@ -87,31 +91,27 @@ namespace OpenSSL.SSL
 				ssl.State = Ssl.SSL_ST_ACCEPT;
 				handShakeState = HandshakeState.RenegotiateInProcess;
 			}
+
 			var lastError = ssl.GetError(nRet);
-			if (lastError == SslError.SSL_ERROR_WANT_READ || lastError == SslError.SSL_ERROR_WANT_WRITE || lastError == SslError.SSL_ERROR_NONE)
+			if (lastError == SslError.SSL_ERROR_WANT_READ || 
+				lastError == SslError.SSL_ERROR_WANT_WRITE || 
+				lastError == SslError.SSL_ERROR_NONE)
 			{
-				if (nRet == 1) // success
-				{
-					bRet = true;
-				}
+				return nRet == 1;
 			}
-			else
+
+			// Check to see if we have alert data in the write_bio that needs to be sent
+			if (write_bio.BytesPending > 0)
 			{
-				// Check to see if we have alert data in the write_bio that needs to be sent
-				if (write_bio.BytesPending > 0)
-				{
-					// We encountered an error, but need to send the alert
-					// set the handshakeException so that it will be processed
-					// and thrown after the alert is sent
-					handshakeException = new OpenSslException();
-				}
-				else
-				{
-					// No alert to send, throw the exception
-					throw new OpenSslException();
-				}
+				// We encountered an error, but need to send the alert
+				// set the handshakeException so that it will be processed
+				// and thrown after the alert is sent
+				handshakeException = new OpenSslException();
+				return false;
 			}
-			return bRet;
+
+			// No alert to send, throw the exception
+			throw new OpenSslException();
 		}
 
 		private void InitializeServerContext(
@@ -132,7 +132,7 @@ namespace OpenSSL.SSL
 			}
 
 			// Initialize the context with specified TLS version
-			sslContext = new SslContext(SslMethod.TLSv12_server_method, ConnectionEnd.Server, true, new[] {
+			sslContext = new SslContext(SslMethod.TLSv12_server_method, ConnectionEnd.Server, new[] {
 				Protocols.Http2,
 				Protocols.Http1
 			});
@@ -161,7 +161,7 @@ namespace OpenSSL.SSL
 			// Set the client certificate verification callback if we are requiring client certs
 			if (clientCertificateRequired)
 			{
-				sslContext.SetVerify(VerifyMode.SSL_VERIFY_PEER | VerifyMode.SSL_VERIFY_FAIL_IF_NO_PEER_CERT, remoteCertificateSelectionCallback);
+				sslContext.SetVerify(VerifyMode.SSL_VERIFY_PEER | VerifyMode.SSL_VERIFY_FAIL_IF_NO_PEER_CERT, OnRemoteCertificate);
 			}
 			else
 			{

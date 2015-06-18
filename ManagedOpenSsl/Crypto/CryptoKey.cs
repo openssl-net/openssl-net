@@ -57,18 +57,15 @@ namespace OpenSSL.Crypto
 			EC = 408
 		}
 
-		const int EVP_PKEY_RSA = 6;
-		const int EVP_PKEY_DSA = 116;
-		const int EVP_PKEY_DH = 28;
-		const int EVP_PKEY_EC = 408;
-
 		[StructLayout(LayoutKind.Sequential)]
 		struct EVP_PKEY
 		{
 			public int type;
 			public int save_type;
 			public int references;
-			public IntPtr ptr;
+			public IntPtr ameth;
+			public IntPtr engine;
+			public IntPtr pkey;
 			public int save_parameters;
 			public IntPtr attributes;
 		}
@@ -76,14 +73,20 @@ namespace OpenSSL.Crypto
 		#region Initialization
 		internal CryptoKey(IntPtr ptr, bool owner) 
 			: base(ptr, owner) 
-		{ }
+		{ 
+		}
+
+		internal CryptoKey(CryptoKey other) : base(other.Handle, true)
+		{
+		}
 
 		/// <summary>
 		/// Calls EVP_PKEY_new()
 		/// </summary>
 		public CryptoKey() 
 			: base(Native.ExpectNonNull(Native.EVP_PKEY_new()), true) 
-		{ }
+		{ 
+		}
 
 		/// <summary>
 		/// Calls PEM_read_bio_PUBKEY()
@@ -235,13 +238,13 @@ namespace OpenSSL.Crypto
 
 				switch (ret)
 				{
-					case EVP_PKEY_EC:
+					case (int)KeyType.EC:
 						return KeyType.EC;
-					case EVP_PKEY_DH:
+					case (int)KeyType.DH:
 						return KeyType.DH;
-					case EVP_PKEY_DSA:
+					case (int)KeyType.DSA:
 						return KeyType.DSA;
-					case EVP_PKEY_RSA:
+					case (int)KeyType.RSA:
 						return KeyType.RSA;
 					default:
 						throw new NotSupportedException();

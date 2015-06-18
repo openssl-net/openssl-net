@@ -25,6 +25,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace OpenSSL.Core
 {
@@ -160,12 +162,11 @@ namespace OpenSSL.Core
 		}
 
 		/// <summary>
-		/// Calls ERR_remove_state()
+		/// Calls ERR_clear_error()
 		/// </summary>
-		/// <param name="value"></param>
-		public static void RemoveState(uint value)
+		public static void ClearErrors()
 		{
-			Native.ERR_remove_state(value);
+			Native.ERR_clear_error();
 		}
 
 		/// <summary>
@@ -186,6 +187,21 @@ namespace OpenSSL.Core
 		public static void CheckMemoryLeaks(MemoryLeakHandler callback)
 		{
 			Native.CRYPTO_mem_leaks_cb(callback);
+		}
+
+		/// <summary>
+		/// Calls ERR_print_errors_cb()
+		/// </summary>
+		/// <value>The errors.</value>
+		public static List<string> GetErrors()
+		{
+			var errors = new List<string>();
+			Native.ERR_print_errors_cb((IntPtr str, uint len, IntPtr u) =>
+			{
+				errors.Add(Native.StaticString(str));
+				return 0;
+			}, IntPtr.Zero);
+			return errors;
 		}
 	}
 }

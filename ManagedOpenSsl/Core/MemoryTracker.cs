@@ -35,30 +35,24 @@ namespace OpenSSL.Core
 			GC.Collect();
 
 			CryptoUtil.Cleanup();
-			CryptoUtil.RemoveState(0);
-
-			CryptoUtil.SetMemoryCheck(MemoryCheck.Off);
+			CryptoUtil.ClearErrors();
+			Threading.RemoveState();
 
 			CryptoUtil.CheckMemoryLeaks(OnMemoryLeak);
 			if (leaked > 0)
 				Console.WriteLine("Leaked total bytes: {0}", leaked);
+
+			CryptoUtil.SetMemoryCheck(MemoryCheck.Off);
 		}
 
 		private static void OnMemoryLeak(uint order, IntPtr file, int line, int num_bytes, IntPtr addr)
 		{
-			string filename;
-
-			if(file != IntPtr.Zero)
-			{
-				filename = Native.PtrToStringAnsi(file, false);
-			}
-			else
-			{
-				filename = "<null>";
-			}
+			string filename = (file != IntPtr.Zero) ? Native.StaticString(file) : "<null>";
 
 			Console.WriteLine("[{0}] file: {1} line: {2} bytes: {3}", order, filename, line, num_bytes);
 			leaked += num_bytes;
+
+			Native.CRYPTO_dbg_free(addr, 0);
 		}
 	}
 }

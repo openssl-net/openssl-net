@@ -33,7 +33,8 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509 object
 	/// </summary>
-	public class X509Certificate : BaseCopyableRef<X509Certificate>, IComparable<X509Certificate>, IStackable
+	public class X509Certificate 
+		: BaseCopyableRef<X509Certificate>, IComparable<X509Certificate>, IStackable
 	{
 		#region Initialization
 
@@ -43,6 +44,22 @@ namespace OpenSSL.X509
 
 		internal X509Certificate(IntPtr ptr, bool owner) : base(ptr, owner)
 		{
+		}
+
+		internal X509Certificate(IntPtr ptr, IntPtr pkey) : base(ptr, true)
+		{
+			if (pkey != IntPtr.Zero)
+			{
+				privateKey = new CryptoKey(pkey, true);
+			}
+		}
+
+		internal X509Certificate(X509Certificate other) : base(other.Handle, true)
+		{
+			if (other.privateKey != null)
+			{
+				privateKey = other.privateKey.CopyRef();
+			}
 		}
 
 		/// <summary>
@@ -56,7 +73,9 @@ namespace OpenSSL.X509
 		/// Calls PEM_read_bio_X509()
 		/// </summary>
 		/// <param name="bio"></param>
-		public X509Certificate(BIO bio) : base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
+		public X509Certificate(BIO bio) : base(
+				Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)),
+				true)
 		{
 		}
 
@@ -360,16 +379,28 @@ namespace OpenSSL.X509
 		/// </summary>
 		public CryptoKey PrivateKey
 		{
-			get { return privateKey.CopyRef(); }
+			get
+			{ 
+				if (privateKey == null)
+					return null;
+				return privateKey.CopyRef(); 
+			}
 			set
 			{
-				if (CheckPrivateKey(value))
+				if (value == null)
 				{
-					privateKey = value.CopyRef();
+					privateKey = null;
 				}
 				else
 				{
-					throw new ArgumentException("Private key doesn't correspond to the this certificate");
+					if (CheckPrivateKey(value))
+					{
+						privateKey = value.CopyRef();
+					}
+					else
+					{
+						throw new ArgumentException("Private key doesn't correspond to the this certificate");
+					}
 				}
 			}
 		}

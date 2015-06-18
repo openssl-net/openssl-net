@@ -49,3 +49,8 @@ authorityKeyIdentifier=keyid:always,issuer:always
 
 # This really needs to be in place for it to be a proxy certificate.
 #proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo
+
+[ tls_server ]
+
+[ tls_client ]
+

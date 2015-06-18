@@ -36,18 +36,22 @@ namespace UnitTests
 	[TestFixture]
 	public class TestECDSA : TestBase
 	{
-		private void x9_62_test_internal(Asn1Object obj, string r_in, string s_in) {
+		private void x9_62_test_internal(Asn1Object obj, string r_in, string s_in)
+		{
 			byte[] message = Encoding.ASCII.GetBytes("abc");
 			
-			using(MessageDigestContext md_ctx = new MessageDigestContext(MessageDigest.ECDSA)) {
+			using (MessageDigestContext md_ctx = new MessageDigestContext(MessageDigest.ECDSA))
+			{
 				byte[] digest = md_ctx.Digest(message);
 				
 				Console.Write("testing {0}: ", obj.ShortName);
 	
-				using(Key key = Key.FromCurveName(obj)) {
+				using (Key key = Key.FromCurveName(obj))
+				{
 					key.GenerateKey();
 					Console.Write(".");
-					using(DSASignature signature = key.Sign(digest)) {
+					using (DSASignature signature = key.Sign(digest))
+					{
 						Console.Write(".");
 						BigNumber r = BigNumber.FromDecimalString(r_in);
 						BigNumber s = BigNumber.FromDecimalString(s_in);
@@ -61,29 +65,31 @@ namespace UnitTests
 			}
 			Console.WriteLine(" ok");
 		}
-		
+
 		[Test]
-		public void x9_62_tests() {
+		public void x9_62_tests()
+		{
 			Random.Seed("string to make the random number generator think it has entropy");
 
 			Console.WriteLine("some tests from X9.62");
 			
 			x9_62_test_internal(Objects.NID.X9_62_prime192v1, 
-			                    "3342403536405981729393488334694600415596881826869351677613", 
-			                    "5735822328888155254683894997897571951568553642892029982342");
+				"3342403536405981729393488334694600415596881826869351677613", 
+				"5735822328888155254683894997897571951568553642892029982342");
 			x9_62_test_internal(Objects.NID.X9_62_prime239v1, 
-			                    "308636143175167811492622547300668018854959378758531778147462058306432176", 
-			                    "323813553209797357708078776831250505931891051755007842781978505179448783");
+				"308636143175167811492622547300668018854959378758531778147462058306432176", 
+				"323813553209797357708078776831250505931891051755007842781978505179448783");
 			x9_62_test_internal(Objects.NID.X9_62_c2tnb191v1, 
-			                    "87194383164871543355722284926904419997237591535066528048", 
-			                    "308992691965804947361541664549085895292153777025772063598");
+				"87194383164871543355722284926904419997237591535066528048", 
+				"308992691965804947361541664549085895292153777025772063598");
 			x9_62_test_internal(Objects.NID.X9_62_c2tnb239v1, 
-			                    "21596333210419611985018340039034612628818151486841789642455876922391552", 
-			                    "197030374000731686738334997654997227052849804072198819102649413465737174");
+				"21596333210419611985018340039034612628818151486841789642455876922391552", 
+				"197030374000731686738334997654997227052849804072198819102649413465737174");
 		}
 
 		[Test]
-		public void test_builtin() {
+		public void test_builtin()
+		{
 			/* fill digest values with some random data */
 			byte[] digest = Random.PseudoBytes(20);
 			byte[] wrong_digest = Random.PseudoBytes(20);
@@ -96,18 +102,22 @@ namespace UnitTests
 			BuiltinCurve[] curves = BuiltinCurve.Get();
 			
 			/* now create and verify a signature for every curve */
-			foreach (BuiltinCurve curve in curves) {
+			foreach (BuiltinCurve curve in curves)
+			{
 				if (curve.Object.NID == Objects.NID.ipsec4.NID)
 					continue;
 				
 				/* create new ecdsa key (== EC_KEY) */
-				using(Key eckey = new Key()) {
+				using (Key eckey = new Key())
+				{
 
-					using(Group group = Group.FromCurveName(curve.Object)) {
+					using (Group group = Group.FromCurveName(curve.Object))
+					{
 						eckey.Group = group;
 					}
 					
-					if (eckey.Group.Degree < 160) {
+					if (eckey.Group.Degree < 160)
+					{
 						/* drop the curve */ 
 						continue;
 					}
@@ -118,8 +128,10 @@ namespace UnitTests
 					eckey.GenerateKey();
 					
 					/* create second key */
-					using(Key wrong_eckey = new Key()) {
-						using(Group group = Group.FromCurveName(curve.Object)) {
+					using (Key wrong_eckey = new Key())
+					{
+						using (Group group = Group.FromCurveName(curve.Object))
+						{
 							wrong_eckey.Group = group;
 						}
 						

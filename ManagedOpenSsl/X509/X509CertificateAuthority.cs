@@ -321,20 +321,25 @@ namespace OpenSSL.X509
 		#region Methods
 
 		/// <summary>
-		/// Process and X509Request. This includes creating a new X509Certificate
+		/// Process an X509Request. This includes creating a new X509Certificate
 		/// and signing this certificate with this CA's private key.
 		/// </summary>
 		/// <param name="request"></param>
 		/// <param name="startTime"></param>
 		/// <param name="endTime"></param>
 		/// <returns></returns>
-		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime)
+		public X509Certificate ProcessRequest(
+			X509Request request, 
+			DateTime startTime, 
+			DateTime endTime,
+			Configuration cfg,
+			string section)
 		{
-			return ProcessRequest(request, startTime, endTime, MessageDigest.DSS1);
+			return ProcessRequest(request, startTime, endTime, cfg, section, MessageDigest.DSS1);
 		}
 
 		/// <summary>
-		/// Process and X509Request. This includes creating a new X509Certificate
+		/// Process an X509Request. This includes creating a new X509Certificate
 		/// and signing this certificate with this CA's private key.
 		/// </summary>
 		/// <param name="request"></param>
@@ -346,13 +351,15 @@ namespace OpenSSL.X509
 			X509Request request,
 			DateTime startTime,
 			DateTime endTime,
+			Configuration cfg,
+			string section,
 			MessageDigest digest)
 		{
-			//using (CryptoKey pkey = request.PublicKey)
-			//{
-			//    if (!request.Verify(pkey))
-			//        throw new Exception("Request signature validation failed");
-			//}
+//			using (var pkey = request.PublicKey)
+//			{
+//				if (!request.Verify(pkey))
+//					throw new Exception("Request signature validation failed");
+//			}
 
 			var cert = new X509Certificate(
 				           serial.Next(),
@@ -363,7 +370,7 @@ namespace OpenSSL.X509
 				           endTime);
 
 			if (cfg != null)
-				cfg.ApplyExtensions("v3_ca", caCert, cert, request);
+				cfg.ApplyExtensions(section, caCert, cert, request);
 
 			cert.Sign(caKey, digest);
 

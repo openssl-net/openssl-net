@@ -34,61 +34,19 @@ namespace OpenSSL.X509
 	/// </summary>
 	public class X509StoreContext : Base
 	{
-		#region X509_STORE_CONTEXT
-		[StructLayout(LayoutKind.Sequential)]
-		struct X509_STORE_CONTEXT
-		{
-			public IntPtr ctx;
-			public int current_method;
-			public IntPtr cert;
-			public IntPtr untrusted;
-			public int purpose;
-			public int trust;
-#if PocketPC
-			public uint check_time;
-#else
-			public long check_time;
-#endif
-			public uint flags;
-			public IntPtr other_ctx;
-			public IntPtr verify;
-			public IntPtr verify_cb;
-			public IntPtr get_issuer;
-			public IntPtr check_issued;
-			public IntPtr check_revocation;
-			public IntPtr get_crl;
-			public IntPtr check_crl;
-			public IntPtr cert_crl;
-			public IntPtr cleanup;
-			public int depth;
-			public int valid;
-			public int last_untrusted;
-			public IntPtr chain;
-			public int error_depth;
-			public int error;
-			public IntPtr current_cert;
-			public IntPtr current_issuer;
-			public IntPtr current_crl;
-			#region CRYPTO_EX_DATA ex_data;
-			public IntPtr ex_data_sk;
-			public int ex_data_dummy;
-			#endregion
-		}
-		#endregion
-
 		#region Initialization
+
 		/// <summary>
 		/// Calls X509_STORE_CTX_new()
 		/// </summary>
-		public X509StoreContext()
-			: base(Native.ExpectNonNull(Native.X509_STORE_CTX_new()), true)
+		public X509StoreContext() : base(Native.ExpectNonNull(Native.X509_STORE_CTX_new()), true)
 		{
 		}
 
-		internal X509StoreContext(IntPtr ptr, bool isOwner)
-			: base(ptr, isOwner)
+		internal X509StoreContext(IntPtr ptr, bool isOwner) : base(ptr, isOwner)
 		{
 		}
+
 		#endregion
 
 		#region Properties
@@ -101,7 +59,6 @@ namespace OpenSSL.X509
 			get
 			{
 				var cert = Native.X509_STORE_CTX_get_current_cert(ptr);
-				
 				return new X509Certificate(cert, false);
 			}
 		}
@@ -128,7 +85,7 @@ namespace OpenSSL.X509
 		/// </summary>
 		public X509Store Store
 		{
-			get { return new X509Store(Raw.ctx, false); }
+			get { return new X509Store(Native.X509_STORE_CTX_get0_store(Handle), false); }
 		}
 
 		/// <summary>
@@ -136,16 +93,13 @@ namespace OpenSSL.X509
 		/// </summary>
 		public string ErrorString
 		{
-			get { return Native.PtrToStringAnsi(Native.X509_verify_cert_error_string(Raw.error), false); }
+			get { return Native.PtrToStringAnsi(Native.X509_verify_cert_error_string(Error), false); }
 		}
 
-		private X509_STORE_CONTEXT Raw
-		{
-			get { return (X509_STORE_CONTEXT)Marshal.PtrToStructure(ptr, typeof(X509_STORE_CONTEXT)); }
-		}
 		#endregion
 
 		#region Methods
+
 		/// <summary>
 		/// Calls X509_STORE_CTX_init()
 		/// </summary>

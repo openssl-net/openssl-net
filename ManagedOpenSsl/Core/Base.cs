@@ -66,23 +66,29 @@ namespace OpenSSL.Core
 		/// Derived types should override this method and not ToString().
 		/// </summary>
 		/// <param name="bio">The BIO stream object to print into</param>
-		public virtual void Print(BIO bio) { }
+		public virtual void Print(BIO bio)
+		{
+		}
 
 		/// <summary>
 		/// Override of ToString() which uses Print() into a BIO memory buffer.
 		/// </summary>
 		/// <returns></returns>
-		public override string ToString() {
-			try {
+		public override string ToString()
+		{
+			try
+			{
 				if (ptr == IntPtr.Zero)
 					return "(null)";
 
-				using (var bio = BIO.MemoryBuffer()) {
+				using (var bio = BIO.MemoryBuffer())
+				{
 					Print(bio);
 					return bio.ReadString();
 				}
 			}
-			catch (Exception) {
+			catch (Exception)
+			{
 				return "<exception>";
 			}
 		}
@@ -107,8 +113,10 @@ namespace OpenSSL.Core
 		/// If the native pointer is not null, we haven't been disposed, and we are the owner,
 		/// then call the virtual OnDispose() method.
 		/// </summary>
-		public void Dispose() {
-			if (!isDisposed && owner && ptr != IntPtr.Zero) {
+		public void Dispose()
+		{
+			if (!isDisposed && owner && ptr != IntPtr.Zero)
+			{
 				OnDispose();
 				DoAfterDispose();
 			}
@@ -163,7 +171,6 @@ namespace OpenSSL.Core
 		/// This is to prevent double-deletion issues.
 		/// </summary>
 		protected bool isDisposed = false;
-
 	}
 
 	/// <summary>
@@ -172,16 +179,14 @@ namespace OpenSSL.Core
 	/// </summary>
 	public abstract class BaseReferenceType : Base
 	{
-		internal BaseReferenceType(IntPtr ptr, bool takeOwnership)
-			: base(ptr, takeOwnership)
+		internal BaseReferenceType(IntPtr ptr, bool takeOwnership) : base(ptr, takeOwnership)
 		{
 			baseOffset = Marshal.OffsetOf(RawReferenceType, "references");
 		}
 
 		internal override void AddRef()
 		{
-			var offset = GetReferencesOffset();
-			Native.CRYPTO_add_lock(offset, 1, LockType, "Base.cs", 0);
+			Native.CRYPTO_add_lock(GetReferencesOffset(), 1, LockType, "Base.cs", 0);
 		}
 
 		/// <summary>
@@ -189,9 +194,16 @@ namespace OpenSSL.Core
 		/// </summary>
 		public void PrintRefCount()
 		{
-			var offset = GetReferencesOffset();
-			var count = Marshal.ReadInt32(offset);
-			Console.WriteLine("{0} ptr: {1}, ref_count: {2}", this.GetType().Name, this.ptr, count);
+			Console.WriteLine("{0} ptr: {1}, ref_count: {2}", GetType().Name, Handle, RefCount);
+		}
+
+		/// <summary>
+		/// Gets the reference count.
+		/// </summary>
+		/// <value>The reference count.</value>
+		public int RefCount
+		{
+			get { return Marshal.ReadInt32(GetReferencesOffset()); }
 		}
 
 		private IntPtr GetReferencesOffset()
@@ -216,19 +228,16 @@ namespace OpenSSL.Core
 	/// Implements the CopyRef() method
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public abstract class BaseCopyableRef<T> : BaseReferenceType where T : BaseCopyableRef<T>
+	public abstract class BaseCopyableRef<T> : BaseReferenceType 
+		where T : BaseCopyableRef<T>, new() 
 	{
-		internal BaseCopyableRef(IntPtr ptr, bool takeOwnership)
-			: base(ptr, takeOwnership)
+		internal BaseCopyableRef(IntPtr ptr, bool takeOwnership) : base(ptr, takeOwnership)
 		{
 		}
 
 		internal T CopyRef()
 		{
-			object[] args = {
-				ptr,
-				true
-			};
+			object[] args = { this };
 
 			var flags =
 				BindingFlags.NonPublic |
@@ -247,8 +256,7 @@ namespace OpenSSL.Core
 	/// </summary>
 	public abstract class BaseValueType : Base
 	{
-		internal BaseValueType(IntPtr ptr, bool takeOwnership)
-			: base(ptr, takeOwnership)
+		internal BaseValueType(IntPtr ptr, bool takeOwnership) : base(ptr, takeOwnership)
 		{
 		}
 
