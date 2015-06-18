@@ -323,7 +323,7 @@ namespace OpenSSL.Crypto
 			if (Type != KeyType.EC)
 				throw new InvalidOperationException();
 
-			return new EC.Key(Native.ExpectNonNull(Native.EVP_PKEY_get1_EC(ptr)), false);
+			return new EC.Key(Native.ExpectNonNull(Native.EVP_PKEY_get1_EC_KEY(ptr)), true);
 		}
 
 
