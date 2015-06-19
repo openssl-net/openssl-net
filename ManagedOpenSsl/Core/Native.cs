@@ -1812,7 +1812,7 @@ namespace OpenSSL.Core
 		public extern static int EVP_PKEY_set1_EC_KEY(IntPtr pkey, IntPtr key);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr EVP_PKEY_get1_EC(IntPtr pkey);
+		public extern static IntPtr EVP_PKEY_get1_EC_KEY(IntPtr pkey);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int EVP_PKEY_set1_DH(IntPtr pkey, IntPtr key);
