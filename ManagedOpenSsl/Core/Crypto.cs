@@ -128,14 +128,6 @@ namespace OpenSSL.Core
 		}
 
 		/// <summary>
-		/// Calls CRYPTO_malloc_debug_init()
-		/// </summary>
-		public static void MallocDebugInit()
-		{
-			Native.CRYPTO_malloc_debug_init();
-		}
-
-		/// <summary>
 		/// Calls CRYPTO_dbg_set_options()
 		/// </summary>
 		/// <param name="options"></param>

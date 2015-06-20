@@ -28,28 +28,51 @@ using System;
 
 namespace OpenSSL.Crypto.EC
 {
+	/// <summary>
+	/// 
+	/// </summary>
 	public class Group : Base
 	{
 		#region Initialization
-		internal Group(IntPtr ptr, bool owner) 
-			: base(ptr, owner) { 
+		internal Group(IntPtr ptr, bool owner)
+			: base(ptr, owner)
+		{
 		}
 
+		/// <summary>
+		/// Calls EC_GROUP_new()
+		/// </summary>
+		/// <param name="method"></param>
 		public Group(Method method)
-			: base(Native.ExpectNonNull(Native.EC_GROUP_new(method.Handle)), true) {
+			: base(Native.ExpectNonNull(Native.EC_GROUP_new(method.Handle)), true)
+		{
 		}
-		
-		public static Group FromCurveName(Asn1Object obj) {
+
+		/// <summary>
+		/// Calls EC_GROUP_new_by_curve_name()
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public static Group FromCurveName(Asn1Object obj)
+		{
 			return new Group(Native.ExpectNonNull(Native.EC_GROUP_new_by_curve_name(obj.NID)), true);
 		}
 		#endregion
 
 		#region Properties
-		public int Degree {
+		/// <summary>
+		/// Calls EC_GROUP_get_degree()
+		/// </summary>
+		public int Degree
+		{
 			get { return Native.EC_GROUP_get_degree(ptr); }
 		}
-		
-		public Method Method {
+
+		/// <summary>
+		/// Calls EC_GROUP_method_of()
+		/// </summary>
+		public Method Method
+		{
 			get { return new Method(Native.EC_GROUP_method_of(ptr), false); }
 		}
 		#endregion
@@ -58,7 +81,11 @@ namespace OpenSSL.Crypto.EC
 		#endregion
 
 		#region Overrides
-		protected override void OnDispose() {
+		/// <summary>
+		/// Calls EC_GROUP_free()
+		/// </summary>
+		protected override void OnDispose()
+		{
 			Native.EC_GROUP_free(this.ptr);
 		}
 		#endregion

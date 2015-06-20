@@ -20,7 +20,7 @@ namespace OpenSSL.Core
 		public static void Start()
 		{
 			leaked = 0;
-			CryptoUtil.MallocDebugInit();
+			Native.CRYPTO_malloc_debug_init();
 			CryptoUtil.SetDebugOptions(DebugOptions.All);
 			CryptoUtil.SetMemoryCheck(MemoryCheck.On);
 		}

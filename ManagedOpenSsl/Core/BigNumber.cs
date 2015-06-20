@@ -91,7 +91,7 @@ namespace OpenSSL.Core
 
 			var ret = Native.BN_dec2bn(out ptr, buf);
 			if (ret <= 0)
-					throw new OpenSslException();
+				throw new OpenSslException();
 
 			return new BigNumber(ptr, true);
 		}
@@ -108,7 +108,7 @@ namespace OpenSSL.Core
 
 			var ret = Native.BN_hex2bn(out ptr, buf);
 			if (ret <= 0)
-					throw new OpenSslException();
+				throw new OpenSslException();
 
 			return new BigNumber(ptr, true);
 		}
@@ -174,7 +174,7 @@ namespace OpenSSL.Core
 
 			return bytes;
 		}
-		
+
 		/// <summary>
 		/// Calls BN_bn2bin()
 		/// </summary>
@@ -261,7 +261,7 @@ namespace OpenSSL.Core
 		/// <param name="lhs"></param>
 		/// <param name="rhs"></param>
 		/// <returns></returns>
-		public static BigNumber operator + (BigNumber lhs, BigNumber rhs)
+		public static BigNumber operator +(BigNumber lhs, BigNumber rhs)
 		{
 			var ret = new BigNumber();
 			Native.ExpectSuccess(Native.BN_add(ret.Handle, lhs.Handle, rhs.Handle));
@@ -351,7 +351,8 @@ namespace OpenSSL.Core
 		/// <summary>
 		/// Calls BN_free()
 		/// </summary>
-		protected override void OnDispose() {
+		protected override void OnDispose()
+		{
 			Native.BN_free(ptr);
 		}
 
@@ -394,7 +395,7 @@ namespace OpenSSL.Core
 				get { return gencb; }
 			}
 
-			public GeneratorThunk(GeneratorHandler client, object arg) 
+			public GeneratorThunk(GeneratorHandler client, object arg)
 			{
 				OnGenerator = client;
 				this.arg = arg;
@@ -410,11 +411,11 @@ namespace OpenSSL.Core
 				{
 					try
 					{
-							return OnGenerator(p, n, this.arg);
+						return OnGenerator(p, n, this.arg);
 					}
 					catch (Exception)
 					{
-							return 0;
+						return 0;
 					}
 				}
 				else
@@ -427,27 +428,50 @@ namespace OpenSSL.Core
 		}
 
 		#endregion
-		
+
 		#region Context
+		/// <summary>
+		/// Wraps BN_CTX
+		/// </summary>
 		public class Context : Base
 		{
+			/// <summary>
+			/// Calls BN_CTX_new()
+			/// </summary>
 			public Context()
-				: base(Native.ExpectNonNull(Native.BN_CTX_new()), true) {
+				: base(Native.ExpectNonNull(Native.BN_CTX_new()), true)
+			{
 			}
-			
-			public BigNumber BigNumber {
+
+			/// <summary>
+			/// Returns BN_CTX_get()
+			/// </summary>
+			public BigNumber BigNumber
+			{
 				get { return new BigNumber(Native.ExpectNonNull(Native.BN_CTX_get(ptr)), false); }
 			}
-			
-			public void Start() {
+
+			/// <summary>
+			/// Calls BN_CTX_start()
+			/// </summary>
+			public void Start()
+			{
 				Native.BN_CTX_start(ptr);
 			}
-			
-			public void End() {
+
+			/// <summary>
+			/// Calls BN_CTX_end()
+			/// </summary>
+			public void End()
+			{
 				Native.BN_CTX_end(ptr);
 			}
-			
-			protected override void OnDispose() {
+
+			/// <summary>
+			/// Calls BN_CTX_free()
+			/// </summary>
+			protected override void OnDispose()
+			{
 				Native.BN_CTX_free(ptr);
 			}
 		}

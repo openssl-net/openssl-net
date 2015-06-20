@@ -129,7 +129,8 @@ namespace OpenSSL.Core
 		/// <summary>
 		/// Returns RAND_status()
 		/// </summary>
-		public static int Status {
+		public static int Status
+		{
 			get { return Native.RAND_status(); }
 		}
 
@@ -186,20 +187,48 @@ namespace OpenSSL.Core
 			return bn;
 		}
 
+		/// <summary>
+		/// Function types
+		/// </summary>
 		public class Delegates
 		{
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="buf"></param>
+			/// <param name="num"></param>
+			/// <returns></returns>
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			public delegate int Seed(IntPtr buf, int num);
-	
+
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="buf"></param>
+			/// <param name="num"></param>
+			/// <returns></returns>
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			public delegate int Bytes([MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] buf, int num);
-	
+			public delegate int Bytes([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] buf, int num);
+
+			/// <summary>
+			/// 
+			/// </summary>
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			public delegate void Cleanup();
-	
+
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="buf"></param>
+			/// <param name="num"></param>
+			/// <param name="entropy"></param>
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			public delegate void Add(IntPtr buf, int num, double entropy);
-	
+
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <returns></returns>
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			public delegate int Status();
 		};
@@ -216,20 +245,28 @@ namespace OpenSSL.Core
 		};
 
 		#region Random Method
+		/// <summary>
+		/// 
+		/// </summary>
 		public class Method : Base
 		{
 			#region Data Structures and Variables
 			private static IntPtr original;
 			private rand_meth_st raw = new rand_meth_st();
 			#endregion
-			
+
 			#region Initialization
-			static Method() {
+			static Method()
+			{
 				original = Native.ExpectNonNull(Native.RAND_get_rand_method());
 			}
-			
-			public Method() 
-				: base(Marshal.AllocHGlobal(Marshal.SizeOf(typeof(rand_meth_st))), true) {
+
+			/// <summary>
+			/// 
+			/// </summary>
+			public Method()
+				: base(Marshal.AllocHGlobal(Marshal.SizeOf(typeof(rand_meth_st))), true)
+			{
 				rand_meth_st raw = (rand_meth_st)Marshal.PtrToStructure(original, typeof(rand_meth_st));
 				this.raw.add = raw.add;
 				this.raw.bytes = raw.bytes;
@@ -238,57 +275,94 @@ namespace OpenSSL.Core
 				this.raw.pseudorand = raw.pseudorand;
 				this.raw.status = raw.status;
 			}
-			
-			~Method() {
+
+			/// <summary>
+			/// 
+			/// </summary>
+			~Method()
+			{
 				Dispose();
 			}
 			#endregion
-			
+
 			#region Properties
-			public Delegates.Seed Seed {
+			/// <summary>
+			/// 
+			/// </summary>
+			public Delegates.Seed Seed
+			{
 				get { return raw.seed; }
 				set { raw.seed = value; }
 			}
 
-			public Delegates.Bytes Bytes {
+			/// <summary>
+			/// 
+			/// </summary>
+			public Delegates.Bytes Bytes
+			{
 				get { return raw.bytes; }
 				set { raw.bytes = value; }
 			}
 
-			public Delegates.Cleanup Cleanup {
+			/// <summary>
+			/// 
+			/// </summary>
+			public Delegates.Cleanup Cleanup
+			{
 				get { return raw.cleanup; }
 				set { raw.cleanup = value; }
 			}
 
-			public Delegates.Add Add {
+			/// <summary>
+			/// 
+			/// </summary>
+			public Delegates.Add Add
+			{
 				get { return raw.add; }
 				set { raw.add = value; }
 			}
 
-			public Delegates.Bytes PseudoRand {
+			/// <summary>
+			/// 
+			/// </summary>
+			public Delegates.Bytes PseudoRand
+			{
 				get { return raw.pseudorand; }
 				set { raw.pseudorand = value; }
 			}
 
-			public Delegates.Status Status {
+			/// <summary>
+			/// 
+			/// </summary>
+			public Delegates.Status Status
+			{
 				get { return raw.status; }
 				set { raw.status = value; }
 			}
 			#endregion
-			
+
 			#region Methods
-			public void Override() {
+			/// <summary>
+			/// 
+			/// </summary>
+			public void Override()
+			{
 				Marshal.StructureToPtr(raw, ptr, false);
 				Native.ExpectSuccess(Native.RAND_set_rand_method(ptr));
 			}
-						
-			private void Restore() {
+
+			private void Restore()
+			{
 				Native.ExpectSuccess(Native.RAND_set_rand_method(original));
 			}
 			#endregion
 
 			#region IDisposable implementation
-			protected override void OnDispose() {
+			/// <summary>
+			/// 
+			/// </summary>
+			protected override void OnDispose()
+			{
 				Restore();
 				Marshal.FreeHGlobal(ptr);
 			}

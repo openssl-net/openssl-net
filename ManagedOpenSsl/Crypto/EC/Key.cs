@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 namespace OpenSSL.Crypto.EC
 {
 	/// <summary>
-	/// Key.
+	/// Wraps EC_KEY
 	/// </summary>
 	public class Key : BaseReference<Key>
 	{
@@ -46,14 +46,14 @@ namespace OpenSSL.Crypto.EC
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="OpenSSL.Crypto.EC.Key"/> class.
+		/// Calls EC_KEY_new()
 		/// </summary>
 		public Key() : base(Native.ExpectNonNull(Native.EC_KEY_new()), true)
 		{
 		}
 
 		/// <summary>
-		/// Froms the name of the curve.
+		/// Calls EC_KEY_new_by_curve_name()
 		/// </summary>
 		/// <returns>The curve name.</returns>
 		/// <param name="obj">Object.</param>

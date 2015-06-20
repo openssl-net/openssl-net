@@ -10,6 +10,7 @@ namespace OpenSSL.Core
 	/// </summary>
     public class Threading
     {
+		[StructLayout(LayoutKind.Sequential)]
 		struct CRYPTO_THREADID
 		{
 			public IntPtr ptr;

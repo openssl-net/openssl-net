@@ -327,6 +327,8 @@ namespace OpenSSL.X509
 		/// <param name="request"></param>
 		/// <param name="startTime"></param>
 		/// <param name="endTime"></param>
+		/// <param name="cfg"></param>
+		/// <param name="section"></param>
 		/// <returns></returns>
 		public X509Certificate ProcessRequest(
 			X509Request request, 
@@ -345,6 +347,8 @@ namespace OpenSSL.X509
 		/// <param name="request"></param>
 		/// <param name="startTime"></param>
 		/// <param name="endTime"></param>
+		/// <param name="cfg"></param>
+		/// <param name="section"></param>
 		/// <param name="digest"></param>
 		/// <returns></returns>
 		public X509Certificate ProcessRequest(

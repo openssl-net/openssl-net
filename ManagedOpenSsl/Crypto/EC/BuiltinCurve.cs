@@ -29,6 +29,9 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto.EC
 {
+	/// <summary>
+	/// Wraps EC_builtin_curve
+	/// </summary>
 	public class BuiltinCurve
 	{
 		[StructLayout(LayoutKind.Sequential)]
@@ -37,35 +40,50 @@ namespace OpenSSL.Crypto.EC
 			public int nid;
 			public string comment;
 		}
-		
+
 		private Asn1Object obj;
 		private string comment;
-		
-		private BuiltinCurve(int nid, string comment) {
+
+		private BuiltinCurve(int nid, string comment)
+		{
 			obj = new Asn1Object(nid);
 			this.comment = comment;
 		}
-		
+
+		/// <summary>
+		/// Returns obj
+		/// </summary>
 		public Asn1Object Object { get { return obj; } }
 
+		/// <summary>
+		/// Returns comment
+		/// </summary>
 		public string Comment { get { return comment; } }
-		
-		public static BuiltinCurve[] Get() {
+
+		/// <summary>
+		/// Calls EC_get_builtin_curves()
+		/// </summary>
+		/// <returns></returns>
+		public static BuiltinCurve[] Get()
+		{
 			var count = Native.EC_get_builtin_curves(IntPtr.Zero, 0);
 			var curves = new BuiltinCurve[count];
 			var ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(EC_builtin_curve)) * count);
 
-			try {
+			try
+			{
 				Native.ExpectSuccess(Native.EC_get_builtin_curves(ptr, count));
 				var pItem = ptr;
 
-				for (var i = 0; i < count; i++) {
+				for (var i = 0; i < count; i++)
+				{
 					var raw = (EC_builtin_curve)Marshal.PtrToStructure(pItem, typeof(EC_builtin_curve));
 					curves[i] = new BuiltinCurve(raw.nid, raw.comment);
 					pItem = new IntPtr(pItem.ToInt64() + Marshal.SizeOf(typeof(EC_builtin_curve)));
 				}
 			}
-			finally {
+			finally
+			{
 				Native.OPENSSL_free(ptr);
 			}
 

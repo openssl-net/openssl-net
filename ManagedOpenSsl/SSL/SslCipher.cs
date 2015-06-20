@@ -30,6 +30,9 @@ using System.Text;
 
 namespace OpenSSL.SSL
 {
+	/// <summary>
+	/// Wraps a SSL_CIPHER
+	/// </summary>
 	public class SslCipher : BaseReference<SslCipher>, IStackable
 	{
 		/// <summary>
