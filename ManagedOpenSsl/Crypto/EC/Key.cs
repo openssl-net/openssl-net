@@ -29,49 +29,70 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto.EC
 {
-	public class Key : BaseCopyableRef<Key>
+	/// <summary>
+	/// Key.
+	/// </summary>
+	public class Key : BaseReference<Key>
 	{
+		/// <summary>
+		/// Compute key handler.
+		/// </summary>
 		public delegate byte[] ComputeKeyHandler(byte[] msg);
-		
-		[StructLayout(LayoutKind.Sequential)]
-		struct ec_key_st 
-		{
-			public int version;
-			public IntPtr group;
-			public IntPtr pub_key;
-			public IntPtr priv_key;
-			public uint enc_flag;
-			public int conv_form;
-			public int references;
-			public IntPtr method_data;
-		}
-		
+
 		#region Initialization
-		internal Key(IntPtr ptr, bool owner) 
-			: base(ptr, owner) { 
+
+		internal Key(IntPtr ptr, bool owner) : base(ptr, owner)
+		{ 
 		}
 
-		public Key()
-			: base(Native.ExpectNonNull(Native.EC_KEY_new()), true) {
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OpenSSL.Crypto.EC.Key"/> class.
+		/// </summary>
+		public Key() : base(Native.ExpectNonNull(Native.EC_KEY_new()), true)
+		{
 		}
-		
-		public static Key FromCurveName(Asn1Object obj) {
+
+		/// <summary>
+		/// Froms the name of the curve.
+		/// </summary>
+		/// <returns>The curve name.</returns>
+		/// <param name="obj">Object.</param>
+		public static Key FromCurveName(Asn1Object obj)
+		{
 			return new Key(Native.ExpectNonNull(Native.EC_KEY_new_by_curve_name(obj.NID)), true);
 		}
+
 		#endregion
 
 		#region Properties
-		public int Size {
+
+		/// <summary>
+		/// Calls ECDSA_size()
+		/// </summary>
+		/// <value>The size.</value>
+		public int Size
+		{
 			get { return Native.ECDSA_size(ptr); }
 		}
-		
-		public Group Group {
+
+		/// <summary>
+		/// EC_KEY_get0_group()/Calls EC_KEY_set_group()
+		/// </summary>
+		/// <value>The group.</value>
+		public Group Group
+		{
 			get { return new Group(Native.ExpectNonNull(Native.EC_KEY_get0_group(ptr)), false); }
 			set { Native.ExpectSuccess(Native.EC_KEY_set_group(ptr, value.Handle)); }
 		}
-		
-		public Point PublicKey {
-			get { 
+
+		/// <summary>
+		/// Calls EC_KEY_get0_public_key()
+		/// </summary>
+		/// <value>The public key.</value>
+		public Point PublicKey
+		{
+			get
+			{ 
 				return new Point(
 					Group,
 					Native.ExpectNonNull(Native.EC_KEY_get0_public_key(ptr)), 
@@ -79,65 +100,116 @@ namespace OpenSSL.Crypto.EC
 			}
 		}
 
-		public Point PrivateKey {
-			get { 
+		/// <summary>
+		/// Calls EC_KEY_get0_private_key()
+		/// </summary>
+		/// <value>The private key.</value>
+		public Point PrivateKey
+		{
+			get
+			{ 
 				return new Point(
 					this.Group,
 					Native.ExpectNonNull(Native.EC_KEY_get0_private_key(ptr)), 
 					false); 
 			}
 		}
-		
+
 		#endregion
 
 		#region Methods
-		public void GenerateKey() {
+
+		/// <summary>
+		/// Calls EC_KEY_generate_key()
+		/// </summary>
+		public void GenerateKey()
+		{
 			Native.ExpectSuccess(Native.EC_KEY_generate_key(ptr));
 		}
-		
-		public bool CheckKey() {
+
+		/// <summary>
+		/// Calls EC_KEY_check_key()
+		/// </summary>
+		/// <returns><c>true</c>, if key was checked, <c>false</c> otherwise.</returns>
+		public bool CheckKey()
+		{
 			return Native.ExpectSuccess(Native.EC_KEY_check_key(ptr)) == 1;
 		}
-		
-		public DSASignature Sign(byte[] digest) {
+
+		/// <summary>
+		/// Calls ECDSA_do_sign()
+		/// </summary>
+		/// <param name="digest">Digest.</param>
+		public DSASignature Sign(byte[] digest)
+		{
 			var sig = Native.ExpectNonNull(Native.ECDSA_do_sign(digest, digest.Length, ptr));
 			return new DSASignature(sig, true);
 		}
-		
-		public uint Sign(int type, byte[] digest, byte[] sig) {
+
+		/// <summary>
+		/// Calls ECDSA_sign()
+		/// </summary>
+		/// <param name="type">Type.</param>
+		/// <param name="digest">Digest.</param>
+		/// <param name="sig">Sig.</param>
+		public uint Sign(int type, byte[] digest, byte[] sig)
+		{
 			var siglen = (uint)sig.Length;
 			Native.ExpectSuccess(Native.ECDSA_sign(type, digest, digest.Length, sig, ref siglen, ptr));
 
 			return siglen;
 		}
-		
-		public bool Verify(byte[] digest, DSASignature sig) {
+
+		/// <summary>
+		/// Calls ECDSA_do_verify()
+		/// </summary>
+		/// <param name="digest">Digest.</param>
+		/// <param name="sig">Sig.</param>
+		public bool Verify(byte[] digest, DSASignature sig)
+		{
 			return Native.ECDSA_do_verify(digest, digest.Length, sig.Handle, ptr) == 1;
 		}
-		
-		public bool Verify(int type, byte[] digest, byte[] sig) {
+
+		/// <summary>
+		/// Calls ECDSA_verify()
+		/// </summary>
+		/// <param name="type">Type.</param>
+		/// <param name="digest">Digest.</param>
+		/// <param name="sig">Sig.</param>
+		public bool Verify(int type, byte[] digest, byte[] sig)
+		{
 			return Native.ECDSA_verify(type, digest, digest.Length, sig, sig.Length, ptr) == 1;
 		}
-		
-		public int ComputeKey(Key b, byte[] buf, ComputeKeyHandler kdf) {
+
+		/// <summary>
+		/// Calls ECDH_compute_key()
+		/// </summary>
+		/// <returns>The key.</returns>
+		/// <param name="b">The blue component.</param>
+		/// <param name="buf">Buffer.</param>
+		/// <param name="kdf">Kdf.</param>
+		public int ComputeKey(Key b, byte[] buf, ComputeKeyHandler kdf)
+		{
 			ComputeKeyThunk thunk = new ComputeKeyThunk(kdf);
 			return Native.ExpectSuccess(
 				Native.ECDH_compute_key(buf, buf.Length, b.PublicKey.Handle, ptr, thunk.Wrapper)
 			);
 		}
-		
+
 		class ComputeKeyThunk
 		{
 			private ComputeKeyHandler kdf;
-			
-			public ComputeKeyThunk(ComputeKeyHandler kdf) {
+
+			public ComputeKeyThunk(ComputeKeyHandler kdf)
+			{
 				this.kdf = kdf;
 			}
-			
-			public IntPtr Wrapper(byte[] pin, int inlen, IntPtr pout, ref int outlen) {
+
+			public IntPtr Wrapper(byte[] pin, int inlen, IntPtr pout, ref int outlen)
+			{
 				var result = kdf(pin);
 
-				if (result.Length > outlen) 
+				if (result.Length > outlen)
 					return IntPtr.Zero;
 
 				Marshal.Copy(result, 0, pout, Math.Min(outlen, result.Length));
@@ -150,17 +222,20 @@ namespace OpenSSL.Crypto.EC
 		#endregion
 
 		#region Overrides
-		protected override void OnDispose() {
+
+		/// <summary>
+		/// This method must be implemented in derived classes.
+		/// </summary>
+		protected override void OnDispose()
+		{
 			Native.EC_KEY_free(ptr);
 		}
 
-		internal override CryptoLockTypes LockType {
-			get { return CryptoLockTypes.CRYPTO_LOCK_EC; }
+		internal override void AddRef()
+		{
+			Native.EC_KEY_up_ref(ptr);
 		}
 
-		internal override Type RawReferenceType {
-			get { return typeof(ec_key_st); }
-		}
 		#endregion
 	}
 }

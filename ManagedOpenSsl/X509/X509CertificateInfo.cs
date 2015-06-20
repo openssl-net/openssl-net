@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
-	internal class X509CertificateInfo : BaseReferenceType, IStackable
+	internal class X509CertificateInfo : BaseReference<X509CertificateInfo>, IStackable
 	{
 		#region X509_INFO
 		[StructLayout(LayoutKind.Sequential)]
@@ -95,14 +95,9 @@ namespace OpenSSL.X509
 			Native.X509_INFO_free(ptr);
 		}
 
-		internal override CryptoLockTypes LockType
+		internal override void AddRef()
 		{
-			get { return CryptoLockTypes.CRYPTO_LOCK_X509_INFO; }
-		}
-
-		internal override Type RawReferenceType
-		{
-			get { return typeof(X509_INFO); }
+			Native.X509_INFO_up_ref(ptr);
 		}
 
 		#endregion

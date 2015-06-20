@@ -32,7 +32,7 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509_STORE object
 	/// </summary>
-	public class X509Store : BaseReferenceType
+	public class X509Store : BaseReference<X509Store>
 	{
 		#region X509_STORE
 		[StructLayout(LayoutKind.Sequential)]
@@ -201,14 +201,9 @@ namespace OpenSSL.X509
 			}
 		}
 
-		internal override CryptoLockTypes LockType
+		internal override void AddRef()
 		{
-			get { return CryptoLockTypes.CRYPTO_LOCK_X509_STORE; }
-		}
-
-		internal override Type RawReferenceType
-		{
-			get { return typeof(X509_STORE); }
+			Native.X509_STORE_up_ref(ptr);
 		}
 
 		#endregion

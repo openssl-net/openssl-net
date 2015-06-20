@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto
 	/// <summary>
 	/// Wraps the DSA_* functions
 	/// </summary>
-	public class DSA : Base
+	public class DSA : BaseReference<DSA>
 	{
 		#region dsa_st
 
@@ -471,6 +471,11 @@ namespace OpenSSL.Crypto
 				code ^= PrivateKey.GetHashCode();
 			
 			return code;
+		}
+
+		internal override void AddRef()
+		{
+			Native.DSA_up_ref(ptr);
 		}
 
 		#endregion

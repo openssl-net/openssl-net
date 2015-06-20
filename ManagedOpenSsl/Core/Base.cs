@@ -143,14 +143,6 @@ namespace OpenSSL.Core
 			get { return ptr; }
 		}
 
-		/// <summary>
-		/// Throws NotImplementedException
-		/// </summary>
-		internal virtual void AddRef()
-		{
-			throw new NotImplementedException();
-		}
-
 		private void DoAfterDispose()
 		{
 			ptr = IntPtr.Zero;
@@ -175,69 +167,23 @@ namespace OpenSSL.Core
 
 	/// <summary>
 	/// Helper type that handles the AddRef() method.
-	/// Derived classes must implement the <code>LockType</code> and <code>RawReferenceType</code> properties
 	/// </summary>
-	public abstract class BaseReferenceType : Base
+	public abstract class BaseReference<T> : Base
+		where T : BaseReference<T>
 	{
-		internal BaseReferenceType(IntPtr ptr, bool takeOwnership) : base(ptr, takeOwnership)
-		{
-			baseOffset = Marshal.OffsetOf(RawReferenceType, "references");
-		}
-
-		internal override void AddRef()
-		{
-			Native.CRYPTO_add_lock(GetReferencesOffset(), 1, LockType, "Base.cs", 0);
-		}
-
-		/// <summary>
-		/// Prints the current underlying reference count
-		/// </summary>
-		public void PrintRefCount()
-		{
-			Console.WriteLine("{0} ptr: {1}, ref_count: {2}", GetType().Name, Handle, RefCount);
-		}
-
-		/// <summary>
-		/// Gets the reference count.
-		/// </summary>
-		/// <value>The reference count.</value>
-		public int RefCount
-		{
-			get { return Marshal.ReadInt32(GetReferencesOffset()); }
-		}
-
-		private IntPtr GetReferencesOffset()
-		{
-			return new IntPtr((long)ptr + (long)baseOffset);
-		}
-
-		/// <summary>
-		/// Derived classes must return a <code>CryptoLockTypes</code> for this type
-		/// </summary>
-		internal abstract CryptoLockTypes LockType { get; }
-
-		/// <summary>
-		/// Derived classes must return a <code>Type</code> that matches the underlying type
-		/// </summary>
-		internal abstract Type RawReferenceType { get; }
-
-		private IntPtr baseOffset;
-	}
-
-	/// <summary>
-	/// Implements the CopyRef() method
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public abstract class BaseCopyableRef<T> : BaseReferenceType 
-		where T : BaseCopyableRef<T>, new() 
-	{
-		internal BaseCopyableRef(IntPtr ptr, bool takeOwnership) : base(ptr, takeOwnership)
+		internal BaseReference(IntPtr ptr, bool takeOwnership)
+			: base(ptr, takeOwnership)
 		{
 		}
 
+		internal abstract void AddRef();
+	
 		internal T CopyRef()
 		{
-			object[] args = { this };
+			object[] args = {
+				ptr,
+				true
+			};
 
 			var flags =
 				BindingFlags.NonPublic |
@@ -252,11 +198,58 @@ namespace OpenSSL.Core
 	}
 
 	/// <summary>
+	/// Derived classes must implement the <code>LockType</code> and <code>RawReferenceType</code> properties
+	/// </summary>
+	public abstract class BaseReferenceImpl<T> : BaseReference<T>
+		where T : BaseReference<T>
+	{
+		internal BaseReferenceImpl(IntPtr ptr, bool takeOwnership)
+			: base(ptr, takeOwnership)
+		{
+			var offset = Marshal.OffsetOf(RawReferenceType, "references");
+			refPtr = new IntPtr((long)ptr + (long)offset);
+		}
+
+		/// <summary>
+		/// Prints the current underlying reference count 
+		/// </summary>
+		public void PrintRefCount()
+		{
+			var count = Marshal.ReadInt32(refPtr);
+			Console.WriteLine("{0} ptr: {1}, ref_count: {2}", 
+				this.GetType().Name, this.ptr, count
+			);
+		}
+
+		/// <summary>
+		/// Gets the reference count.
+		/// </summary>
+		/// <value>The reference count.</value>
+		public int RefCount
+		{
+			get { return Marshal.ReadInt32(refPtr); }
+		}
+
+		internal override void AddRef()
+		{
+			Native.CRYPTO_add_lock(refPtr, 1, LockType, "Base.cs", 0);
+		}
+	
+		internal abstract CryptoLockTypes LockType { get; }
+
+		internal abstract Type RawReferenceType { get; }
+
+		private IntPtr refPtr;
+	}
+
+	/// <summary>
 	/// Helper base class that handles the AddRef() method by using a _dup() method.
 	/// </summary>
-	public abstract class BaseValueType : Base
+	public abstract class BaseValue<T> : BaseReference<T>
+		where T : BaseReference<T>
 	{
-		internal BaseValueType(IntPtr ptr, bool takeOwnership) : base(ptr, takeOwnership)
+		internal BaseValue(IntPtr ptr, bool takeOwnership)
+			: base(ptr, takeOwnership)
 		{
 		}
 

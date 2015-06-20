@@ -42,51 +42,198 @@ namespace UnitTests
 		}
 
 		[Test]
-		public void CanCompare()
+		public void CanCompareRSA()
 		{
-			using (DSA dsa = new DSA(true))
-			{
-				using (CryptoKey lhs = new CryptoKey(dsa))
-				{
-					Assert.AreEqual(lhs, lhs);
-					using (CryptoKey rhs = new CryptoKey(dsa))
-					{
-						Assert.AreEqual(lhs, rhs);
-					}
-
-					using (DSA dsa2 = new DSA(true))
-					{
-						using (CryptoKey other = new CryptoKey(dsa2))
-						{
-							Assert.IsFalse(lhs == other);
-						}
-					}
-				}
-			}
-
-			using (RSA rsa = new RSA())
+			using (var rsa = new RSA())
 			{
 				rsa.GenerateKeys(1024, BigNumber.One, null, null);
-				using (CryptoKey lhs = new CryptoKey(rsa))
+				using (var lhs = new CryptoKey(rsa))
 				{
 					Assert.AreEqual(lhs, lhs);
-					using (CryptoKey rhs = new CryptoKey(rsa))
+					using (var rhs = new CryptoKey(rsa))
 					{
 						Assert.AreEqual(lhs, rhs);
 					}
 
-					using (RSA rsa2 = new RSA())
+					using (var rsa2 = new RSA())
 					{
 						rsa2.GenerateKeys(1024, BigNumber.One, null, null);
-						using (CryptoKey other = new CryptoKey(rsa2))
+						using (var other = new CryptoKey(rsa2))
 						{
-							Assert.IsFalse(lhs == other);
+							Assert.AreNotEqual(lhs, other);
 						}
 					}
 				}
 			}
 		}
-	
+
+		[Test]
+		public void CanCompareDSA()
+		{
+			using (var dsa = new DSA(true))
+			using (var lhs = new CryptoKey(dsa))
+			{
+				Assert.AreEqual(lhs, lhs);
+				using (var rhs = new CryptoKey(dsa))
+				{
+					Assert.AreEqual(lhs, rhs);
+				}
+
+				using (var dsa2 = new DSA(true))
+				using (var other = new CryptoKey(dsa2))
+				{
+					Assert.AreNotEqual(lhs, other);
+				}
+			}
+		}
+
+		[Test]
+		public void CanCompareDH()
+		{
+			using (var dh = new DH())
+			{
+				dh.GenerateKeys();
+
+				using (var lhs = new CryptoKey(dh))
+				{
+					Assert.AreEqual(lhs, lhs);
+					using (var rhs = new CryptoKey(dh))
+					{
+						Assert.AreEqual(lhs, rhs);
+					}
+
+					using (var dh2 = new DH(1, 5))
+					{
+						dh2.GenerateKeys();
+						using (var other = new CryptoKey(dh2))
+						{
+							Assert.AreNotEqual(lhs, other);
+						}
+					}
+				}
+			}
+		}
+
+		[Test]
+		public void CanCompareEC()
+		{
+			using (var ec = Key.FromCurveName(Objects.NID.X9_62_prime256v1))
+			{
+				ec.GenerateKey();
+
+				using (var lhs = new CryptoKey(ec))
+				{
+					Assert.AreEqual(lhs, lhs);
+					using (var rhs = new CryptoKey(ec))
+					{
+						Assert.AreEqual(lhs, rhs);
+					}
+
+					using (var ec2 = Key.FromCurveName(Objects.NID.X9_62_prime256v1))
+					{
+						ec2.GenerateKey();
+
+						using (var other = new CryptoKey(ec2))
+						{
+							Assert.AreNotEqual(lhs, other);
+						}
+					}
+				}
+			}
+		}
+
+		[Test]
+		public void CanCreateFromDSA()
+		{
+			using (var dsa = new DSA(true))
+			{
+				using (var key = new CryptoKey(dsa))
+				{
+					Assert.AreEqual(CryptoKey.KeyType.DSA, key.Type);
+					Assert.AreEqual(dsa.Size, key.Size);
+					Assert.AreEqual(dsa.Handle, key.GetDSA().Handle);
+				}
+
+				using (var key = new CryptoKey())
+				{
+					key.Assign(dsa);
+					Assert.AreEqual(dsa.Handle, key.GetDSA().Handle);
+				}
+			}
+
+			using (var key = new CryptoKey(new DSA(false)))
+			{
+				Assert.AreEqual(CryptoKey.KeyType.DSA, key.Type);
+			}
+		}
+
+		[Test]
+		public void CanCreateFromRSA()
+		{
+			using (var rsa = new RSA())
+			{
+				rsa.GenerateKeys(1024, BigNumber.One, null, null);
+				using (var key = new CryptoKey(rsa))
+				{
+					Assert.AreEqual(CryptoKey.KeyType.RSA, key.Type);
+					Assert.AreEqual(rsa.Size, key.Size);
+					Assert.AreEqual(rsa.Handle, key.GetRSA().Handle);
+				}
+
+				using (var key = new CryptoKey())
+				{
+					key.Assign(rsa);
+					Assert.AreEqual(rsa.Handle, key.GetRSA().Handle);
+				}
+			}
+		}
+
+		[Test]
+		public void CanCreateFromEC()
+		{
+			using (var ec = new Key())
+			{
+				using (var group = Group.FromCurveName(Objects.NID.X9_62_prime256v1))
+				{
+					ec.Group = group;
+				}
+				ec.GenerateKey();
+				using (var key = new CryptoKey(ec))
+				{
+					Assert.AreEqual(CryptoKey.KeyType.EC, key.Type);
+					Assert.AreEqual(ec.Size, key.Size);
+					Assert.AreEqual(ec.Handle, key.GetEC().Handle);
+				}
+
+				using (var key = new CryptoKey())
+				{
+					key.Assign(ec);
+					Assert.AreEqual(ec.Handle, key.GetEC().Handle);
+				}
+			}
+		}
+
+		[Test]
+		public void CanCreateFromDH()
+		{
+			using (var dh = new DH())
+			{
+				dh.GenerateKeys();
+
+				using (var key = new CryptoKey(dh))
+				{
+					Assert.AreEqual(CryptoKey.KeyType.DH, key.Type);
+					Assert.AreEqual(dh.Handle, key.GetDH().Handle);
+				}
+
+				using (var key = new CryptoKey())
+				{
+					key.Assign(dh);
+					Assert.AreEqual(dh.Handle, key.GetDH().Handle);
+				}
+			}
+		}
+
 		[Test]
 		[Ignore("Not implemented yet")]
 		public void CanCreateFromPublicKey()
@@ -96,74 +243,6 @@ namespace UnitTests
 		[Test]
 		[Ignore("Not implemented yet")]
 		public void CanCreateFromPrivateKey()
-		{
-		}
-
-		[Test]
-		public void CanCreateFromDSA()
-		{
-			using (DSA dsa = new DSA(true))
-			{
-				using (CryptoKey key = new CryptoKey(dsa))
-				{
-					Assert.AreEqual(CryptoKey.KeyType.DSA, key.Type);
-					Assert.AreEqual(dsa.Size, key.Size);
-				}
-			}
-
-			using (CryptoKey key = new CryptoKey(new DSA(false)))
-			{
-				Assert.AreEqual(CryptoKey.KeyType.DSA, key.Type);
-			}
-		}
-
-		[Test]
-		public void CanCreateFromRSA()
-		{
-			using (RSA rsa = new RSA())
-			{
-				rsa.GenerateKeys(1024, BigNumber.One, null, null);
-				using (CryptoKey key = new CryptoKey(rsa))
-				{
-					Assert.AreEqual(CryptoKey.KeyType.RSA, key.Type);
-					Assert.AreEqual(rsa.Size, key.Size);
-				}
-			}
-		}
-
-		[Test]
-		public void CanCreateFromEC()
-		{
-			using (Key ec = new Key())
-			{
-				using (Group group = Group.FromCurveName(Objects.NID.X9_62_prime256v1))
-				{
-					ec.Group = group;
-				}
-				ec.GenerateKey();
-				using (CryptoKey key = new CryptoKey(ec))
-				{
-					Assert.AreEqual(CryptoKey.KeyType.EC, key.Type);
-					Assert.AreEqual(ec.Size, key.Size);
-				}
-			}
-		}
-
-		[Test]
-		public void CanCreateFromDH()
-		{
-			using (DH dh = new DH())
-			{
-				dh.GenerateKeys();
-				using (CryptoKey key = new CryptoKey(dh)) {
-					Assert.AreEqual(CryptoKey.KeyType.DH, key.Type);
-				}
-			}
-		}
-
-		[Test]
-		[Ignore("Not implemented yet")]
-		public void CanAssign()
 		{
 		}
 

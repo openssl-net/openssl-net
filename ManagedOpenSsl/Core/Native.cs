@@ -712,6 +712,9 @@ namespace OpenSSL.Core
 		public extern static void X509_STORE_free(IntPtr x);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int X509_STORE_up_ref(IntPtr x);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr X509_STORE_CTX_new();
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
@@ -741,6 +744,9 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void X509_INFO_free(IntPtr a);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int X509_INFO_up_ref(IntPtr a);
 
 		#endregion
 
@@ -915,6 +921,9 @@ namespace OpenSSL.Core
 		public extern static void DSA_free(IntPtr dsa);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int DSA_up_ref(IntPtr dsa);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int DSA_size(IntPtr dsa);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
@@ -938,6 +947,9 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void RSA_free(IntPtr rsa);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int RSA_up_ref(IntPtr rsa);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int RSA_size(IntPtr rsa);
@@ -990,6 +1002,9 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void DH_free(IntPtr dh);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int DH_up_ref(IntPtr dh);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int DH_check(IntPtr dh, out int codes);
@@ -1717,7 +1732,7 @@ namespace OpenSSL.Core
 		public extern static int EVP_PKEY_size(IntPtr pkey);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int EVP_PKEY_assign(IntPtr pkey, int type, byte[] key);
+		public extern static int EVP_PKEY_assign(IntPtr pkey, int type, IntPtr key);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int EVP_PKEY_set1_DSA(IntPtr pkey, IntPtr key);
@@ -1735,7 +1750,7 @@ namespace OpenSSL.Core
 		public extern static int EVP_PKEY_set1_EC_KEY(IntPtr pkey, IntPtr key);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr EVP_PKEY_get1_EC(IntPtr pkey);
+		public extern static IntPtr EVP_PKEY_get1_EC_KEY(IntPtr pkey);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int EVP_PKEY_set1_DH(IntPtr pkey, IntPtr key);

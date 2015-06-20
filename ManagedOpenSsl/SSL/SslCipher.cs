@@ -30,10 +30,7 @@ using System.Text;
 
 namespace OpenSSL.SSL
 {
-	/// <summary>
-	/// Ssl cipher.
-	/// </summary>
-	public class SslCipher : Base, IStackable
+	public class SslCipher : BaseReference<SslCipher>, IStackable
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OpenSSL.SSL.SslCipher"/> class.
@@ -107,7 +104,7 @@ namespace OpenSSL.SSL
 		protected override void OnDispose()
 		{
 			// SSL_CIPHERs come from a static list in ssl_ciph.c
-			// no need to free them
+			// nothing to do here
 		}
 	}
 }
