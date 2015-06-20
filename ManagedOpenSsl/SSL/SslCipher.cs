@@ -30,7 +30,7 @@ using System.Text;
 
 namespace OpenSSL.SSL
 {
-	class SslCipher : Base, IStackable
+	class SslCipher : BaseReference<SslCipher>, IStackable
 	{
 		#region SSL_CIPHER
 		[StructLayout(LayoutKind.Sequential)]
@@ -441,9 +441,16 @@ namespace OpenSSL.SSL
 			}
 		}
 
+		internal override void AddRef()
+		{
+			// SSL_CIPHERs come from a static list in ssl_ciph.c
+			// nothing to do here
+		}
+
 		protected override void OnDispose()
 		{
-			Native.OPENSSL_free(ptr);
+			// SSL_CIPHERs come from a static list in ssl_ciph.c
+			// nothing to do here
 		}
 	}
 }

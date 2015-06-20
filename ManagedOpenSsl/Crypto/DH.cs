@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto
 	/// <summary>
 	/// Encapsulates the native openssl Diffie-Hellman functions (DH_*)
 	/// </summary>
-	public class DH : Base
+	public class DH : BaseReference<DH>
 	{
 		/// <summary>
 		/// Constant generator value of 2.
@@ -436,6 +436,11 @@ namespace OpenSSL.Crypto
 		}
 
 		#endregion
+
+		internal override void AddRef()
+		{
+			Native.DH_up_ref(ptr);
+		}
 
 		#region IDisposable Members
 

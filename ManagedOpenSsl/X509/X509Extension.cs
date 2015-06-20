@@ -32,7 +32,7 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509_EXTENSION object
 	/// </summary>
-	public class X509Extension : BaseValueType, IStackable
+	public class X509Extension : BaseValue<X509Extension>, IStackable
 	{
 		#region Initialization
 

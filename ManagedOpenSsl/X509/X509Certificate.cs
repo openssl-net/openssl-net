@@ -33,7 +33,7 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509 object
 	/// </summary>
-	public class X509Certificate : BaseCopyableRef<X509Certificate>, IComparable<X509Certificate>, IStackable
+	public class X509Certificate : BaseReferenceImpl<X509Certificate>, IComparable<X509Certificate>, IStackable
 	{
 		#region Initialization
 

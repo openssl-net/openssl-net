@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto
 	/// <summary>
 	/// Wraps the RSA_* functions
 	/// </summary>
-	public class RSA : Base, IDisposable
+	public class RSA : BaseReference<RSA>
 	{
 		#region rsa_st
 		[StructLayout(LayoutKind.Sequential)]
@@ -504,6 +504,11 @@ namespace OpenSSL.Crypto
 		}
 
 		#endregion
+
+		internal override void AddRef()
+		{
+			Native.RSA_up_ref(ptr);
+		}
 
 		#region Fields
 		private BigNumber.GeneratorThunk thunk = null;

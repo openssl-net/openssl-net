@@ -31,7 +31,7 @@ namespace OpenSSL.Core
 	/// <summary>
 	/// Wraps ASN1_STRING_*
 	/// </summary>
-	public class Asn1String : BaseValueType, IComparable<Asn1String>
+	public class Asn1String : BaseValue<Asn1String>, IComparable<Asn1String>
 	{
 		#region Initialization
 		/// <summary>

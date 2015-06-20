@@ -33,7 +33,7 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509_OBJECT: a glorified union
 	/// </summary>
-	public class X509Object : Base, IStackable
+	public class X509Object : BaseReference<X509Object>, IStackable
 	{
 		#region X509_OBJECT
 		const int X509_LU_RETRY = -1;
