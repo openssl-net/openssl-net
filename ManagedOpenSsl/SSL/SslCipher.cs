@@ -27,6 +27,7 @@ using OpenSSL.Core;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Collections.Generic;
 
 namespace OpenSSL.SSL
 {
@@ -56,6 +57,47 @@ namespace OpenSSL.SSL
 		internal SslCipher(IStack stack, IntPtr ptr) :
 			base(ptr, true)
 		{
+		}
+
+		/// <summary>
+		/// see https://www.openssl.org/docs/apps/ciphers.html
+		/// for details about OpenSSL cipher string
+		/// </summary>
+		/// <returns>The string.</returns>
+		/// <param name="sslProtocols">SSL protocols.</param>
+		/// <param name="sslStrength">SSL strength.</param>
+		public static string MakeString(SslProtocols sslProtocols, SslStrength sslStrength)
+		{
+			var parts = new List<string>();
+
+			if (EnumExtensions.HasFlag(sslStrength, SslStrength.High))
+			{
+				parts.Add("HIGH");
+			}
+
+			if (EnumExtensions.HasFlag(sslStrength, SslStrength.Medium))
+			{
+				parts.Add("MEDIUM");
+			}
+
+			if (EnumExtensions.HasFlag(sslStrength, SslStrength.Low))
+			{
+				parts.Add("LOW");
+			}
+
+			if ((sslProtocols == SslProtocols.Default) ||
+				(sslProtocols == SslProtocols.Tls) ||
+				(sslProtocols == SslProtocols.Ssl3))
+			{
+				parts.Add("!SSLv2");
+			}
+
+			parts.Add("!ADH");
+			parts.Add("!aNULL");
+			parts.Add("!eNULL");
+			parts.Add("@STRENGTH");
+
+			return string.Join(":", parts.ToArray());
 		}
 
 		/// <summary>

@@ -137,27 +137,30 @@ namespace OpenSSL.SSL
 				Protocols.Http1
 			});
             
+			var options = sslContext.Options;
+
 			// Remove support for protocols not specified in the enabledSslProtocols
-			if ((enabledSslProtocols & SslProtocols.Ssl2) != SslProtocols.Ssl2)
+			if (!EnumExtensions.HasFlag(enabledSslProtocols, SslProtocols.Ssl2))
 			{
-				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv2;
+				options |= SslOptions.SSL_OP_NO_SSLv2;
 			}
-			if ((enabledSslProtocols & SslProtocols.Ssl3) != SslProtocols.Ssl3 &&
-			    ((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
+
+			if (!EnumExtensions.HasFlag(enabledSslProtocols, SslProtocols.Ssl3))
 			{
-				// no SSLv3 support
-				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv3;
+				options |= SslOptions.SSL_OP_NO_SSLv3;
 			}
-			if ((enabledSslProtocols & SslProtocols.Tls) != SslProtocols.Tls &&
-			    (enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
+
+			if (!EnumExtensions.HasFlag(enabledSslProtocols, SslProtocols.Tls))
 			{
-				sslContext.Options |= SslOptions.SSL_OP_NO_TLSv1;
+				options |= SslOptions.SSL_OP_NO_TLSv1;
 			}
+
+			// Set the workaround options
+			sslContext.Options = options | SslOptions.SSL_OP_ALL;
 
 			// Set the context mode
 			sslContext.Mode = SslMode.SSL_MODE_AUTO_RETRY;
-			// Set the workaround options
-			sslContext.Options = SslOptions.SSL_OP_ALL;
+
 			// Set the client certificate verification callback if we are requiring client certs
 			if (clientCertificateRequired)
 			{
@@ -175,8 +178,7 @@ namespace OpenSSL.SSL
 			{
 				// Don't take ownership of the X509Store IntPtr.  When we
 				// SetCertificateStore, the context takes ownership of the store pointer.
-				var cert_store = new X509Store(caCerts, false);
-				sslContext.SetCertificateStore(cert_store);
+				sslContext.SetCertificateStore(new X509Store(caCerts, false));
 				var name_stack = new Core.Stack<X509Name>();
 				foreach (var cert in caCerts)
 				{
@@ -187,7 +189,7 @@ namespace OpenSSL.SSL
 				sslContext.CAList = name_stack;
 			}
 			// Set the cipher string
-			sslContext.SetCipherList(GetCipherString(false, enabledSslProtocols, sslStrength));
+			sslContext.SetCipherList(SslCipher.MakeString(enabledSslProtocols, sslStrength));
 			// Set the certificate
 			sslContext.UseCertificate(serverCertificate);
 			// Set the private key

@@ -76,26 +76,30 @@ namespace OpenSSL.SSL
 				Protocols.Http1
 			});
             
+			var options = sslContext.Options;
+
 			// Remove support for protocols not specified in the enabledSslProtocols
-			if ((enabledSslProtocols & SslProtocols.Ssl2) != SslProtocols.Ssl2)
+			if (!EnumExtensions.HasFlag(enabledSslProtocols, SslProtocols.Ssl2))
 			{
-				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv2;
+				options |= SslOptions.SSL_OP_NO_SSLv2;
 			}
-			if ((enabledSslProtocols & SslProtocols.Ssl3) != SslProtocols.Ssl3 &&
-			    ((enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default))
+
+			if (!EnumExtensions.HasFlag(enabledSslProtocols, SslProtocols.Ssl3))
 			{
-				sslContext.Options |= SslOptions.SSL_OP_NO_SSLv3;
+				options |= SslOptions.SSL_OP_NO_SSLv3;
 			}
-			if ((enabledSslProtocols & SslProtocols.Tls) != SslProtocols.Tls &&
-			    (enabledSslProtocols & SslProtocols.Default) != SslProtocols.Default)
+
+			if (!EnumExtensions.HasFlag(enabledSslProtocols, SslProtocols.Tls))
 			{
-				sslContext.Options |= SslOptions.SSL_OP_NO_TLSv1;
+				options |= SslOptions.SSL_OP_NO_TLSv1;
 			}
+
+			sslContext.Options = options;
 
 			// Set the Local certificate selection callback
 			sslContext.SetClientCertCallback(OnClientCertificate);
 			// Set the enabled cipher list
-			sslContext.SetCipherList(GetCipherString(false, enabledSslProtocols, sslStrength));
+			sslContext.SetCipherList(SslCipher.MakeString(enabledSslProtocols, sslStrength));
 			// Set the callbacks for remote cert verification and local cert selection
 			if (OnRemoteCertificate != null)
 			{

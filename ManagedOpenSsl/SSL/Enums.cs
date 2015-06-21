@@ -148,7 +148,7 @@ namespace OpenSSL.SSL
 	/// 
 	/// </summary>
 	[Flags]
-	public enum SslProtocols : long
+	public enum SslProtocols
 	{
 		/// <summary>
 		/// 
@@ -175,6 +175,7 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// 
 	/// </summary>
+	[Flags]
 	public enum SslStrength
 	{
 		/// <summary>
@@ -229,7 +230,6 @@ namespace OpenSSL.SSL
 		Complete
 	}
 
-
 	/// <summary>
 	/// Options enumeration for Options property
 	/// </summary>
@@ -241,7 +241,10 @@ namespace OpenSSL.SSL
 		SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG = 0x00000008,
 		SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG = 0x00000010,
 		SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER = 0x00000020,
-		SSL_OP_MSIE_SSLV2_RSA_PADDING = 0x00000040, /* no effect since 0.9.7h and 0.9.8b */
+		/// <summary>
+		/// no effect since 0.9.7h and 0.9.8b
+		/// </summary>
+		SSL_OP_MSIE_SSLV2_RSA_PADDING = 0x00000040, 
 		SSL_OP_SSLEAY_080_CLIENT_DH_BUG = 0x00000080,
 		SSL_OP_TLS_D5_BUG = 0x00000100,
 		SSL_OP_TLS_BLOCK_PADDING_BUG = 0x00000200,
@@ -277,8 +280,10 @@ namespace OpenSSL.SSL
 		SSL_OP_NO_SSLv3 = 0x02000000,
 		SSL_OP_NO_TLSv1 = 0x04000000,
 
-		/* The next flag deliberately changes the ciphertest, this is a check
-		 * for the PKCS#1 attack */
+		/// <summary>
+		/// The next flag deliberately changes the ciphertest, this is a check
+		/// for the PKCS#1 attack
+		/// </summary>
 		SSL_OP_PKCS1_CHECK_1 = 0x08000000,
 		SSL_OP_PKCS1_CHECK_2 = 0x10000000,
 		SSL_OP_NETSCAPE_CA_DN_BUG = 0x20000000,
@@ -287,18 +292,29 @@ namespace OpenSSL.SSL
 
 	enum SslMode
 	{
-		/* Allow SSL_write(..., n) to return r with 0 < r < n (i.e. report success
-		 * when just a single record has been written): */
+		/// <summary>
+		/// Allow SSL_write(..., n) to return r with 0 &lt; r &lt; n (i.e. report success
+		/// when just a single record has been written): 
+		/// </summary>
 		SSL_MODE_ENABLE_PARTIAL_WRITE = 0x00000001,
-		/* Make it possible to retry SSL_write() with changed buffer location
-		 * (buffer contents must stay the same!); this is not the default to avoid
-		 * the misconception that non-blocking SSL_write() behaves like
-		 * non-blocking write(): */
+
+		/// <summary>
+		/// Make it possible to retry SSL_write() with changed buffer location
+		/// (buffer contents must stay the same!); this is not the default to avoid
+		/// the misconception that non-blocking SSL_write() behaves like
+		/// non-blocking write():
+		/// </summary>
 		SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER = 0x00000002,
-		/* Never bother the application with retries if the transport
-		 * is blocking: */
+
+		/// <summary>
+		/// Never bother the application with retries if the transport
+		/// is blocking:
+		/// </summary>
 		SSL_MODE_AUTO_RETRY = 0x00000004,
-		/* Don't attempt to automatically build certificate chain */
+
+		/// <summary>
+		/// Don't attempt to automatically build certificate chain
+		/// </summary>
 		SSL_MODE_NO_AUTO_CHAIN = 0x00000008
 	}
 

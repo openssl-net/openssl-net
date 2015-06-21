@@ -121,6 +121,34 @@ namespace UnitTests
 		}
 
 		[Test]
+		public void TestSslCipherList()
+		{
+			Assert.AreEqual("LOW:!ADH:!aNULL:!eNULL:@STRENGTH", 
+				SslCipher.MakeString(SslProtocols.None, SslStrength.Low)
+			);
+
+			Assert.AreEqual("MEDIUM:!ADH:!aNULL:!eNULL:@STRENGTH", 
+				SslCipher.MakeString(SslProtocols.None, SslStrength.Medium)
+			);
+
+			Assert.AreEqual("HIGH:!ADH:!aNULL:!eNULL:@STRENGTH", 
+				SslCipher.MakeString(SslProtocols.None, SslStrength.High)
+			);
+
+			Assert.AreEqual("HIGH:MEDIUM:LOW:!ADH:!aNULL:!eNULL:@STRENGTH", 
+				SslCipher.MakeString(SslProtocols.None, SslStrength.All)
+			);
+
+			Assert.AreEqual("HIGH:MEDIUM:LOW:!SSLv2:!ADH:!aNULL:!eNULL:@STRENGTH", 
+				SslCipher.MakeString(SslProtocols.Default, SslStrength.All)
+			);
+
+			Assert.AreEqual("HIGH:MEDIUM:LOW:!ADH:!aNULL:!eNULL:@STRENGTH", 
+				SslCipher.MakeString(SslProtocols.Ssl2, SslStrength.All)
+			);
+		}
+
+		[Test]
 		public void TestSyncBasic()
 		{
 			IPEndPoint ep = null;
@@ -276,7 +304,7 @@ namespace UnitTests
 		}
 
 		[Test]
-		[Ignore]
+		[Ignore("Frequent crashes")]
 		public void TestSyncAdvanced()
 		{
 			IPEndPoint ep = null;

@@ -47,8 +47,13 @@ namespace OpenSSL.SSL
 		#region Members
 
 		private AlpnExtension alpnExt;
-		private ClientCertCallbackThunk _clientCertCallbackThunk;
-		private VerifyCertCallbackThunk _verifyCertCallbackThunk;
+		private ClientCertCallbackHandler OnClientCert;
+		private RemoteCertificateValidationHandler OnVerifyCert;
+
+		// hold down the thunk so it doesn't get collected
+		private Native.client_cert_cb _ptrOnClientCertThunk;
+		private Native.VerifyCertCallback _ptrOnVerifyCertThunk;
+		private Native.alpn_cb _ptrOnAlpn;
 
 		#endregion
 
@@ -62,13 +67,18 @@ namespace OpenSSL.SSL
 		public SslContext(
 			SslMethod sslMethod,
 			ConnectionEnd end,
-			IEnumerable<string> protoList = null) :
+			IEnumerable<string> protoList) :
 			base(Native.ExpectNonNull(Native.SSL_CTX_new(sslMethod.Handle)), true)
 		{
 			alpnExt = new AlpnExtension(Handle, protoList);
+
+			_ptrOnClientCertThunk = OnClientCertThunk;
+			_ptrOnVerifyCertThunk = OnVerifyCertThunk;
+			_ptrOnAlpn = alpnExt.AlpnCb;
+
 			if (end == ConnectionEnd.Server)
 			{
-				Native.SSL_CTX_set_alpn_select_cb(Handle, alpnExt.AlpnCb, IntPtr.Zero);
+				Native.SSL_CTX_set_alpn_select_cb(Handle, _ptrOnAlpn, IntPtr.Zero);
 			}
 		}
 
@@ -91,95 +101,50 @@ namespace OpenSSL.SSL
 
 		#endregion
 
-		internal class ClientCertCallbackThunk
+		private int OnVerifyCertThunk(int ok, IntPtr store)
 		{
-			private ClientCertCallbackHandler OnClientCertCallback;
+			var ctx = new X509StoreContext(store, false);
 
-			public ClientCertCallbackThunk(ClientCertCallbackHandler callback)
+			// build the X509Chain from the store
+			using (var chain = new X509Chain())
 			{
-				OnClientCertCallback = callback;
-			}
-
-			public Native.client_cert_cb Callback
-			{
-				get
+				foreach (var obj in ctx.Store.Objects)
 				{
-					if (OnClientCertCallback == null)
-						return null;
-					return OnClientCertThunk;
-				}
-			}
-
-			internal int OnClientCertThunk(IntPtr ssl_ptr, out IntPtr cert_ptr, out IntPtr key_ptr)
-			{
-				X509Certificate cert = null;
-				CryptoKey key = null;
-				var ssl = new Ssl(ssl_ptr, false);
-				cert_ptr = IntPtr.Zero;
-				key_ptr = IntPtr.Zero;
-
-				var nRet = OnClientCertCallback(ssl, out cert, out key);
-				if (nRet != 0)
-				{
+					var cert = obj.Certificate;
 					if (cert != null)
-					{
-						cert_ptr = cert.Handle;
-					}
-
-					if (key != null)
-					{
-						key_ptr = key.Handle;
-					}
+						chain.Add(cert);
 				}
-				return nRet;
+
+				// Call the managed delegate
+				return OnVerifyCert(
+					this, 
+					ctx.CurrentCert, 
+					chain, 
+					ctx.ErrorDepth, 
+					(VerifyResult)ctx.Error
+				) ? 1 : 0;
 			}
 		}
 
-		internal class VerifyCertCallbackThunk
+		private int OnClientCertThunk(IntPtr ptrSsl, out IntPtr ptrCert, out IntPtr ptrKey)
 		{
-			private RemoteCertificateValidationHandler OnVerifyCert;
+			ptrCert = IntPtr.Zero;
+			ptrKey = IntPtr.Zero;
 
-			public VerifyCertCallbackThunk(RemoteCertificateValidationHandler callback)
+			var ssl = new Ssl(ptrSsl, false);
+			X509Certificate cert;
+			CryptoKey key;
+
+			var ret = OnClientCert(ssl, out cert, out key);
+			if (ret != 0)
 			{
-				OnVerifyCert = callback;
+				if (cert != null)
+					ptrCert = cert.Handle;
+
+				if (key != null)
+					ptrKey = key.Handle;
 			}
-
-			public Native.VerifyCertCallback Callback
-			{
-				get
-				{
-					if (OnVerifyCert == null)
-						return null;
-					return OnVerifyCertThunk;
-				}
-			}
-
-			internal int OnVerifyCertThunk(int ok, IntPtr store_ctx)
-			{
-				var ctx = new X509StoreContext(store_ctx, false);
-
-				// build the X509Chain from the store
-				using (var chain = new X509Chain())
-				{
-					foreach (var obj in ctx.Store.Objects)
-					{
-						var cert = obj.Certificate;
-						if (cert != null)
-						{
-							chain.Add(cert);
-						}
-					}
-
-					// Call the managed delegate
-					return OnVerifyCert(
-						this, 
-						ctx.CurrentCert, 
-						chain, 
-						ctx.ErrorDepth, 
-						(VerifyResult)ctx.Error
-					) ? 1 : 0;
-				}
-			}
+			return ret;
 		}
 
 		#region Methods
@@ -193,10 +158,7 @@ namespace OpenSSL.SSL
 		/// <param name="store"></param>
 		public void SetCertificateStore(X509Store store)
 		{
-			// Remove the native pointer ownership from the object
-			// Reference counts don't work for the X509_STORE, so
-			// we just remove ownership from the X509Store object
-			store.IsOwner = false;
+			store.AddRef();
 			Native.SSL_CTX_set_cert_store(ptr, store.Handle);
 		}
 
@@ -207,8 +169,8 @@ namespace OpenSSL.SSL
 		/// <param name="callback"></param>
 		public void SetVerify(VerifyMode mode, RemoteCertificateValidationHandler callback)
 		{
-			_verifyCertCallbackThunk = new VerifyCertCallbackThunk(callback);
-			Native.SSL_CTX_set_verify(ptr, (int)mode, _verifyCertCallbackThunk.Callback);
+			OnVerifyCert = callback;
+			Native.SSL_CTX_set_verify(ptr, (int)mode, callback == null ? null : _ptrOnVerifyCertThunk);
 		}
 
 		/// <summary>
@@ -242,8 +204,7 @@ namespace OpenSSL.SSL
 			}
 			set
 			{
-				// Remove the native pointer ownership from the Stack object
-				value.IsOwner = false;
+				value.AddRef();
 				Native.SSL_CTX_set_client_CA_list(ptr, value.Handle);
 			}
 		}
@@ -295,8 +256,8 @@ namespace OpenSSL.SSL
 
 		public void SetClientCertCallback(ClientCertCallbackHandler callback)
 		{
-			_clientCertCallbackThunk = new ClientCertCallbackThunk(callback);
-			Native.SSL_CTX_set_client_cert_cb(ptr, _clientCertCallbackThunk.Callback);
+			OnClientCert = callback;
+			Native.SSL_CTX_set_client_cert_cb(ptr, callback == null ? null : _ptrOnClientCertThunk);
 		}
 
 		#endregion

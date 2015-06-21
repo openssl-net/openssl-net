@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{73DCC218-655B-485F-8EAC-0CE5F2F7343D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -86,12 +84,12 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\bin\Trace\</OutputPath>
     <DefineConstants>TRACE;DEBUG;MEMORY_TRACKER</DefineConstants>
-    <DocumentationFile>
-    </DocumentationFile>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Trace|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -102,6 +100,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -171,6 +171,7 @@
     <Compile Include="SSL\ConnectionEnd.cs" />
     <Compile Include="Core\Asn1Encoding.cs" />
     <Compile Include="Core\Threading.cs" />
+    <Compile Include="SSL\Extensions\EnumExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

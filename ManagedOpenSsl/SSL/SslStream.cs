@@ -406,7 +406,7 @@ namespace OpenSSL.SSL
 		}
 
 
-		#endregion // Properties
+		#endregion
 
 		#region Methods
 

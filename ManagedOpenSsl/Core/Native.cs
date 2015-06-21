@@ -2666,6 +2666,16 @@ namespace OpenSSL.Core
 		}
 
 		/// <summary>
+		/// #define SSL_CTX_get_mode in ssl.h - calls SSL_CTX_ctrl
+		/// </summary>
+		/// <param name="ctx"></param>
+		/// <returns></returns>
+		public static int SSL_CTX_get_mode(IntPtr ctx)
+		{
+			return SSL_CTX_ctrl(ctx, SSL_CTRL_MODE, 0, IntPtr.Zero);
+		}
+
+		/// <summary>
 		/// #define SSL_CTX_set_options in ssl.h - calls SSL_CTX_ctrl
 		/// </summary>
 		/// <param name="ctx"></param>
@@ -2674,16 +2684,6 @@ namespace OpenSSL.Core
 		public static int SSL_CTX_set_options(IntPtr ctx, int op)
 		{
 			return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, op, IntPtr.Zero);
-		}
-
-		/// <summary>
-		/// #define SSL_CTX_get_mode in ssl.h - calls SSL_CTX_ctrl
-		/// </summary>
-		/// <param name="ctx"></param>
-		/// <returns></returns>
-		public static int SSL_CTX_get_mode(IntPtr ctx)
-		{
-			return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, 0, IntPtr.Zero);
 		}
 
 		/// <summary>
