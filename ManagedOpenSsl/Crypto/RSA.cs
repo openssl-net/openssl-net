@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto
 	/// <summary>
 	/// Wraps the RSA_* functions
 	/// </summary>
-	public class RSA : BaseReference<RSA>
+	public class RSA : BaseReference
 	{
 		#region rsa_st
 		[StructLayout(LayoutKind.Sequential)]

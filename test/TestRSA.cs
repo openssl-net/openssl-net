@@ -255,7 +255,8 @@ namespace UnitTests
 		private void TestKey(int v, RSA key)
 		{
 			byte[] ctext_ex = null;
-			switch (v % 3) {
+			switch (v % 3)
+			{
 				case 0: ctext_ex = Key1(key); break;
 				case 1: ctext_ex = Key2(key); break;
 				case 2: ctext_ex = Key3(key); break;
@@ -292,18 +293,22 @@ namespace UnitTests
 			Assert.AreEqual(str2, str1);
 
 			Console.WriteLine("OAEP encryption/decryption ok!", v);
-			for (int n = 0; n < ctext.Length; ++n) {
+			for (int n = 0; n < ctext.Length; ++n)
+			{
 				byte saved = ctext[n];
-				for (byte b = 0; b < byte.MaxValue; ++b) {
+				for (byte b = 0; b < byte.MaxValue; ++b)
+				{
 					if (b == saved)
 						continue;
 
 					ctext[n] = b;
 					bool error = false;
-					try {
+					try
+					{
 						ptext = key.PrivateDecrypt(ctext, RSA.Padding.OAEP);
 					}
-					catch (Exception) {
+					catch (Exception)
+					{
 						error = true;
 					}
 					Assert.IsTrue(error, "Corrupt data decrypted!");
@@ -312,14 +317,19 @@ namespace UnitTests
 		}
 
 		[Test]
-		public void TestCase()
+		[TestCase(0)]
+		[TestCase(1)]
+		[TestCase(2)]
+		[TestCase(3)]
+		[TestCase(4)]
+		[TestCase(5)]
+		public void TestCase(int v)
 		{
 			OpenSSL.Core.Random.Seed(rnd_seed);
 
-			for (int v = 0; v < 6; v++) {
-				using (RSA key = new RSA()) {
-					TestKey(v, key);
-				}
+			using (RSA key = new RSA())
+			{
+				TestKey(v, key);
 			}
 		}
 	}

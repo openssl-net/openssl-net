@@ -66,23 +66,29 @@ namespace OpenSSL.Core
 		/// Derived types should override this method and not ToString().
 		/// </summary>
 		/// <param name="bio">The BIO stream object to print into</param>
-		public virtual void Print(BIO bio) { }
+		public virtual void Print(BIO bio)
+		{
+		}
 
 		/// <summary>
 		/// Override of ToString() which uses Print() into a BIO memory buffer.
 		/// </summary>
 		/// <returns></returns>
-		public override string ToString() {
-			try {
+		public override string ToString()
+		{
+			try
+			{
 				if (ptr == IntPtr.Zero)
 					return "(null)";
 
-				using (var bio = BIO.MemoryBuffer()) {
+				using (var bio = BIO.MemoryBuffer())
+				{
 					Print(bio);
 					return bio.ReadString();
 				}
 			}
-			catch (Exception) {
+			catch (Exception)
+			{
 				return "<exception>";
 			}
 		}
@@ -107,8 +113,10 @@ namespace OpenSSL.Core
 		/// If the native pointer is not null, we haven't been disposed, and we are the owner,
 		/// then call the virtual OnDispose() method.
 		/// </summary>
-		public void Dispose() {
-			if (!isDisposed && owner && ptr != IntPtr.Zero) {
+		public void Dispose()
+		{
+			if (!isDisposed && owner && ptr != IntPtr.Zero)
+			{
 				OnDispose();
 				DoAfterDispose();
 			}
@@ -155,14 +163,12 @@ namespace OpenSSL.Core
 		/// This is to prevent double-deletion issues.
 		/// </summary>
 		protected bool isDisposed = false;
-
 	}
 
 	/// <summary>
 	/// Helper type that handles the AddRef() method.
 	/// </summary>
-	public abstract class BaseReference<T> : Base
-		where T : BaseReference<T>
+	public abstract class BaseReference : Base
 	{
 		internal BaseReference(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
@@ -170,31 +176,12 @@ namespace OpenSSL.Core
 		}
 
 		internal abstract void AddRef();
-	
-		internal T CopyRef()
-		{
-			object[] args = {
-				ptr,
-				true
-			};
-
-			var flags =
-				BindingFlags.NonPublic |
-				BindingFlags.Public |
-				BindingFlags.Instance;
-
-			var ret = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
-			ret.AddRef();
-
-			return ret;
-		}
 	}
 
 	/// <summary>
 	/// Derived classes must implement the <code>LockType</code> and <code>RawReferenceType</code> properties
 	/// </summary>
-	public abstract class BaseReferenceImpl<T> : BaseReference<T>
-		where T : BaseReference<T>
+	public abstract class BaseReferenceImpl : BaseReference
 	{
 		internal BaseReferenceImpl(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
@@ -214,6 +201,15 @@ namespace OpenSSL.Core
 			);
 		}
 
+		/// <summary>
+		/// Gets the reference count.
+		/// </summary>
+		/// <value>The reference count.</value>
+		public int RefCount
+		{
+			get { return Marshal.ReadInt32(refPtr); }
+		}
+
 		internal override void AddRef()
 		{
 			Native.CRYPTO_add_lock(refPtr, 1, LockType, "Base.cs", 0);
@@ -226,12 +222,10 @@ namespace OpenSSL.Core
 		private IntPtr refPtr;
 	}
 
-
 	/// <summary>
 	/// Helper base class that handles the AddRef() method by using a _dup() method.
 	/// </summary>
-	public abstract class BaseValue<T> : BaseReference<T>
-		where T : BaseReference<T>
+	public abstract class BaseValue : BaseReference
 	{
 		internal BaseValue(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)

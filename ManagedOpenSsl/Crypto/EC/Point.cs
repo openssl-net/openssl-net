@@ -28,41 +28,68 @@ using System;
 
 namespace OpenSSL.Crypto.EC
 {
+	/// <summary>
+	/// Wraps EC_POINT
+	/// </summary>
 	public class Point : Base
 	{
 		private Group group;
-		
+
 		#region Initialization
-		internal Point(Group group, IntPtr ptr, bool owner) 
-			: base(ptr, owner) { 
+		internal Point(Group group, IntPtr ptr, bool owner)
+			: base(ptr, owner)
+		{
 			this.group = group;
 		}
-		
-		public Point(Group group) 
-			: base(Native.EC_POINT_new(group.Handle), true) {
+
+		/// <summary>
+		/// Calls EC_POINT_new()
+		/// </summary>
+		/// <param name="group"></param>
+		public Point(Group group)
+			: base(Native.EC_POINT_new(group.Handle), true)
+		{
 			this.group = group;
 		}
 		#endregion
 
 		#region Properties
 		#endregion
-		
+
 		#region Methods
-		public void GetAffineCoordinatesGF2m(BigNumber x, BigNumber y, BigNumber.Context ctx) {
+		/// <summary>
+		/// Calls EC_POINT_get_affine_coordinates_GF2m()
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="ctx"></param>
+		public void GetAffineCoordinatesGF2m(BigNumber x, BigNumber y, BigNumber.Context ctx)
+		{
 			Native.ExpectSuccess(
 				Native.EC_POINT_get_affine_coordinates_GF2m(group.Handle, ptr, x.Handle, y.Handle, ctx.Handle)
 			);
 		}
-		
-		public void GetAffineCoordinatesGFp(BigNumber x, BigNumber y, BigNumber.Context ctx) {
+
+		/// <summary>
+		/// Calls EC_POINT_get_affine_coordinates_GFp()
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="ctx"></param>
+		public void GetAffineCoordinatesGFp(BigNumber x, BigNumber y, BigNumber.Context ctx)
+		{
 			Native.ExpectSuccess(
 				Native.EC_POINT_get_affine_coordinates_GFp(group.Handle, ptr, x.Handle, y.Handle, ctx.Handle)
 			);
 		}
 		#endregion
-		
+
 		#region Overrides
-		protected override void OnDispose() {
+		/// <summary>
+		/// Calls EC_POINT_free()
+		/// </summary>
+		protected override void OnDispose()
+		{
 			Native.EC_POINT_free(this.ptr);
 		}
 		#endregion

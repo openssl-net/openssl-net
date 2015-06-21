@@ -48,7 +48,9 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		public X509Chain(BIO bio)
 		{
-			var sk = Native.ExpectNonNull(Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero));
+			var sk = Native.ExpectNonNull(
+				Native.PEM_X509_INFO_read_bio(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)
+			);
 
 			using (var stack = new Core.Stack<X509CertificateInfo>(sk, true))
 			{
@@ -57,7 +59,6 @@ namespace OpenSSL.X509
 					using (var xi = stack.Shift())
 					{
 						var cert = xi.Certificate;
-						
 						if (cert != null)
 						{
 							Add(cert);

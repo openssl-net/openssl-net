@@ -35,17 +35,6 @@ namespace OpenSSL.X509
 	/// </summary>
 	public class PKCS12 : Base
 	{
-		#region PKCS12 structure
-
-		[StructLayout(LayoutKind.Sequential)]
-		struct _PKCS12
-		{
-			public IntPtr version;     //ASN1_INTEGER *version;
-			public IntPtr mac;         //PKCS12_MAC_DATA *mac;
-			public IntPtr authsafes;   //PKCS7 *authsafes;
-		}
-		#endregion
-
 		/// <summary>
 		/// Password-Based Encryption (from PKCS #5)
 		/// </summary>
@@ -104,7 +93,7 @@ namespace OpenSSL.X509
 			/// </summary>
 			SHA1_RC2_40 = 149
 		}
-		
+
 		/// <summary>
 		/// This is a non standard extension that is only currently interpreted by MSIE
 		/// </summary>
@@ -114,12 +103,12 @@ namespace OpenSSL.X509
 			/// omit the flag from the private key
 			/// </summary>
 			KEY_DEFAULT = 0,
-		
+
 			/// <summary>
 			/// the key can be used for signing only
 			/// </summary>
 			KEY_SIG = 0x80,
-		
+
 			/// <summary>
 			/// the key can be used for signing and encryption
 			/// </summary>
@@ -136,7 +125,8 @@ namespace OpenSSL.X509
 		/// <param name="cert"></param>
 		/// <param name="ca"></param>
 		public PKCS12(string password, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca) :
-			base(Create(password, null, key, cert, ca, PBE.Default, PBE.Default, 0, KeyType.KEY_DEFAULT), true) {
+			base(Create(password, null, key, cert, ca, PBE.Default, PBE.Default, 0, KeyType.KEY_DEFAULT), true)
+		{
 			Init(password);
 		}
 
@@ -152,31 +142,49 @@ namespace OpenSSL.X509
 		/// <param name="certPbe">How to encrypt the certificate</param>
 		/// <param name="iterations"># of iterations during encryption</param>
 		/// <param name="keyType"></param>
-		public PKCS12(string password, string name, CryptoKey key, X509Certificate cert, Stack<X509Certificate> ca, PBE keyPbe, PBE certPbe, int iterations, KeyType keyType) :
-			base(Create(password, name, key, cert, ca, keyPbe, certPbe, iterations, keyType), true) {
-			Init(password);
-		}
-
-		private static IntPtr Create(
-			string password, 
-			string name, 
-			CryptoKey key, 
+		public PKCS12(
+			string password,
+			string name,
+			CryptoKey key,
 			X509Certificate cert,
 			Stack<X509Certificate> ca,
 			PBE keyPbe,
 			PBE certPbe,
 			int iterations,
-			KeyType keyType) {
+			KeyType keyType) :
+			base(Create(password, name, key, cert, ca, keyPbe, certPbe, iterations, keyType), true)
+		{
+			Init(password);
+		}
+
+		private static IntPtr Create(
+			string password,
+			string name,
+			CryptoKey key,
+			X509Certificate cert,
+			Stack<X509Certificate> ca,
+			PBE keyPbe,
+			PBE certPbe,
+			int iterations,
+			KeyType keyType)
+		{
+			if (key == null)
+				throw new ArgumentException("Key cannot be null", "key");
+			if (cert == null)
+				throw new ArgumentException("Certificate cannot be null", "cert");
+			if (ca == null)
+				throw new ArgumentException("Certificate chain cannot be null", "ca");
+
 			return Native.ExpectNonNull(Native.PKCS12_create(
-				password, 
-				name, 
-				key.Handle, 
-				cert.Handle, 
-				ca.Handle, 
+				password,
+				name,
+				key.Handle,
+				cert.Handle,
+				ca.Handle,
 				(int)keyPbe,
 				(int)certPbe,
-				iterations, 
-				1, 
+				iterations,
+				1,
 				(int)keyType));
 		}
 
@@ -186,11 +194,15 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		/// <param name="password"></param>
 		public PKCS12(BIO bio, string password)
-			: base(Native.ExpectNonNull(Native.d2i_PKCS12_bio(bio.Handle, IntPtr.Zero)), true) {
+			: base(
+				Native.ExpectNonNull(Native.d2i_PKCS12_bio(bio.Handle, IntPtr.Zero)),
+				true)
+		{
 			Init(password);
 		}
 
-		private void Init(string password) {
+		private void Init(string password)
+		{
 			IntPtr cert;
 			IntPtr pkey;
 			IntPtr cacerts;
@@ -198,20 +210,17 @@ namespace OpenSSL.X509
 			// Parse the PKCS12 object and get privatekey, cert, cacerts if available
 			Native.ExpectSuccess(Native.PKCS12_parse(ptr, password, out pkey, out cert, out cacerts));
 
-			if (cert != IntPtr.Zero) {
-				certificate = new X509Certificate(cert, true);
-				if (pkey != IntPtr.Zero) {
-					privateKey = new CryptoKey(pkey, true);
-
-					// We have a private key, assign it to the cert
-					certificate.PrivateKey = privateKey.CopyRef();
-				}
+			if (cert != IntPtr.Zero)
+			{
+				certificate = new X509Certificate(cert, pkey);
 			}
 
-			if (cacerts != IntPtr.Zero) {
+			if (cacerts != IntPtr.Zero)
+			{
 				caCertificates = new Stack<X509Certificate>(cacerts, true);
 			}
-			else {
+			else
+			{
 				caCertificates = new Stack<X509Certificate>();
 			}
 		}
@@ -222,7 +231,8 @@ namespace OpenSSL.X509
 		/// Calls i2d_PKCS12_bio()
 		/// </summary>
 		/// <param name="bio"></param>
-		public void Write(BIO bio) {
+		public void Write(BIO bio)
+		{
 			Native.ExpectSuccess(Native.i2d_PKCS12_bio(bio.Handle, Handle));
 		}
 
@@ -235,28 +245,9 @@ namespace OpenSSL.X509
 		{
 			get
 			{
-				if (certificate != null)
-				{
-					var cert = certificate.CopyRef();
-					if (privateKey != null)
-						cert.PrivateKey = privateKey.CopyRef();
-					return cert;
-				}
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Returns the PrivateKey
-		/// </summary>
-		public CryptoKey PrivateKey
-		{
-			get
-			{
-				if (privateKey != null)
-					return privateKey.CopyRef();
-
-				return null;
+				if (certificate == null)
+					return null;
+				return certificate.CopyRef();
 			}
 		}
 
@@ -282,11 +273,7 @@ namespace OpenSSL.X509
 				certificate.Dispose();
 				certificate = null;
 			}
-			if (privateKey != null)
-			{
-				privateKey.Dispose();
-				privateKey = null;
-			}
+
 			if (caCertificates != null)
 			{
 				caCertificates.Dispose();
@@ -299,9 +286,10 @@ namespace OpenSSL.X509
 		#endregion
 
 		#region Fields
-		private CryptoKey privateKey;
+
 		private X509Certificate certificate;
 		private Stack<X509Certificate> caCertificates;
+
 		#endregion
 	}
 }

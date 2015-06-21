@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto
 	/// <summary>
 	/// Wraps the DSA_* functions
 	/// </summary>
-	public class DSA : BaseReference<DSA>
+	public class DSA : BaseReference
 	{
 		#region dsa_st
 

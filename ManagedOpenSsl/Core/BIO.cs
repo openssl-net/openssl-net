@@ -36,7 +36,9 @@ namespace OpenSSL.Core
 	public class BIO : Base
 	{
 		#region Initialization
-		internal BIO(IntPtr ptr, bool owner) : base(ptr, owner) { }
+		internal BIO(IntPtr ptr, bool owner) : base(ptr, owner) 
+		{ 
+		}
 
 		/// <summary>
 		/// Calls BIO_new(BIO_s_mem()) and then BIO_write() the buf

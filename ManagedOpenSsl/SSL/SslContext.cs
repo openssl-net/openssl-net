@@ -33,7 +33,11 @@ using OpenSSL.Extensions;
 
 namespace OpenSSL.SSL
 {
-	internal delegate int ClientCertCallbackHandler(Ssl ssl, out X509Certificate cert, out CryptoKey key);
+	internal delegate int ClientCertCallbackHandler(
+		Ssl ssl, 
+		out X509Certificate cert, 
+		out CryptoKey key
+	);
 
 	/// <summary>
 	///     Wraps the SST_CTX structure and methods
@@ -42,40 +46,29 @@ namespace OpenSSL.SSL
 	{
 		#region Members
 
-		//private SSL_CTX raw;
+		private AlpnExtension alpnExt;
 		private ClientCertCallbackThunk _clientCertCallbackThunk;
 		private VerifyCertCallbackThunk _verifyCertCallbackThunk;
 
 		#endregion
 
-		private static AlpnCallback alpnCb;
-		private static AlpnExtension alpnExt;
 
 		/// <summary>
 		///     Calls SSL_CTX_new()
 		/// </summary>
 		/// <param name="sslMethod"></param>
 		/// <param name="end"></param>
-		/// <param name="includeAlpn"></param>
 		/// <param name="protoList"></param>
 		public SslContext(
 			SslMethod sslMethod,
 			ConnectionEnd end,
-			bool includeAlpn,
 			IEnumerable<string> protoList = null) :
 			base(Native.ExpectNonNull(Native.SSL_CTX_new(sslMethod.Handle)), true)
 		{
-			if (!includeAlpn)
-				return;
-
 			alpnExt = new AlpnExtension(Handle, protoList);
-
 			if (end == ConnectionEnd.Server)
 			{
-				alpnCb = alpnExt.AlpnCb;
-				var alpnCbPtr = Marshal.GetFunctionPointerForDelegate(alpnCb);
-				var arg = new IntPtr();
-				Native.SSL_CTX_set_alpn_select_cb(Handle, alpnCbPtr, arg);
+				Native.SSL_CTX_set_alpn_select_cb(Handle, alpnExt.AlpnCb, IntPtr.Zero);
 			}
 		}
 
@@ -98,15 +91,9 @@ namespace OpenSSL.SSL
 
 		#endregion
 
-		internal bool AlpnIncluded
-		{
-			get { return alpnExt != null; }
-		}
-
 		internal class ClientCertCallbackThunk
 		{
 			private ClientCertCallbackHandler OnClientCertCallback;
-			private Native.client_cert_cb nativeCallback;
 
 			public ClientCertCallbackThunk(ClientCertCallbackHandler callback)
 			{
@@ -118,16 +105,8 @@ namespace OpenSSL.SSL
 				get
 				{
 					if (OnClientCertCallback == null)
-					{
 						return null;
-					}
-					if (nativeCallback != null)
-					{
-						return nativeCallback;
-					}
-
-					nativeCallback = OnClientCertThunk;
-					return nativeCallback;
+					return OnClientCertThunk;
 				}
 			}
 
@@ -146,6 +125,7 @@ namespace OpenSSL.SSL
 					{
 						cert_ptr = cert.Handle;
 					}
+
 					if (key != null)
 					{
 						key_ptr = key.Handle;
@@ -158,7 +138,6 @@ namespace OpenSSL.SSL
 		internal class VerifyCertCallbackThunk
 		{
 			private RemoteCertificateValidationHandler OnVerifyCert;
-			private Native.VerifyCertCallback nativeCallback;
 
 			public VerifyCertCallbackThunk(RemoteCertificateValidationHandler callback)
 			{
@@ -170,39 +149,36 @@ namespace OpenSSL.SSL
 				get
 				{
 					if (OnVerifyCert == null)
-					{
 						return null;
-					}
-					if (nativeCallback != null)
-					{
-						return nativeCallback;
-					}
-					nativeCallback = OnVerifyCertThunk;
-					return nativeCallback;
+					return OnVerifyCertThunk;
 				}
 			}
 
 			internal int OnVerifyCertThunk(int ok, IntPtr store_ctx)
 			{
 				var ctx = new X509StoreContext(store_ctx, false);
-				var cert = ctx.CurrentCert;
-				var depth = ctx.ErrorDepth;
-				var result = (VerifyResult)ctx.Error;
-				// build the X509Chain from the store
-				var store = ctx.Store;
-				var objStack = store.Objects;
-				var chain = new X509Chain();
 
-				foreach (var obj in objStack)
+				// build the X509Chain from the store
+				using (var chain = new X509Chain())
 				{
-					var objCert = obj.Certificate;
-					if (objCert != null)
+					foreach (var obj in ctx.Store.Objects)
 					{
-						chain.Add(objCert);
+						var cert = obj.Certificate;
+						if (cert != null)
+						{
+							chain.Add(cert);
+						}
 					}
+
+					// Call the managed delegate
+					return OnVerifyCert(
+						this, 
+						ctx.CurrentCert, 
+						chain, 
+						ctx.ErrorDepth, 
+						(VerifyResult)ctx.Error
+					) ? 1 : 0;
 				}
-				// Call the managed delegate
-				return OnVerifyCert(this, cert, chain, depth, result) ? 1 : 0;
 			}
 		}
 
@@ -247,8 +223,7 @@ namespace OpenSSL.SSL
 		public Core.Stack<X509Name> LoadClientCAFile(string filename)
 		{
 			var stack = Native.SSL_load_client_CA_file(filename);
-			var name_stack = new Core.Stack<X509Name>(stack, true);
-			return name_stack;
+			return new Core.Stack<X509Name>(stack, true);
 		}
 
 		/// <summary>
@@ -263,8 +238,7 @@ namespace OpenSSL.SSL
 			get
 			{
 				var ptr = Native.SSL_CTX_get_client_CA_list(this.ptr);
-				var name_stack = new Core.Stack<X509Name>(ptr, false);
-				return name_stack;
+				return new Core.Stack<X509Name>(ptr, false);
 			}
 			set
 			{
@@ -323,24 +297,6 @@ namespace OpenSSL.SSL
 		{
 			_clientCertCallbackThunk = new ClientCertCallbackThunk(callback);
 			Native.SSL_CTX_set_client_cert_cb(ptr, _clientCertCallbackThunk.Callback);
-		}
-
-		public List<string> GetCipherList()
-		{
-			var ret = new List<string>();
-			var raw = (SSL_CTX)Marshal.PtrToStructure(ptr, typeof(SSL_CTX));
-			var stack = new Core.Stack<SslCipher>(raw.cipher_list, false);
-			foreach (var cipher in stack)
-			{
-				var cipher_ptr = Native.SSL_CIPHER_description(cipher.Handle, null, 0);
-				if (cipher_ptr != IntPtr.Zero)
-				{
-					var strCipher = Marshal.PtrToStringAnsi(cipher_ptr);
-					ret.Add(strCipher);
-					Native.OPENSSL_free(cipher_ptr);
-				}
-			}
-			return ret;
 		}
 
 		#endregion

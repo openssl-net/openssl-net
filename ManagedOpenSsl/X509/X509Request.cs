@@ -36,16 +36,19 @@ namespace OpenSSL.X509
 	public class X509Request : Base
 	{
 		#region Initialization
+
 		/// <summary>
 		/// Calls X509_REQ_new()
 		/// </summary>
-		public X509Request() 
+		public X509Request()
 			: base(Native.ExpectNonNull(Native.X509_REQ_new()), true)
-		{ }
-		
-		internal X509Request(IntPtr ptr, bool owner) 
-			: base(ptr, owner) 
-		{ }
+		{
+		}
+
+		internal X509Request(IntPtr ptr, bool owner)
+			: base(ptr, owner)
+		{
+		}
 
 		/// <summary>
 		/// Calls X509_REQ_new() and then initializes version, subject, and key.
@@ -67,7 +70,8 @@ namespace OpenSSL.X509
 		/// <param name="bio"></param>
 		public X509Request(BIO bio)
 			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
-		{ }
+		{
+		}
 
 		/// <summary>
 		/// Creates a X509_REQ from a PEM formatted string.
@@ -75,26 +79,34 @@ namespace OpenSSL.X509
 		/// <param name="pem"></param>
 		public X509Request(string pem)
 			: this(new BIO(pem))
-		{ }
+		{
+		}
+
 		#endregion
 
 		#region X509_REQ_INFO
+
 		[StructLayout(LayoutKind.Sequential)]
 		private struct X509_REQ_INFO
 		{
 			#region ASN1_ENCODING enc;
+
 			public IntPtr enc_enc;
 			public int enc_len;
 			public int enc_modified;
+
 			#endregion
+
 			public IntPtr version;
 			public IntPtr subject;
 			public IntPtr pubkey;
 			public IntPtr attributes;
 		}
+
 		#endregion
 
 		#region X509_REQ
+
 		[StructLayout(LayoutKind.Sequential)]
 		private struct X509_REQ
 		{
@@ -103,9 +115,11 @@ namespace OpenSSL.X509
 			public IntPtr signature;
 			public int references;
 		}
+
 		#endregion
 
 		#region Properties
+
 		private X509_REQ Raw
 		{
 			get { return (X509_REQ)Marshal.PtrToStructure(ptr, typeof(X509_REQ)); }
@@ -115,7 +129,7 @@ namespace OpenSSL.X509
 		{
 			get { return (X509_REQ_INFO)Marshal.PtrToStructure(Raw.req_info, typeof(X509_REQ_INFO)); }
 		}
-		
+
 		/// <summary>
 		/// Accessor to the version field. The settor calls X509_REQ_set_version().
 		/// </summary>
@@ -153,14 +167,16 @@ namespace OpenSSL.X509
 				using (var bio = BIO.MemoryBuffer())
 				{
 					Write(bio);
-					
+
 					return bio.ReadString();
 				}
 			}
 		}
+
 		#endregion
 
 		#region Methods
+
 		/// <summary>
 		/// Sign this X509Request using the supplied key and digest.
 		/// </summary>
@@ -187,12 +203,17 @@ namespace OpenSSL.X509
 			return ret == 1;
 		}
 
-		//public ArraySegment<byte> Digest(IntPtr type, byte[] digest)
-		//{
-		//    uint len = (uint)digest.Length;
-		//    Native.ExpectSuccess(Native.X509_REQ_digest(this.ptr, type, digest, ref len));
-		//    return new ArraySegment<byte>(digest, 0, (int)len);
-		//}
+		/// <summary>
+		/// Digest the specified type and digest.
+		/// </summary>
+		/// <param name="type">Type.</param>
+		/// <param name="digest">Digest.</param>
+		public ArraySegment<byte> Digest(IntPtr type, byte[] digest)
+		{
+			uint len = (uint)digest.Length;
+			Native.ExpectSuccess(Native.X509_REQ_digest(this.ptr, type, digest, ref len));
+			return new ArraySegment<byte>(digest, 0, (int)len);
+		}
 
 		/// <summary>
 		/// Calls X509_REQ_print()
@@ -222,6 +243,7 @@ namespace OpenSSL.X509
 		{
 			return new X509Certificate(Native.ExpectNonNull(Native.X509_REQ_to_X509(ptr, days, pkey.Handle)), true);
 		}
+
 		#endregion
 
 		#region Overrides Members
@@ -229,7 +251,8 @@ namespace OpenSSL.X509
 		/// <summary>
 		/// Calls X509_REQ_free()
 		/// </summary>
-		protected override void OnDispose() {
+		protected override void OnDispose()
+		{
 			Native.X509_REQ_free(ptr);
 		}
 

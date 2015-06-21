@@ -29,6 +29,9 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto.EC
 {
+	/// <summary>
+	/// Wraps ECDSA_SIG_st
+	/// </summary>
 	public class DSASignature : Base
 	{
 		[StructLayout(LayoutKind.Sequential)]
@@ -39,26 +42,40 @@ namespace OpenSSL.Crypto.EC
 		}
 
 		#region Initialization
-		internal DSASignature(IntPtr ptr, bool owner) 
-			: base(ptr, owner) {
+		internal DSASignature(IntPtr ptr, bool owner)
+			: base(ptr, owner)
+		{
 		}
-		
-		public DSASignature() 
-			: base(Native.ExpectNonNull(Native.ECDSA_SIG_new()), true) {
+
+		/// <summary>
+		/// Calls ECDSA_SIG_new()
+		/// </summary>
+		public DSASignature()
+			: base(Native.ExpectNonNull(Native.ECDSA_SIG_new()), true)
+		{
 		}
 		#endregion
 
 		#region Properties
-		private ECDSA_SIG_st Raw {
+		private ECDSA_SIG_st Raw
+		{
 			get { return (ECDSA_SIG_st)Marshal.PtrToStructure(ptr, typeof(ECDSA_SIG_st)); }
 			set { Marshal.StructureToPtr(value, ptr, false); }
 		}
 
-		public BigNumber R {
+		/// <summary>
+		/// Returns R
+		/// </summary>
+		public BigNumber R
+		{
 			get { return new BigNumber(Raw.r, false); }
 		}
 
-		public BigNumber S {
+		/// <summary>
+		/// Returns S
+		/// </summary>
+		public BigNumber S
+		{
 			get { return new BigNumber(Raw.s, false); }
 		}
 		#endregion
@@ -67,7 +84,11 @@ namespace OpenSSL.Crypto.EC
 		#endregion
 
 		#region Overrides
-		protected override void OnDispose() {
+		/// <summary>
+		/// Calls ECDSA_SIG_free()
+		/// </summary>
+		protected override void OnDispose()
+		{
 			Native.ECDSA_SIG_free(ptr);
 		}
 		#endregion

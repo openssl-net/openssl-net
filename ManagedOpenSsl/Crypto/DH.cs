@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto
 	/// <summary>
 	/// Encapsulates the native openssl Diffie-Hellman functions (DH_*)
 	/// </summary>
-	public class DH : BaseReference<DH>
+	public class DH : BaseReference
 	{
 		/// <summary>
 		/// Constant generator value of 2.

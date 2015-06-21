@@ -47,21 +47,6 @@ namespace OpenSSL.SSL
 		}
 
 		/// <summary>
-		/// SSLv2_method()
-		/// </summary>
-		public static SslMethod SSLv2_method = new SslMethod(Native.SSLv2_method(), false);
-
-		/// <summary>
-		/// SSLv2_server_method()
-		/// </summary>
-		public static SslMethod SSLv2_server_method = new SslMethod(Native.SSLv2_server_method(), false);
-
-		/// <summary>
-		/// SSLv2_client_method()
-		/// </summary>
-		public static SslMethod SSLv2_client_method = new SslMethod(Native.SSLv2_client_method(), false);
-        
-		/// <summary>
 		/// SSLv3_method()
 		/// </summary>
 		public static SslMethod SSLv3_method = new SslMethod(Native.SSLv3_method(), false);

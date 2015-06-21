@@ -1,0 +1,12 @@
+﻿<NUnitProject>
+  <Settings activeconfig="Debug" processModel="Separate" />
+  <Config name="Debug" binpathtype="Auto" runtimeFramework="any">
+    <assembly path="..\bin\Debug\UnitTests.dll" />
+  </Config>
+  <Config name="Release" binpathtype="Auto">
+    <assembly path="..\bin\Release\UnitTests.dll" />
+  </Config>
+  <Config name="Trace" binpathtype="Auto" runtimeFramework="any">
+    <assembly path="..\bin\Trace\UnitTests.dll" />
+  </Config>
+</NUnitProject>

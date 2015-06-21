@@ -187,7 +187,7 @@ namespace OpenSSL.X509
 
 			cert.Sign(key, MessageDigest.DSS1);
 
-			return new X509CertificateAuthority(cert, key, seq, cfg);
+			return new X509CertificateAuthority(cert, key, seq);
 		}
 
 		/// <summary>
@@ -224,7 +224,7 @@ namespace OpenSSL.X509
 
 			cert.Sign(key, digest);
 
-			return new X509CertificateAuthority(cert, key, seq, cfg);
+			return new X509CertificateAuthority(cert, key, seq);
 		}
 
 		/// <summary>
@@ -271,7 +271,7 @@ namespace OpenSSL.X509
 
 			cert.Sign(key, digest);
 
-			return new X509CertificateAuthority(cert, key, seq, null);
+			return new X509CertificateAuthority(cert, key, seq);
 		}
 
 		#endregion
@@ -284,8 +284,7 @@ namespace OpenSSL.X509
 		/// <param name="caCert"></param>
 		/// <param name="caKey"></param>
 		/// <param name="serial"></param>
-		/// <param name="cfg"></param>
-		public X509CertificateAuthority(X509Certificate caCert, CryptoKey caKey, ISequenceNumber serial, Configuration cfg)
+		public X509CertificateAuthority(X509Certificate caCert, CryptoKey caKey, ISequenceNumber serial)
 		{
 			if (!caCert.CheckPrivateKey(caKey))
 				throw new Exception("The specified CA Private Key does match the specified CA Certificate");
@@ -293,7 +292,6 @@ namespace OpenSSL.X509
 			this.caCert = caCert;
 			this.caKey = caKey;
 			this.serial = serial;
-			this.cfg = cfg;
 		}
 
 		#endregion
@@ -321,38 +319,49 @@ namespace OpenSSL.X509
 		#region Methods
 
 		/// <summary>
-		/// Process and X509Request. This includes creating a new X509Certificate
+		/// Process an X509Request. This includes creating a new X509Certificate
 		/// and signing this certificate with this CA's private key.
 		/// </summary>
 		/// <param name="request"></param>
 		/// <param name="startTime"></param>
 		/// <param name="endTime"></param>
+		/// <param name="cfg"></param>
+		/// <param name="section"></param>
 		/// <returns></returns>
-		public X509Certificate ProcessRequest(X509Request request, DateTime startTime, DateTime endTime)
+		public X509Certificate ProcessRequest(
+			X509Request request, 
+			DateTime startTime, 
+			DateTime endTime,
+			Configuration cfg,
+			string section)
 		{
-			return ProcessRequest(request, startTime, endTime, MessageDigest.DSS1);
+			return ProcessRequest(request, startTime, endTime, cfg, section, MessageDigest.DSS1);
 		}
 
 		/// <summary>
-		/// Process and X509Request. This includes creating a new X509Certificate
+		/// Process an X509Request. This includes creating a new X509Certificate
 		/// and signing this certificate with this CA's private key.
 		/// </summary>
 		/// <param name="request"></param>
 		/// <param name="startTime"></param>
 		/// <param name="endTime"></param>
+		/// <param name="cfg"></param>
+		/// <param name="section"></param>
 		/// <param name="digest"></param>
 		/// <returns></returns>
 		public X509Certificate ProcessRequest(
 			X509Request request,
 			DateTime startTime,
 			DateTime endTime,
+			Configuration cfg,
+			string section,
 			MessageDigest digest)
 		{
-			//using (CryptoKey pkey = request.PublicKey)
-			//{
-			//    if (!request.Verify(pkey))
-			//        throw new Exception("Request signature validation failed");
-			//}
+//			using (var pkey = request.PublicKey)
+//			{
+//				if (!request.Verify(pkey))
+//					throw new Exception("Request signature validation failed");
+//			}
 
 			var cert = new X509Certificate(
 				           serial.Next(),
@@ -363,7 +372,7 @@ namespace OpenSSL.X509
 				           endTime);
 
 			if (cfg != null)
-				cfg.ApplyExtensions("v3_ca", caCert, cert, request);
+				cfg.ApplyExtensions(section, caCert, cert, request);
 
 			cert.Sign(caKey, digest);
 
@@ -390,12 +399,6 @@ namespace OpenSSL.X509
 				caCert.Dispose();
 				caCert = null;
 			}
-
-			if (cfg != null)
-			{
-				cfg.Dispose();
-				cfg = null;
-			}
 		}
 
 		#endregion
@@ -405,7 +408,6 @@ namespace OpenSSL.X509
 		private X509Certificate caCert;
 		private CryptoKey caKey;
 		private ISequenceNumber serial;
-		private Configuration cfg;
 
 		#endregion
 	}

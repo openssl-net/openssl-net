@@ -90,28 +90,6 @@ namespace OpenSSL.Core
 	}
 
 	/// <summary>
-	/// static class for initialize OpenSSL/Crypto libraries for threading
-	/// </summary>
-	public class ThreadInitialization
-	{
-		/// <summary>
-		/// Calls Native.InitializeThreads()
-		/// </summary>
-		public static void InitializeThreads()
-		{
-			Native.InitializeThreads();
-		}
-
-		/// <summary>
-		/// Calls Native.UninitializeThreads()
-		/// </summary>
-		public static void UninitializeThreads()
-		{
-			Native.UninitializeThreads();
-		}
-	}
-
-	/// <summary>
 	/// This is the low-level C-style interface to the crypto API.
 	/// Use this interface with caution.
 	/// </summary>
@@ -127,6 +105,9 @@ namespace OpenSSL.Core
 		#region Delegates
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate int err_cb(IntPtr str, uint len, IntPtr u);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int pem_password_cb(IntPtr buf, int size, int rwflag, IntPtr userdata);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -139,13 +120,32 @@ namespace OpenSSL.Core
 		public delegate void CRYPTO_locking_callback(int mode, int type, string file, int line);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate uint CRYPTO_id_callback();
+		public delegate void CRYPTO_id_callback(IntPtr tid);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int VerifyCertCallback(int ok, IntPtr x509_store_ctx);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int client_cert_cb(IntPtr ssl, out IntPtr x509, out IntPtr pkey);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate int alpn_cb(
+			IntPtr ssl, 
+			out string selProto, 
+			out byte selProtoLen,
+			IntPtr inProtos, 
+			int inProtosLen, 
+			IntPtr arg
+		);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate IntPtr MallocFunctionPtr(uint num, IntPtr file, int line);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate IntPtr ReallocFunctionPtr(IntPtr addr, uint num, IntPtr file, int line);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void FreeFunctionPtr(IntPtr addr);
 
 		#endregion
 
@@ -158,6 +158,10 @@ namespace OpenSSL.Core
 			if (lib.Raw < wrapper.Raw)
 				throw new Exception(string.Format("Invalid version of {0}, expecting {1}, got: {2}",
 					DLLNAME, wrapper, lib));
+
+#if MEMORY_TRACKER
+			MemoryTracker.Init();
+#endif
 
 			// Enable FIPS mode
 			if (FIPS.Enabled)
@@ -180,47 +184,6 @@ namespace OpenSSL.Core
 			var rng = RandomNumberGenerator.Create();
 			rng.GetBytes(seed);
 			RAND_seed(seed, seed.Length);
-		}
-
-		public static void InitializeThreads()
-		{
-			// Initialize the threading locks
-			var nLocks = CRYPTO_num_locks();
-			lock_objects = new List<object>(nLocks);
-			
-			for (var i = 0; i < nLocks; i++)
-			{
-				var obj = new object();
-				lock_objects.Add(obj);
-			}
-
-			// Initialize the internal thread id stack
-			threadIDs = new System.Collections.Generic.Stack<uint>();
-			
-			// Initialize the delegate for the locking callback
-			CRYPTO_locking_callback_delegate = new CRYPTO_locking_callback(LockingCallback);
-			CRYPTO_set_locking_callback(CRYPTO_locking_callback_delegate);
-			
-			// Initialize the thread id callback
-			CRYPTO_id_callback_delegate = new CRYPTO_id_callback(ThreadIDCallback);
-			CRYPTO_set_id_callback(CRYPTO_id_callback_delegate);
-		}
-
-		public static void UninitializeThreads()
-		{
-			// Cleanup the thread lock objects
-			CRYPTO_set_locking_callback(null);
-			lock_objects.Clear();
-			CRYPTO_set_id_callback(null);
-			
-			// Clean up error state for each thread that was used by OpenSSL
-			if (threadIDs != null)
-			{
-				foreach (var id in threadIDs)
-				{
-					Native.ERR_remove_state(id);
-				}
-			}
 		}
 
 		#endregion
@@ -258,12 +221,11 @@ namespace OpenSSL.Core
 
 		#region Threading
 
-		private static List<object> lock_objects;
-		private static CRYPTO_locking_callback CRYPTO_locking_callback_delegate;
-		private static CRYPTO_id_callback CRYPTO_id_callback_delegate;
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CRYPTO_THREADID_set_callback(CRYPTO_id_callback cb);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_set_id_callback(CRYPTO_id_callback cb);
+		public extern static void CRYPTO_THREADID_set_numeric(IntPtr id, uint val);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void CRYPTO_set_locking_callback(CRYPTO_locking_callback cb);
@@ -273,32 +235,6 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int CRYPTO_add_lock(IntPtr ptr, int amount, CryptoLockTypes type, string file, int line);
-
-		public const int CRYPTO_LOCK = 1;
-
-		public static void LockingCallback(int mode, int type, string file, int line)
-		{
-			if ((mode & CRYPTO_LOCK) == CRYPTO_LOCK)
-			{
-				Monitor.Enter(lock_objects[type]);
-			}
-			else
-			{
-				Monitor.Exit(lock_objects[type]);
-			}
-		}
-
-		private static System.Collections.Generic.Stack<uint> threadIDs;
-
-		public static uint ThreadIDCallback()
-		{
-			var threadId = (uint)Thread.CurrentThread.ManagedThreadId;
-			if (!threadIDs.Contains(threadId))
-			{
-				threadIDs.Push(threadId);
-			}
-			return threadId;
-		}
 
 		#endregion
 
@@ -311,15 +247,6 @@ namespace OpenSSL.Core
 		public extern static void OPENSSL_add_all_algorithms_conf();
 
 		/// <summary>
-		/// #define OPENSSL_free(addr) CRYPTO_free(addr)
-		/// </summary>
-		/// <param name="p"></param>
-		public static void OPENSSL_free(IntPtr p)
-		{
-			CRYPTO_free(p);
-		}
-
-		/// <summary>
 		/// #define OPENSSL_malloc(num)	CRYPTO_malloc((int)num,__FILE__,__LINE__)
 		/// </summary>
 		/// <param name="cbSize"></param>
@@ -329,6 +256,15 @@ namespace OpenSSL.Core
 			return CRYPTO_malloc(cbSize, Assembly.GetExecutingAssembly().FullName, 0);
 		}
 
+		/// <summary>
+		/// #define OPENSSL_free(addr) CRYPTO_free(addr)
+		/// </summary>
+		/// <param name="p"></param>
+		public static void OPENSSL_free(IntPtr p)
+		{
+			CRYPTO_free(p);
+		}
+
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void CRYPTO_free(IntPtr p);
 
@@ -336,83 +272,14 @@ namespace OpenSSL.Core
 		public extern static IntPtr CRYPTO_malloc(int num, string file, int line);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr CRYPTO_realloc(IntPtr ptr, int num, string file, int line);
-
-		private static MallocFunctionPtr ptr_CRYPTO_dbg_malloc = CRYPTO_dbg_malloc;
-		private static ReallocFunctionPtr ptr_CRYPTO_dbg_realloc = CRYPTO_dbg_realloc;
-		private static FreeFunctionPtr ptr_CRYPTO_dbg_free = CRYPTO_dbg_free;
-		private static SetOptionsFunctionPtr ptr_CRYPTO_dbg_set_options = CRYPTO_dbg_set_options;
-		private static GetOptionsFunctionPtr ptr_CRYPTO_dbg_get_options = CRYPTO_dbg_get_options;
-
-		//!! - Expose the default CRYPTO_malloc_debug_init() - this method hooks up the default
-		//!! - debug functions in the crypto library, this allows us to utilize the MemoryTracker
-		//!! - on non-Windows systems as well.
-		public static void CRYPTO_malloc_debug_init()
-		{
-			CRYPTO_set_mem_debug_functions(
-				ptr_CRYPTO_dbg_malloc,
-				ptr_CRYPTO_dbg_realloc,
-				ptr_CRYPTO_dbg_free,
-				ptr_CRYPTO_dbg_set_options,
-				ptr_CRYPTO_dbg_get_options);
-		}
-
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void MallocFunctionPtr(IntPtr addr, int num, IntPtr file, int line, int before_p);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void ReallocFunctionPtr(IntPtr addr1, IntPtr addr2, int num, IntPtr file, int line, int before_p);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void FreeFunctionPtr(IntPtr addr, int before_p);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void SetOptionsFunctionPtr(int bits);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate int GetOptionsFunctionPtr();
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_malloc(IntPtr addr, int num, IntPtr file, int line, int before_p);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_realloc(
-			IntPtr addr1,
-			IntPtr addr2,
-			int num,
-			IntPtr file,
-			int line,
-			int before_p);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_free(IntPtr addr, int before_p);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_set_options(int bits);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int CRYPTO_dbg_get_options();
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int CRYPTO_set_mem_debug_functions(
+		public extern static int CRYPTO_set_mem_ex_functions(
 			MallocFunctionPtr m, 
 			ReallocFunctionPtr r, 
-			FreeFunctionPtr f, 
-			SetOptionsFunctionPtr so, 
-			GetOptionsFunctionPtr go);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int CRYPTO_mem_ctrl(int mode);
+			FreeFunctionPtr f
+		);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void CRYPTO_cleanup_all_ex_data();
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_mem_leaks(IntPtr bio);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_mem_leaks_cb(CryptoUtil.MemoryLeakHandler cb);
 
 		#endregion
 
@@ -805,6 +672,9 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int X509_STORE_CTX_get_error_depth(IntPtr x509_store_ctx);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static IntPtr X509_STORE_CTX_get0_store(IntPtr ctx);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int X509_STORE_CTX_get_error(IntPtr x509_store_ctx);
@@ -1282,7 +1152,6 @@ namespace OpenSSL.Core
 		public extern static int i2d_PKCS12_bio(IntPtr bp, IntPtr p12);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		//PKCS12 *PKCS12_create(char *pass, char *name, EVP_PKEY *pkey, X509 *cert, STACK_OF(X509) *ca, int nid_key, int nid_cert, int iter, int mac_iter, int keytype);
 		public extern static IntPtr PKCS12_create(
 			string pass,
 			string name,
@@ -1296,14 +1165,12 @@ namespace OpenSSL.Core
 			int keytype);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		//int PKCS12_parse(PKCS12 *p12, const char *pass, EVP_PKEY **pkey, X509 **cert, STACK_OF(X509) **ca);
 		public extern static int PKCS12_parse(IntPtr p12, string pass, out IntPtr pkey, out IntPtr cert, out IntPtr ca);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void PKCS12_free(IntPtr p12);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		//!!int PEM_write_bio_PKCS8PrivateKey(BIO *bp, EVP_PKEY *x, const EVP_CIPHER *enc, char *kstr, int klen, pem_password_cb *cb, void *u);
 		public extern static int PEM_write_bio_PKCS8PrivateKey(
 			IntPtr bp,
 			IntPtr evp_pkey,
@@ -2570,10 +2437,13 @@ namespace OpenSSL.Core
 		public extern static IntPtr ERR_reason_error_string(uint e);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void ERR_remove_state(uint pid);
+		public extern static void ERR_remove_thread_state(IntPtr tid);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void ERR_clear_error();
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static void ERR_print_errors_cb(err_cb cb, IntPtr u);
 
 		#endregion
 
@@ -2889,16 +2759,22 @@ namespace OpenSSL.Core
 		#region SSL functions
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr SSL_CIPHER_description(IntPtr ssl_cipher, byte[] buf, int buf_len);
+		public extern static string SSL_CIPHER_description(IntPtr ssl_cipher, byte[] buf, int buf_len);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static string SSL_CIPHER_name(IntPtr ssl_cipher);
+		public extern static IntPtr SSL_CIPHER_get_name(IntPtr ssl_cipher);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int SSL_CIPHER_get_bits(IntPtr ssl_cipher, out int alg_bits);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static IntPtr SSL_CIPHER_get_version(IntPtr ssl_cipher);
+
+		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr SSL_get_current_cipher(IntPtr ssl);
+
+		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static IntPtr SSL_get_ciphers(IntPtr ssl);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int SSL_get_verify_result(IntPtr ssl);
@@ -2949,6 +2825,12 @@ namespace OpenSSL.Core
 		public extern static void SSL_free(IntPtr ssl);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int SSL_state(IntPtr ssl);
+
+		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static void SSL_set_state(IntPtr ssl, int state);
+
+		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void SSL_set_bio(IntPtr ssl, IntPtr read_bio, IntPtr write_bio);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
@@ -2994,16 +2876,13 @@ namespace OpenSSL.Core
 		public static extern int SSL_CTX_callback_ctrl(IntPtr ctx, int cmd, IntPtr cb);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int SSL_CTX_set_alpn_protos(
-			IntPtr ctx,
-			[MarshalAs(UnmanagedType.LPArray)] byte[] protos,
-			UInt32 protos_len);
+		public static extern int SSL_CTX_set_alpn_protos(IntPtr ctx, byte[] protos, UInt32 protos_len);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public static extern void SSL_get0_alpn_selected(IntPtr ssl, ref IntPtr data, ref IntPtr len);
+		public static extern void SSL_get0_alpn_selected(IntPtr ssl, out IntPtr data, out int len);
 
 		[DllImport(SSLDLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public static extern void SSL_CTX_set_alpn_select_cb(IntPtr ctx, IntPtr alpnCb, IntPtr arg);
+		public static extern void SSL_CTX_set_alpn_select_cb(IntPtr ctx, alpn_cb alpnCb, IntPtr arg);
 
 		#endregion
 

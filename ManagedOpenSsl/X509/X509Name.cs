@@ -33,7 +33,7 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Encapsulates the X509_NAME_* functions
 	/// </summary>
-	public class X509Name : BaseValue<X509Name>, IComparable<X509Name>, IStackable
+	public class X509Name : BaseValue, IComparable<X509Name>, IStackable
 	{
 		#region Initialization
 		internal X509Name(IntPtr ptr, bool owner) 

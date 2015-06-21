@@ -33,22 +33,44 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509 object
 	/// </summary>
-	public class X509Certificate : BaseReferenceImpl<X509Certificate>, IComparable<X509Certificate>, IStackable
+	public class X509Certificate : BaseReferenceImpl, IComparable<X509Certificate>, IStackable
 	{
 		#region Initialization
 
-		internal X509Certificate(IStack stack, IntPtr ptr) : base(ptr, true)
+		internal X509Certificate(IStack stack, IntPtr ptr)
+			: base(ptr, true)
 		{
 		}
 
-		internal X509Certificate(IntPtr ptr, bool owner) : base(ptr, owner)
+		internal X509Certificate(IntPtr ptr, bool owner)
+			: base(ptr, owner)
 		{
+		}
+
+		internal X509Certificate(IntPtr ptr, IntPtr pkey)
+			: base(ptr, true)
+		{
+			if (pkey != IntPtr.Zero)
+			{
+				privateKey = new CryptoKey(pkey, true);
+			}
+		}
+
+		private X509Certificate(X509Certificate other)
+			: base(other.Handle, true)
+		{
+			AddRef();
+			if (other.privateKey != null)
+			{
+				privateKey = other.privateKey.CopyRef();
+			}
 		}
 
 		/// <summary>
 		/// Calls X509_new()
 		/// </summary>
-		public X509Certificate() : base(Native.ExpectNonNull(Native.X509_new()), true)
+		public X509Certificate()
+			: base(Native.ExpectNonNull(Native.X509_new()), true)
 		{
 		}
 
@@ -56,7 +78,10 @@ namespace OpenSSL.X509
 		/// Calls PEM_read_bio_X509()
 		/// </summary>
 		/// <param name="bio"></param>
-		public X509Certificate(BIO bio) : base(Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
+		public X509Certificate(BIO bio)
+			: base(
+				Native.ExpectNonNull(Native.PEM_read_bio_X509(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)),
+				true)
 		{
 		}
 
@@ -81,7 +106,7 @@ namespace OpenSSL.X509
 		{
 			var pkcs7 = PKCS7.FromPEM(bio);
 			var chain = pkcs7.Certificates;
-			
+
 			if (chain != null && chain.Count > 0)
 			{
 				return new X509Certificate(chain[0].Handle, false);
@@ -101,12 +126,12 @@ namespace OpenSSL.X509
 		{
 			var pkcs7 = PKCS7.FromDER(bio);
 			var chain = pkcs7.Certificates;
-			
+
 			if (chain != null && chain.Count > 0)
 			{
 				return new X509Certificate(chain[0].Handle, false);
 			}
-			
+
 			return null;
 		}
 
@@ -139,7 +164,8 @@ namespace OpenSSL.X509
 			X509Name issuer,
 			CryptoKey pubkey,
 			DateTime start,
-			DateTime end) : this()
+			DateTime end)
+			: this()
 		{
 			Version = 2;
 			SerialNumber = serial;
@@ -360,16 +386,28 @@ namespace OpenSSL.X509
 		/// </summary>
 		public CryptoKey PrivateKey
 		{
-			get { return privateKey.CopyRef(); }
+			get
+			{
+				if (privateKey == null)
+					return null;
+				return privateKey.CopyRef();
+			}
 			set
 			{
-				if (CheckPrivateKey(value))
+				if (value == null)
 				{
-					privateKey = value.CopyRef();
+					privateKey = null;
 				}
 				else
 				{
-					throw new ArgumentException("Private key doesn't correspond to the this certificate");
+					if (CheckPrivateKey(value))
+					{
+						privateKey = value.CopyRef();
+					}
+					else
+					{
+						throw new ArgumentException("Private key doesn't correspond to the this certificate");
+					}
 				}
 			}
 		}
@@ -407,6 +445,15 @@ namespace OpenSSL.X509
 		#endregion
 
 		#region Methods
+
+		/// <summary>
+		/// Returns a copy of this object.
+		/// </summary>
+		/// <returns></returns>
+		public X509Certificate CopyRef()
+		{
+			return new X509Certificate(this);
+		}
 
 		/// <summary>
 		/// Calls X509_sign()

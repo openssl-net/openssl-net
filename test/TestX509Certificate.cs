@@ -51,7 +51,7 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPEM()
 		{
-			using (var bio = new BIO(LoadString(Resources.CaCrt)))
+			using (var bio = new BIO(Util.LoadString(Resources.CaCrt)))
 			{
 				using (var cert = new X509Certificate(bio))
 				{
@@ -63,7 +63,7 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromDER()
 		{
-			using (var bio = new BIO(LoadBytes(Resources.CaDer)))
+			using (var bio = new BIO(Util.LoadBytes(Resources.CaDer)))
 			{
 				using (var cert = X509Certificate.FromDER(bio))
 				{
@@ -75,7 +75,7 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPKCS7_PEM()
 		{
-			using (var bio = new BIO(LoadString(Resources.CaChainP7cPem)))
+			using (var bio = new BIO(Util.LoadString(Resources.CaChainP7cPem)))
 			{
 				using (var cert = X509Certificate.FromPKCS7_PEM(bio))
 				{
@@ -87,7 +87,7 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPKCS7_DER()
 		{
-			using (var bio = new BIO(LoadBytes(Resources.CaChainP7c)))
+			using (var bio = new BIO(Util.LoadBytes(Resources.CaChainP7c)))
 			{
 				using (var cert = X509Certificate.FromPKCS7_DER(bio))
 				{
@@ -99,21 +99,21 @@ namespace UnitTests
 		[Test]
 		public void CanLoadFromPCKS12()
 		{
-			using (var bio = new BIO(LoadBytes(Resources.ServerPfx)))
+			using (var cert = Util.LoadPKCS12Certificate(Resources.ServerPfx, Resources.Password))
 			{
-				using (var cert = X509Certificate.FromPKCS12(bio, password))
-				{
-					TestCert(cert, "CN=localhost", "CN=Root", 1235);
-				}
+				TestCert(cert, "CN=localhost", "CN=Root", 1235);
 			}
 		}
 
 		[Test]
 		public void CanCreatePKCS12()
 		{
-			using (var bio = new BIO(LoadBytes(Resources.ServerPfx)))
-			using (var pfx = new PKCS12(bio, password))
-			using (var new_pfx = new PKCS12(password, pfx.PrivateKey, pfx.Certificate, pfx.CACertificates))
+			using (var bio = new BIO(Util.LoadBytes(Resources.ServerPfx)))
+			using (var pfx = new PKCS12(bio, Resources.Password))
+			using (var new_pfx = new PKCS12(Resources.Password,
+									   pfx.Certificate.PrivateKey,
+									   pfx.Certificate,
+									   pfx.CACertificates))
 			{
 				TestCert(new_pfx.Certificate, "CN=localhost", "CN=Root", 1235);
 			}
@@ -133,7 +133,7 @@ namespace UnitTests
 				Assert.AreEqual(subject, cert.Subject);
 				Assert.AreEqual(issuer, cert.Issuer);
 				Assert.AreEqual(serial, cert.SerialNumber);
-			
+
 				// We compare short date/time strings here because the wrapper can't handle milliseconds
 				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
 				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
@@ -261,7 +261,7 @@ namespace UnitTests
 		[Test]
 		public void CanGetAsPEM()
 		{
-			var data = LoadString(Resources.CaCrt);
+			var data = Util.LoadString(Resources.CaCrt);
 			var expected = data.Replace("\r\n", "\n");
 			using (var bio = new BIO(data))
 			using (var cert = new X509Certificate(bio))
@@ -276,7 +276,7 @@ namespace UnitTests
 		[Test]
 		public void CanSaveAsDER()
 		{
-			var data = LoadBytes(Resources.CaDer);
+			var data = Util.LoadBytes(Resources.CaDer);
 			using (var bio = new BIO(data))
 			using (var cert = X509Certificate.FromDER(bio))
 			{
@@ -363,7 +363,7 @@ namespace UnitTests
 			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
 			using (var request = cert.CreateRequest(key, MessageDigest.DSS1))
 			{
-				Assert.AreEqual(true, request.Verify(key));
+				Assert.IsTrue(request.Verify(key));
 			}
 		}
 
@@ -403,42 +403,7 @@ namespace UnitTests
 		{
 			Assert.AreEqual(subject, cert.Subject.ToString());
 			Assert.AreEqual(issuer, cert.Issuer.ToString());
-			Assert.AreEqual(serial, cert.SerialNumber); 
+			Assert.AreEqual(serial, cert.SerialNumber);
 		}
-
-		private string LoadString(string resourceId)
-		{
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId))
-			using (var reader = new StreamReader(stream))
-			{
-				return reader.ReadToEnd();
-			}
-		}
-
-		private byte[] LoadBytes(string resourceId)
-		{
-			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceId))
-			using (var reader = new BinaryReader(stream))
-			{
-				return reader.ReadBytes((int)stream.Length);
-			}
-		}
-
-		static class Resources
-		{
-			public const string CaCrt = "UnitTests.certs.ca.crt";
-			public const string CaDer = "UnitTests.certs.ca.der";
-			public const string CaChainP7c = "UnitTests.certs.ca_chain.p7c";
-			public const string CaChainP7cPem = "UnitTests.certs.ca_chain.p7c.pem";
-			public const string CaChainPem = "UnitTests.certs.ca_chain.pem";
-			public const string ClientCrt = "UnitTests.certs.client.crt";
-			public const string ClientPfx = "UnitTests.certs.client.pfx";
-			public const string ClientKey = "UnitTests.certs.client.key";
-			public const string ServerCrt = "UnitTests.certs.server.crt";
-			public const string ServerPfx = "UnitTests.certs.server.pfx";
-			public const string ServerKey = "UnitTests.certs.server.key";
-		}
-
-		const string password = "p@ssw0rd";
 	}
 }

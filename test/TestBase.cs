@@ -26,6 +26,9 @@
 using System;
 using NUnit.Framework;
 using OpenSSL.Core;
+using System.Reflection;
+using System.IO;
+using OpenSSL.X509;
 
 namespace UnitTests
 {
@@ -40,8 +43,14 @@ namespace UnitTests
 		[TearDown]
 		public virtual void Teardown()
 		{
-			MemoryTracker.Finish();
-			Assert.AreEqual(0, MemoryTracker.Leaked);
+			//var errors = CryptoUtil.GetErrors();
+			//foreach (var err in errors)
+			//{
+			//	Console.WriteLine("ERROR: {0}", err);
+			//}
+
+			CollectionAssert.IsEmpty(MemoryTracker.Finish());
+//			CollectionAssert.IsEmpty(errors);
 		}
 	}
 }

@@ -45,8 +45,8 @@ namespace OpenSSL.Core
 	/// Encapsulates the sk_* functions
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class Stack<T> : BaseValue<Stack<T>>, IStack, IList<T> 
-		where T : BaseReference<T>, IStackable
+	public class Stack<T> : BaseValue, IStack, IList<T> 
+		where T : BaseReference, IStackable
 	{
 		#region Initialization
 		internal Stack(IntPtr ptr, bool owner)

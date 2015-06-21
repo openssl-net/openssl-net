@@ -25,6 +25,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace OpenSSL.Core
 {
@@ -126,32 +128,6 @@ namespace OpenSSL.Core
 		}
 
 		/// <summary>
-		/// Calls CRYPTO_malloc_debug_init()
-		/// </summary>
-		public static void MallocDebugInit()
-		{
-			Native.CRYPTO_malloc_debug_init();
-		}
-
-		/// <summary>
-		/// Calls CRYPTO_dbg_set_options()
-		/// </summary>
-		/// <param name="options"></param>
-		public static void SetDebugOptions(DebugOptions options)
-		{
-			Native.CRYPTO_dbg_set_options((int)options);
-		}
-
-		/// <summary>
-		/// Calls CRYPTO_mem_ctrl()
-		/// </summary>
-		/// <param name="options"></param>
-		public static void SetMemoryCheck(MemoryCheck options)
-		{
-			Native.CRYPTO_mem_ctrl((int)options);
-		}
-
-		/// <summary>
 		/// Calls CRYPTO_cleanup_all_ex_data()
 		/// </summary>
 		public static void Cleanup()
@@ -160,32 +136,26 @@ namespace OpenSSL.Core
 		}
 
 		/// <summary>
-		/// Calls ERR_remove_state()
+		/// Calls ERR_clear_error()
 		/// </summary>
-		/// <param name="value"></param>
-		public static void RemoveState(uint value)
+		public static void ClearErrors()
 		{
-			Native.ERR_remove_state(value);
+			Native.ERR_clear_error();
 		}
 
 		/// <summary>
-		/// CRYPTO_MEM_LEAK_CB
+		/// Calls ERR_print_errors_cb()
 		/// </summary>
-		/// <param name="order"></param>
-		/// <param name="file"></param>
-		/// <param name="line"></param>
-		/// <param name="num_bytes"></param>
-		/// <param name="addr"></param>
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void MemoryLeakHandler(uint order, IntPtr file, int line, int num_bytes, IntPtr addr);
-
-		/// <summary>
-		/// Calls CRYPTO_mem_leaks_cb()
-		/// </summary>
-		/// <param name="callback"></param>
-		public static void CheckMemoryLeaks(MemoryLeakHandler callback)
+		/// <value>The errors.</value>
+		public static List<string> GetErrors()
 		{
-			Native.CRYPTO_mem_leaks_cb(callback);
+			var errors = new List<string>();
+			Native.ERR_print_errors_cb((IntPtr str, uint len, IntPtr u) =>
+			{
+				errors.Add(Native.StaticString(str));
+				return 0;
+			}, IntPtr.Zero);
+			return errors;
 		}
 	}
 }

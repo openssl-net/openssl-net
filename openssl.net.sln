@@ -1,20 +1,16 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Files", "Project Files", "{0B96FB71-2BB0-48F8-B3E0-E3848A4F9E87}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGES = CHANGES
 		COPYING = COPYING
 		INSTALL = INSTALL
 		LICENSE = LICENSE
-		README = README
-		release.cmd = release.cmd
 		Makefile = Makefile
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{16576C0C-C834-416B-86B1-F89EAD9EFB8E}"
-	ProjectSection(SolutionItems) = preProject
-		web\index.html = web\index.html
+		release.cmd = release.cmd
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl", "ManagedOpenSsl\ManagedOpenSsl.csproj", "{73DCC218-655B-485F-8EAC-0CE5F2F7343D}"
@@ -27,23 +23,30 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Trace|Any CPU = Trace|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Trace|Any CPU.ActiveCfg = Trace|Any CPU
+		{73DCC218-655B-485F-8EAC-0CE5F2F7343D}.Trace|Any CPU.Build.0 = Trace|Any CPU
 		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Trace|Any CPU.ActiveCfg = Trace|Any CPU
+		{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}.Trace|Any CPU.Build.0 = Trace|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.Build.0 = Release|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Trace|Any CPU.ActiveCfg = Trace|Any CPU
+		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Trace|Any CPU.Build.0 = Trace|Any CPU
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{16576C0C-C834-416B-86B1-F89EAD9EFB8E} = {0B96FB71-2BB0-48F8-B3E0-E3848A4F9E87}
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
@@ -80,8 +83,5 @@ Global
 		$2.inheritsSet = Mono
 		$2.inheritsScope = text/x-csharp
 		$2.scope = text/x-csharp
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
