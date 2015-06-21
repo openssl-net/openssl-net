@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 
 namespace OpenSSL.X509
 {
-	internal class X509CertificateInfo : BaseReference<X509CertificateInfo>, IStackable
+	internal class X509CertificateInfo : BaseReference, IStackable
 	{
 		#region X509_INFO
 		[StructLayout(LayoutKind.Sequential)]

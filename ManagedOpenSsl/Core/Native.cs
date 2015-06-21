@@ -103,6 +103,8 @@ namespace OpenSSL.Core
 		const string SSLDLLNAME = "ssleay32";
 
 		#region Delegates
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void MemoryLeakHandler(uint order, IntPtr file, int line, int num_bytes, IntPtr addr);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int err_cb(IntPtr str, uint len, IntPtr u);
@@ -138,6 +140,15 @@ namespace OpenSSL.Core
 			IntPtr arg
 		);
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate IntPtr MallocFunctionPtr(uint num, IntPtr file, int line);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate IntPtr ReallocFunctionPtr(IntPtr addr, uint num, IntPtr file, int line);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void FreeFunctionPtr(IntPtr addr);
+
 		#endregion
 
 		#region Initialization
@@ -149,6 +160,10 @@ namespace OpenSSL.Core
 			if (lib.Raw < wrapper.Raw)
 				throw new Exception(string.Format("Invalid version of {0}, expecting {1}, got: {2}",
 					DLLNAME, wrapper, lib));
+
+#if MEMORY_TRACKER
+			MemoryTracker.Init();
+#endif
 
 			// Enable FIPS mode
 			if (FIPS.Enabled)
@@ -234,15 +249,6 @@ namespace OpenSSL.Core
 		public extern static void OPENSSL_add_all_algorithms_conf();
 
 		/// <summary>
-		/// #define OPENSSL_free(addr) CRYPTO_free(addr)
-		/// </summary>
-		/// <param name="p"></param>
-		public static void OPENSSL_free(IntPtr p)
-		{
-			CRYPTO_free(p);
-		}
-
-		/// <summary>
 		/// #define OPENSSL_malloc(num)	CRYPTO_malloc((int)num,__FILE__,__LINE__)
 		/// </summary>
 		/// <param name="cbSize"></param>
@@ -252,6 +258,15 @@ namespace OpenSSL.Core
 			return CRYPTO_malloc(cbSize, Assembly.GetExecutingAssembly().FullName, 0);
 		}
 
+		/// <summary>
+		/// #define OPENSSL_free(addr) CRYPTO_free(addr)
+		/// </summary>
+		/// <param name="p"></param>
+		public static void OPENSSL_free(IntPtr p)
+		{
+			CRYPTO_free(p);
+		}
+
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void CRYPTO_free(IntPtr p);
 
@@ -259,83 +274,14 @@ namespace OpenSSL.Core
 		public extern static IntPtr CRYPTO_malloc(int num, string file, int line);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr CRYPTO_realloc(IntPtr ptr, int num, string file, int line);
-
-		private static MallocFunctionPtr ptr_CRYPTO_dbg_malloc = CRYPTO_dbg_malloc;
-		private static ReallocFunctionPtr ptr_CRYPTO_dbg_realloc = CRYPTO_dbg_realloc;
-		private static FreeFunctionPtr ptr_CRYPTO_dbg_free = CRYPTO_dbg_free;
-		private static SetOptionsFunctionPtr ptr_CRYPTO_dbg_set_options = CRYPTO_dbg_set_options;
-		private static GetOptionsFunctionPtr ptr_CRYPTO_dbg_get_options = CRYPTO_dbg_get_options;
-
-		//!! - Expose the default CRYPTO_malloc_debug_init() - this method hooks up the default
-		//!! - debug functions in the crypto library, this allows us to utilize the MemoryTracker
-		//!! - on non-Windows systems as well.
-		public static void CRYPTO_malloc_debug_init()
-		{
-			CRYPTO_set_mem_debug_functions(
-				ptr_CRYPTO_dbg_malloc,
-				ptr_CRYPTO_dbg_realloc,
-				ptr_CRYPTO_dbg_free,
-				ptr_CRYPTO_dbg_set_options,
-				ptr_CRYPTO_dbg_get_options);
-		}
-
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void MallocFunctionPtr(IntPtr addr, int num, IntPtr file, int line, int before_p);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void ReallocFunctionPtr(IntPtr addr1, IntPtr addr2, int num, IntPtr file, int line, int before_p);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void FreeFunctionPtr(IntPtr addr, int before_p);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void SetOptionsFunctionPtr(int bits);
-
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate int GetOptionsFunctionPtr();
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_malloc(IntPtr addr, int num, IntPtr file, int line, int before_p);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_realloc(
-			IntPtr addr1,
-			IntPtr addr2,
-			int num,
-			IntPtr file,
-			int line,
-			int before_p);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_free(IntPtr addr, int before_p);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_dbg_set_options(int bits);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int CRYPTO_dbg_get_options();
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int CRYPTO_set_mem_debug_functions(
+		public extern static int CRYPTO_set_mem_ex_functions(
 			MallocFunctionPtr m, 
 			ReallocFunctionPtr r, 
-			FreeFunctionPtr f, 
-			SetOptionsFunctionPtr so, 
-			GetOptionsFunctionPtr go);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static int CRYPTO_mem_ctrl(int mode);
+			FreeFunctionPtr f
+		);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void CRYPTO_cleanup_all_ex_data();
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_mem_leaks(IntPtr bio);
-
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void CRYPTO_mem_leaks_cb(CryptoUtil.MemoryLeakHandler cb);
 
 		#endregion
 
@@ -2492,6 +2438,9 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr ERR_reason_error_string(uint e);
 
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static void ERR_remove_state();
+		
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void ERR_remove_thread_state(IntPtr tid);
 

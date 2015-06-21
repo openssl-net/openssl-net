@@ -128,24 +128,6 @@ namespace OpenSSL.Core
 		}
 
 		/// <summary>
-		/// Calls CRYPTO_dbg_set_options()
-		/// </summary>
-		/// <param name="options"></param>
-		public static void SetDebugOptions(DebugOptions options)
-		{
-			Native.CRYPTO_dbg_set_options((int)options);
-		}
-
-		/// <summary>
-		/// Calls CRYPTO_mem_ctrl()
-		/// </summary>
-		/// <param name="options"></param>
-		public static void SetMemoryCheck(MemoryCheck options)
-		{
-			Native.CRYPTO_mem_ctrl((int)options);
-		}
-
-		/// <summary>
 		/// Calls CRYPTO_cleanup_all_ex_data()
 		/// </summary>
 		public static void Cleanup()
@@ -159,26 +141,6 @@ namespace OpenSSL.Core
 		public static void ClearErrors()
 		{
 			Native.ERR_clear_error();
-		}
-
-		/// <summary>
-		/// CRYPTO_MEM_LEAK_CB
-		/// </summary>
-		/// <param name="order"></param>
-		/// <param name="file"></param>
-		/// <param name="line"></param>
-		/// <param name="num_bytes"></param>
-		/// <param name="addr"></param>
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void MemoryLeakHandler(uint order, IntPtr file, int line, int num_bytes, IntPtr addr);
-
-		/// <summary>
-		/// Calls CRYPTO_mem_leaks_cb()
-		/// </summary>
-		/// <param name="callback"></param>
-		public static void CheckMemoryLeaks(MemoryLeakHandler callback)
-		{
-			Native.CRYPTO_mem_leaks_cb(callback);
 		}
 
 		/// <summary>

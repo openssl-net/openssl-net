@@ -187,7 +187,7 @@ namespace OpenSSL.X509
 
 			cert.Sign(key, MessageDigest.DSS1);
 
-			return new X509CertificateAuthority(cert, key, seq, cfg);
+			return new X509CertificateAuthority(cert, key, seq);
 		}
 
 		/// <summary>
@@ -224,7 +224,7 @@ namespace OpenSSL.X509
 
 			cert.Sign(key, digest);
 
-			return new X509CertificateAuthority(cert, key, seq, cfg);
+			return new X509CertificateAuthority(cert, key, seq);
 		}
 
 		/// <summary>
@@ -271,7 +271,7 @@ namespace OpenSSL.X509
 
 			cert.Sign(key, digest);
 
-			return new X509CertificateAuthority(cert, key, seq, null);
+			return new X509CertificateAuthority(cert, key, seq);
 		}
 
 		#endregion
@@ -284,8 +284,7 @@ namespace OpenSSL.X509
 		/// <param name="caCert"></param>
 		/// <param name="caKey"></param>
 		/// <param name="serial"></param>
-		/// <param name="cfg"></param>
-		public X509CertificateAuthority(X509Certificate caCert, CryptoKey caKey, ISequenceNumber serial, Configuration cfg)
+		public X509CertificateAuthority(X509Certificate caCert, CryptoKey caKey, ISequenceNumber serial)
 		{
 			if (!caCert.CheckPrivateKey(caKey))
 				throw new Exception("The specified CA Private Key does match the specified CA Certificate");
@@ -293,7 +292,6 @@ namespace OpenSSL.X509
 			this.caCert = caCert;
 			this.caKey = caKey;
 			this.serial = serial;
-			this.cfg = cfg;
 		}
 
 		#endregion
@@ -401,12 +399,6 @@ namespace OpenSSL.X509
 				caCert.Dispose();
 				caCert = null;
 			}
-
-			if (cfg != null)
-			{
-				cfg.Dispose();
-				cfg = null;
-			}
 		}
 
 		#endregion
@@ -416,7 +408,6 @@ namespace OpenSSL.X509
 		private X509Certificate caCert;
 		private CryptoKey caKey;
 		private ISequenceNumber serial;
-		private Configuration cfg;
 
 		#endregion
 	}

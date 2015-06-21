@@ -32,7 +32,7 @@ namespace OpenSSL.Crypto.EC
 	/// <summary>
 	/// Wraps EC_KEY
 	/// </summary>
-	public class Key : BaseReference<Key>
+	public class Key : BaseReference
 	{
 		/// <summary>
 		/// Compute key handler.

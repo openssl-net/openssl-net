@@ -43,14 +43,13 @@ namespace UnitTests
 		[TearDown]
 		public virtual void Teardown()
 		{
-			var errors = CryptoUtil.GetErrors();
-			foreach (var err in errors)
-			{
-				Console.WriteLine("ERROR: {0}", err);
-			}
+			//var errors = CryptoUtil.GetErrors();
+			//foreach (var err in errors)
+			//{
+			//	Console.WriteLine("ERROR: {0}", err);
+			//}
 
-			MemoryTracker.Finish();
-			Assert.AreEqual(0, MemoryTracker.Leaked);
+			CollectionAssert.IsEmpty(MemoryTracker.Finish());
 //			CollectionAssert.IsEmpty(errors);
 		}
 	}

@@ -19,6 +19,10 @@ namespace OpenSSL.Core
 
 		private const int CRYPTO_LOCK = 1;
 
+		// These are used to pin the functions down so they don't get yanked while in use
+		static Native.CRYPTO_locking_callback _ptrOnLocking = OnLocking;
+		static Native.CRYPTO_id_callback _ptrOnThreadId = OnThreadId;
+
 		private static List<object> lock_objects;
 		private static List<uint> _threadIDs;
 
@@ -41,10 +45,10 @@ namespace OpenSSL.Core
 			_threadIDs = new List<uint>();
 
 			// Initialize the delegate for the locking callback
-			Native.CRYPTO_set_locking_callback(OnLocking);
+			Native.CRYPTO_set_locking_callback(_ptrOnLocking);
 
 			// Initialize the thread id callback
-			Native.CRYPTO_THREADID_set_callback(OnThreadId);
+			Native.CRYPTO_THREADID_set_callback(_ptrOnThreadId);
 		}
 
 		/// <summary>
@@ -64,17 +68,6 @@ namespace OpenSSL.Core
 					RemoveState(id);
 				}
 				_threadIDs.Clear();
-			}
-		}
-
-		internal static void RemoveState()
-		{
-			var id = (uint)Thread.CurrentThread.ManagedThreadId;
-			RemoveState(id);
-
-			if (_threadIDs != null && _threadIDs.Contains(id))
-			{
-				_threadIDs.Remove(id);
 			}
 		}
 

@@ -168,8 +168,7 @@ namespace OpenSSL.Core
 	/// <summary>
 	/// Helper type that handles the AddRef() method.
 	/// </summary>
-	public abstract class BaseReference<T> : Base
-		where T : BaseReference<T>
+	public abstract class BaseReference : Base
 	{
 		internal BaseReference(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
@@ -177,31 +176,12 @@ namespace OpenSSL.Core
 		}
 
 		internal abstract void AddRef();
-	
-		internal T CopyRef()
-		{
-			object[] args = {
-				ptr,
-				true
-			};
-
-			var flags =
-				BindingFlags.NonPublic |
-				BindingFlags.Public |
-				BindingFlags.Instance;
-
-			var ret = (T)Activator.CreateInstance(typeof(T), flags, null, args, null);
-			ret.AddRef();
-
-			return ret;
-		}
 	}
 
 	/// <summary>
 	/// Derived classes must implement the <code>LockType</code> and <code>RawReferenceType</code> properties
 	/// </summary>
-	public abstract class BaseReferenceImpl<T> : BaseReference<T>
-		where T : BaseReference<T>
+	public abstract class BaseReferenceImpl : BaseReference
 	{
 		internal BaseReferenceImpl(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)
@@ -245,8 +225,7 @@ namespace OpenSSL.Core
 	/// <summary>
 	/// Helper base class that handles the AddRef() method by using a _dup() method.
 	/// </summary>
-	public abstract class BaseValue<T> : BaseReference<T>
-		where T : BaseReference<T>
+	public abstract class BaseValue : BaseReference
 	{
 		internal BaseValue(IntPtr ptr, bool takeOwnership)
 			: base(ptr, takeOwnership)

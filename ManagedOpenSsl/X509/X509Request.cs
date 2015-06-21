@@ -40,11 +40,13 @@ namespace OpenSSL.X509
 		/// <summary>
 		/// Calls X509_REQ_new()
 		/// </summary>
-		public X509Request() : base(Native.ExpectNonNull(Native.X509_REQ_new()), true)
+		public X509Request()
+			: base(Native.ExpectNonNull(Native.X509_REQ_new()), true)
 		{
 		}
 
-		internal X509Request(IntPtr ptr, bool owner) : base(ptr, owner)
+		internal X509Request(IntPtr ptr, bool owner)
+			: base(ptr, owner)
 		{
 		}
 
@@ -54,7 +56,8 @@ namespace OpenSSL.X509
 		/// <param name="version"></param>
 		/// <param name="subject"></param>
 		/// <param name="key"></param>
-		public X509Request(int version, X509Name subject, CryptoKey key) : this()
+		public X509Request(int version, X509Name subject, CryptoKey key)
+			: this()
 		{
 			Version = version;
 			Subject = subject;
@@ -65,7 +68,8 @@ namespace OpenSSL.X509
 		/// Calls PEM_read_bio_X509_REQ()
 		/// </summary>
 		/// <param name="bio"></param>
-		public X509Request(BIO bio) : base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
+		public X509Request(BIO bio)
+			: base(Native.ExpectNonNull(Native.PEM_read_bio_X509_REQ(bio.Handle, IntPtr.Zero, null, IntPtr.Zero)), true)
 		{
 		}
 
@@ -73,7 +77,8 @@ namespace OpenSSL.X509
 		/// Creates a X509_REQ from a PEM formatted string.
 		/// </summary>
 		/// <param name="pem"></param>
-		public X509Request(string pem) : this(new BIO(pem))
+		public X509Request(string pem)
+			: this(new BIO(pem))
 		{
 		}
 
@@ -162,7 +167,7 @@ namespace OpenSSL.X509
 				using (var bio = BIO.MemoryBuffer())
 				{
 					Write(bio);
-					
+
 					return bio.ReadString();
 				}
 			}
@@ -205,9 +210,9 @@ namespace OpenSSL.X509
 		/// <param name="digest">Digest.</param>
 		public ArraySegment<byte> Digest(IntPtr type, byte[] digest)
 		{
-		    uint len = (uint)digest.Length;
-		    Native.ExpectSuccess(Native.X509_REQ_digest(this.ptr, type, digest, ref len));
-		    return new ArraySegment<byte>(digest, 0, (int)len);
+			uint len = (uint)digest.Length;
+			Native.ExpectSuccess(Native.X509_REQ_digest(this.ptr, type, digest, ref len));
+			return new ArraySegment<byte>(digest, 0, (int)len);
 		}
 
 		/// <summary>

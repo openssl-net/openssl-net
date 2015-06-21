@@ -33,7 +33,7 @@ namespace OpenSSL.SSL
 	/// <summary>
 	/// Wraps a SSL_CIPHER
 	/// </summary>
-	public class SslCipher : BaseReference<SslCipher>, IStackable
+	public class SslCipher : BaseReference, IStackable
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OpenSSL.SSL.SslCipher"/> class.

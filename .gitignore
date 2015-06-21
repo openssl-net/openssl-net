@@ -12,3 +12,4 @@ dist
 .DS_Store
 test-results
 TestResult.xml
+test/openssl.net.VisualState.xml

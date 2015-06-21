@@ -110,11 +110,10 @@ namespace UnitTests
 		{
 			using (var bio = new BIO(Util.LoadBytes(Resources.ServerPfx)))
 			using (var pfx = new PKCS12(bio, Resources.Password))
-			using (var new_pfx = new PKCS12(
-				                       Resources.Password, 
-				                       pfx.Certificate.PrivateKey, 
-				                       pfx.Certificate, 
-				                       pfx.CACertificates))
+			using (var new_pfx = new PKCS12(Resources.Password,
+									   pfx.Certificate.PrivateKey,
+									   pfx.Certificate,
+									   pfx.CACertificates))
 			{
 				TestCert(new_pfx.Certificate, "CN=localhost", "CN=Root", 1235);
 			}
@@ -134,7 +133,7 @@ namespace UnitTests
 				Assert.AreEqual(subject, cert.Subject);
 				Assert.AreEqual(issuer, cert.Issuer);
 				Assert.AreEqual(serial, cert.SerialNumber);
-			
+
 				// We compare short date/time strings here because the wrapper can't handle milliseconds
 				Assert.AreEqual(start.ToShortDateString(), cert.NotBefore.ToShortDateString());
 				Assert.AreEqual(start.ToShortTimeString(), cert.NotBefore.ToShortTimeString());
@@ -404,7 +403,7 @@ namespace UnitTests
 		{
 			Assert.AreEqual(subject, cert.Subject.ToString());
 			Assert.AreEqual(issuer, cert.Issuer.ToString());
-			Assert.AreEqual(serial, cert.SerialNumber); 
+			Assert.AreEqual(serial, cert.SerialNumber);
 		}
 	}
 }

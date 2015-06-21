@@ -103,12 +103,12 @@ namespace OpenSSL.X509
 			/// omit the flag from the private key
 			/// </summary>
 			KEY_DEFAULT = 0,
-		
+
 			/// <summary>
 			/// the key can be used for signing only
 			/// </summary>
 			KEY_SIG = 0x80,
-		
+
 			/// <summary>
 			/// the key can be used for signing and encryption
 			/// </summary>
@@ -158,9 +158,9 @@ namespace OpenSSL.X509
 		}
 
 		private static IntPtr Create(
-			string password, 
-			string name, 
-			CryptoKey key, 
+			string password,
+			string name,
+			CryptoKey key,
 			X509Certificate cert,
 			Stack<X509Certificate> ca,
 			PBE keyPbe,
@@ -168,16 +168,23 @@ namespace OpenSSL.X509
 			int iterations,
 			KeyType keyType)
 		{
+			if (key == null)
+				throw new ArgumentException("Key cannot be null", "key");
+			if (cert == null)
+				throw new ArgumentException("Certificate cannot be null", "cert");
+			if (ca == null)
+				throw new ArgumentException("Certificate chain cannot be null", "ca");
+
 			return Native.ExpectNonNull(Native.PKCS12_create(
-				password, 
-				name, 
-				key.Handle, 
-				cert.Handle, 
-				ca.Handle, 
+				password,
+				name,
+				key.Handle,
+				cert.Handle,
+				ca.Handle,
 				(int)keyPbe,
 				(int)certPbe,
-				iterations, 
-				1, 
+				iterations,
+				1,
 				(int)keyType));
 		}
 
@@ -186,7 +193,8 @@ namespace OpenSSL.X509
 		/// </summary>
 		/// <param name="bio"></param>
 		/// <param name="password"></param>
-		public PKCS12(BIO bio, string password) : base(
+		public PKCS12(BIO bio, string password)
+			: base(
 				Native.ExpectNonNull(Native.d2i_PKCS12_bio(bio.Handle, IntPtr.Zero)),
 				true)
 		{

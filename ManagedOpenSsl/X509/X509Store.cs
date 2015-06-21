@@ -32,7 +32,7 @@ namespace OpenSSL.X509
 	/// <summary>
 	/// Wraps the X509_STORE object
 	/// </summary>
-	public class X509Store : BaseReference<X509Store>
+	public class X509Store : BaseReference
 	{
 		#region X509_STORE
 		[StructLayout(LayoutKind.Sequential)]
