@@ -103,8 +103,6 @@ namespace OpenSSL.Core
 		const string SSLDLLNAME = "ssleay32";
 
 		#region Delegates
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void MemoryLeakHandler(uint order, IntPtr file, int line, int num_bytes, IntPtr addr);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int err_cb(IntPtr str, uint len, IntPtr u);
@@ -2438,9 +2436,6 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr ERR_reason_error_string(uint e);
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static void ERR_remove_state();
-		
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static void ERR_remove_thread_state(IntPtr tid);
 

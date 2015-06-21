@@ -130,7 +130,7 @@ namespace OpenSSL.Core
 
 			CryptoUtil.Cleanup();
 			CryptoUtil.ClearErrors();
-			Native.ERR_remove_state();
+			Native.ERR_remove_thread_state(IntPtr.Zero);
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
