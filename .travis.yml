@@ -1,0 +1,24 @@
+language: csharp
+solution: openssl.net.sln
+
+os:
+ - osx
+ - linux
+
+before_install:
+ - wget ftp://ftp.openssl.org/source/openssl-1.0.2a.tar.gz
+ - tar zxvf openssl-1.0.2a.tar.gz > /dev/null
+ - cd openssl-1.0.2a
+ - ./config --prefix=/usr > /dev/null
+ - sudo make > /dev/null
+ - sudo make install > /dev/null
+ - openssl version
+ - cd ..
+ 
+install:
+ - nuget restore openssl.net.sln
+ - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+
+script:
+ - xbuild /p:Configuration=Release openssl.net.sln
+ - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./bin/Release/UnitTests.dll
