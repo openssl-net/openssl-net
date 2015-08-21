@@ -5,11 +5,13 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Files", "Project Files", "{0B96FB71-2BB0-48F8-B3E0-E3848A4F9E87}"
 	ProjectSection(SolutionItems) = preProject
+		ManagedOpenSsl\build-nuget.cmd = ManagedOpenSsl\build-nuget.cmd
 		CHANGES = CHANGES
 		COPYING = COPYING
 		INSTALL = INSTALL
 		LICENSE = LICENSE
 		Makefile = Makefile
+		ManagedOpenSsl\ManagedOpenSsl.nuspec = ManagedOpenSsl\ManagedOpenSsl.nuspec
 		release.cmd = release.cmd
 	EndProjectSection
 EndProject
