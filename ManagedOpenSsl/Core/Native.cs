@@ -1207,10 +1207,14 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int PEM_write_bio_X509_REQ(IntPtr bp, IntPtr x);
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr PEM_read_bio_X509_REQ(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
+        //int i2d_X509_REQ_bio(BIO* bp, X509_REQ* x);
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static int i2d_X509_REQ_bio(IntPtr bp, IntPtr x);
 
-		#endregion
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static IntPtr PEM_read_bio_X509_REQ(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
+
+        #endregion
 
 		#region X509_REQ_NEW
 

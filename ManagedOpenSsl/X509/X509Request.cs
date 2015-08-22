@@ -233,6 +233,15 @@ namespace OpenSSL.X509
 			Native.ExpectSuccess(Native.PEM_write_bio_X509_REQ(bio.Handle, ptr));
 		}
 
+        /// <summary>
+        /// Calls i2d_X509_REQ_bio()
+        /// </summary>
+        /// <param name="bio"></param>
+        public void Write_DER(BIO bio)
+        {
+            Native.ExpectSuccess(Native.i2d_X509_REQ_bio(bio.Handle, ptr));
+        }
+
 		/// <summary>
 		/// Converts this request into a certificate using X509_REQ_to_X509().
 		/// </summary>
