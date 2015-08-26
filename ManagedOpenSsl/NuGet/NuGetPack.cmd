@@ -1,0 +1,1 @@
+..\..\.nuget\NuGet.exe pack OpenSsl-Net-x64.1.0.0.nuspec

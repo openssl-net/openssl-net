@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>OpenSsl-Net-x64</id>
+        <version>1.0.0</version>
+        <authors>sergei.voronkov</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>OpenSsl.Net wrapper for x64 sll native dlls.</description>
+    </metadata>
+    <files>
+        <file src="OpenSsl-Net-x64.targets" target="build\OpenSsl-Net-x64.targets" />
+        <file src="..\bin\x64\Release\libeay32.dll" target="lib\native\libeay32.dll" />
+        <file src="..\bin\x64\Release\ssleay32.dll" target="lib\native\ssleay32.dll" />
+        <file src="..\bin\x64\Release\ManagedOpenSsl.dll" target="lib\net45\ManagedOpenSsl.dll" />
+        <file src="..\bin\x64\Release\ManagedOpenSsl.dll.config" target="lib\net45\ManagedOpenSsl.dll.config" />
+        <file src="..\bin\x64\Release\ManagedOpenSsl.pdb" target="lib\net45\ManagedOpenSsl.pdb" />
+    </files>
+</package>
