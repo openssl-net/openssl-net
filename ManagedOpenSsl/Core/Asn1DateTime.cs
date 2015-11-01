@@ -81,11 +81,24 @@ namespace OpenSSL.Core
 		{
 			string str;
 
-			using (var bio = BIO.MemoryBuffer())
+			try
 			{
-				Native.ExpectSuccess(Native.ASN1_UTCTIME_print(bio.Handle, ptr));
-				str = bio.ReadString();
+				using (var bio = BIO.MemoryBuffer())
+				{
+					Native.ExpectSuccess(Native.ASN1_UTCTIME_print(bio.Handle, ptr));
+					str = bio.ReadString();
+				}
 			}
+			catch (Exception)
+			{
+				using (var bio = BIO.MemoryBuffer())
+				{
+					Native.ExpectSuccess(Native.ASN1_GENERALIZEDTIME_print(bio.Handle, ptr));
+					str = bio.ReadString();
+				}
+			}
+
+			
 
 			string[] fmts = 
 			{ 
