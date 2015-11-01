@@ -404,6 +404,9 @@ namespace OpenSSL.Core
 		public extern static int ASN1_UTCTIME_print(IntPtr bp, IntPtr a);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int ASN1_GENERALIZEDTIME_print(IntPtr bp, IntPtr a);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr ASN1_TIME_new();
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
