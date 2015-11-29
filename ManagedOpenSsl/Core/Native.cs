@@ -95,16 +95,21 @@ namespace OpenSSL.Core
 	/// </summary>
 	internal class Native
 	{
-		/// <summary>
-		/// This is the name of the DLL that P/Invoke loads and tries to bind all of
-		/// these native functions to.
-		/// </summary>
-		const string DLLNAME = "libeay32";
-		const string SSLDLLNAME = "ssleay32";
+        /// <summary>
+        /// This is the name of the DLL that P/Invoke loads and tries to bind all of
+        /// these native functions to.
+        /// </summary>
+#if _WIN64
+        const string DLLNAME = "x64\\libeay32";
+		const string SSLDLLNAME = "x64\\ssleay32";
+#else
+        const string DLLNAME = "x86\\libeay32";
+        const string SSLDLLNAME = "x86\\ssleay32";
+#endif
 
-		#region Delegates
+        #region Delegates
 
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int err_cb(IntPtr str, uint len, IntPtr u);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
