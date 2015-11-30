@@ -9,9 +9,9 @@
     -->
   
   <metadata>
-    <id>$id$</id>
-    <version>$version$</version>
-    <title>$title$</title>
+    <id>$id$$idSuffix$</id>
+    <version>$version$$nugetRev$</version>
+    <title>$title$ for $Platform$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
     <licenseUrl>https://raw.githubusercontent.com/openssl-net/openssl-net/master/LICENSE</licenseUrl>
@@ -23,7 +23,7 @@
       C# wrapper for the popular OpenSSL libraries
     </description>
     <releaseNotes>See the list of changes at https://github.com/openssl-net/openssl-net/blob/master/CHANGES </releaseNotes>
-    <copyright>Copyright 2015</copyright>
-    <tags>OpenSSL PKI</tags>
+    <copyright>Copyright &#169; 2015 OpenSSL Software Foundation</copyright>
+    <tags>openssl pki</tags>
   </metadata>
 </package>
