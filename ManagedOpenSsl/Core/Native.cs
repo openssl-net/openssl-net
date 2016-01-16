@@ -475,6 +475,10 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int X509_REQ_print(IntPtr bp, IntPtr x);
 
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int X509_REQ_add_extensions(IntPtr req, IntPtr exts);
+
+
 		#endregion
 
 		#region X509

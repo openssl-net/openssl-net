@@ -244,6 +244,23 @@ namespace OpenSSL.X509
 			return new X509Certificate(Native.ExpectNonNull(Native.X509_REQ_to_X509(ptr, days, pkey.Handle)), true);
 		}
 
+		/// <summary>
+		/// Add the extensions to the request using X509_REQ_add_extensions().
+		/// </summary>
+		/// <param name="sk_ext"></param>
+		public void AddExtensions(Core.Stack<X509Extension> sk_ext)
+		{
+			IntPtr stack = Native.sk_new_null();
+            
+			foreach (var ext in sk_ext)
+			{
+				Native.sk_push(stack, ext.Handle);
+			}
+			Native.ExpectSuccess(Native.X509_REQ_add_extensions(ptr, stack));
+
+			Native.sk_free(stack);
+		}
+
 		#endregion
 
 		#region Overrides Members
