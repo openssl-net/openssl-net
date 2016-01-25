@@ -64,6 +64,22 @@ namespace OpenSSL.X509
 			}
 		}
 
+        /// <summary>
+        /// Calls X509V3_EXT_conf_nid()
+        /// </summary>
+        /// <param name="request"></param>
+		/// <param name="name"></param>
+        /// <param name="critical"></param>
+        /// <param name="value"></param>
+        public X509Extension(X509Request request, string name, bool critical, string value)
+			: base(IntPtr.Zero, true)
+		{
+			using (var ctx = new X509V3Context(null, null, request))
+			{
+				ptr = Native.ExpectNonNull(Native.X509V3_EXT_conf_nid(IntPtr.Zero, ctx.Handle, Native.TextToNID(name), value));
+			}
+		}
+
 		#endregion
 
 		#region Properties

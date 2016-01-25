@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package >
+  <!--
+    Token replacement comes from:
+        $id$	The Assembly name
+        $version$	The assembly version as specified in the assembly’s AssemblyVersionAttribute (or AssemblyInformationalVersionAttribute if present).
+        $author$	The company as specified in the AssemblyCompanyAttribute.
+        $description$	The description as specified in the AssemblyDescriptionAttribute.
+    -->
+  
+  <metadata>
+    <id>$id$$idSuffix$</id>
+    <version>$version$$nugetRev$</version>
+    <title>$title$ for $Platform$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://raw.githubusercontent.com/openssl-net/openssl-net/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/openssl-net/openssl-net</projectUrl>
+    <iconUrl>http://www.poweradmin.com/blog/wp-content/uploads/2013/10/openssl-logo2.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      <!--$description$-->
+      C# wrapper for the popular OpenSSL libraries
+    </description>
+    <releaseNotes>See the list of changes at https://github.com/openssl-net/openssl-net/blob/master/CHANGES </releaseNotes>
+    <copyright>Copyright &#169; 2015 OpenSSL Software Foundation</copyright>
+    <tags>openssl pki</tags>
+  </metadata>
+</package>

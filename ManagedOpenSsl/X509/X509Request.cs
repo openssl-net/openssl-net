@@ -233,6 +233,15 @@ namespace OpenSSL.X509
 			Native.ExpectSuccess(Native.PEM_write_bio_X509_REQ(bio.Handle, ptr));
 		}
 
+        /// <summary>
+        /// Calls i2d_X509_REQ_bio()
+        /// </summary>
+        /// <param name="bio"></param>
+        public void Write_DER(BIO bio)
+        {
+            Native.ExpectSuccess(Native.i2d_X509_REQ_bio(bio.Handle, ptr));
+        }
+
 		/// <summary>
 		/// Converts this request into a certificate using X509_REQ_to_X509().
 		/// </summary>
@@ -242,6 +251,23 @@ namespace OpenSSL.X509
 		public X509Certificate CreateCertificate(int days, CryptoKey pkey)
 		{
 			return new X509Certificate(Native.ExpectNonNull(Native.X509_REQ_to_X509(ptr, days, pkey.Handle)), true);
+		}
+
+		/// <summary>
+		/// Add the extensions to the request using X509_REQ_add_extensions().
+		/// </summary>
+		/// <param name="sk_ext"></param>
+		public void AddExtensions(Core.Stack<X509Extension> sk_ext)
+		{
+			IntPtr stack = Native.sk_new_null();
+            
+			foreach (var ext in sk_ext)
+			{
+				Native.sk_push(stack, ext.Handle);
+			}
+			Native.ExpectSuccess(Native.X509_REQ_add_extensions(ptr, stack));
+
+			Native.sk_free(stack);
 		}
 
 		#endregion

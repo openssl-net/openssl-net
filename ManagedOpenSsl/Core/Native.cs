@@ -95,16 +95,21 @@ namespace OpenSSL.Core
 	/// </summary>
 	internal class Native
 	{
-		/// <summary>
-		/// This is the name of the DLL that P/Invoke loads and tries to bind all of
-		/// these native functions to.
-		/// </summary>
-		const string DLLNAME = "libeay32";
-		const string SSLDLLNAME = "ssleay32";
+        /// <summary>
+        /// This is the name of the DLL that P/Invoke loads and tries to bind all of
+        /// these native functions to.
+        /// </summary>
+#if _WIN64
+        const string DLLNAME = "x64\\libeay32";
+		const string SSLDLLNAME = "x64\\ssleay32";
+#else
+        const string DLLNAME = "x86\\libeay32";
+        const string SSLDLLNAME = "x86\\ssleay32";
+#endif
 
-		#region Delegates
+        #region Delegates
 
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate int err_cb(IntPtr str, uint len, IntPtr u);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -474,6 +479,10 @@ namespace OpenSSL.Core
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int X509_REQ_print(IntPtr bp, IntPtr x);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int X509_REQ_add_extensions(IntPtr req, IntPtr exts);
+
 
 		#endregion
 
@@ -1207,10 +1216,14 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int PEM_write_bio_X509_REQ(IntPtr bp, IntPtr x);
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-		public extern static IntPtr PEM_read_bio_X509_REQ(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
+        //int i2d_X509_REQ_bio(BIO* bp, X509_REQ* x);
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static int i2d_X509_REQ_bio(IntPtr bp, IntPtr x);
 
-		#endregion
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static IntPtr PEM_read_bio_X509_REQ(IntPtr bp, IntPtr x, pem_password_cb cb, IntPtr u);
+
+        #endregion
 
 		#region X509_REQ_NEW
 
