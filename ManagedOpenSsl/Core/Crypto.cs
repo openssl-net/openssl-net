@@ -88,14 +88,6 @@ namespace OpenSSL.Core
 	public class CryptoUtil
 	{
 		/// <summary>
-		/// Returns MD2_options()
-		/// </summary>
-		public static string MD2_Options
-		{
-			get { return Native.StaticString(Native.MD2_options()); }
-		}
-
-		/// <summary>
 		/// Returns RC4_options()
 		/// </summary>
 		public static string RC4_Options
