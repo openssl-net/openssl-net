@@ -97,7 +97,6 @@ namespace OpenSSL.X509
 
 		internal override void AddRef()
 		{
-			Native.X509_INFO_up_ref(ptr);
 		}
 
 		#endregion
