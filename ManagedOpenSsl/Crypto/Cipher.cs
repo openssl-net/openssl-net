@@ -503,40 +503,39 @@ namespace OpenSSL.Crypto
 		public byte[] Data;
 	}
 
-	/// <summary>
-	/// Wraps the EVP_CIPHER_CTX object.
-	/// </summary>
-	public class CipherContext : Base, IDisposable
+    #region EVP_CIPHER_CTX
+    [StructLayout(LayoutKind.Sequential)]
+    struct EVP_CIPHER_CTX {
+        public IntPtr cipher;
+        public IntPtr engine;   /* functional reference if 'cipher' is ENGINE-provided */
+        public int encrypt;     /* encrypt or decrypt */
+        public int buf_len;     /* number we have left */
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_IV_LENGTH)]
+        public byte[] oiv;  /* original iv */
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_IV_LENGTH)]
+        public byte[] iv;   /* working iv */
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
+        public byte[] buf;/* saved partial block */
+        public int num;             /* used by cfb/ofb mode */
+
+        public IntPtr app_data;     /* application stuff */
+        public int key_len;     /* May change for variable length cipher */
+        public uint flags;  /* Various flags */
+        public IntPtr cipher_data; /* per EVP data */
+        public int final_used;
+        public int block_mask;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
+        public byte[] final;/* possible final block */
+    }
+    #endregion
+
+    /// <summary>
+    /// Wraps the EVP_CIPHER_CTX object.
+    /// </summary>
+    public class CipherContext : Base, IDisposable
 	{
-		#region EVP_CIPHER_CTX
-		[StructLayout(LayoutKind.Sequential)]
-		struct EVP_CIPHER_CTX
-		{
-			public IntPtr cipher;
-			public IntPtr engine;	/* functional reference if 'cipher' is ENGINE-provided */
-			public int encrypt;		/* encrypt or decrypt */
-			public int buf_len;		/* number we have left */
-
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_IV_LENGTH)]
-			public byte[] oiv;	/* original iv */
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_IV_LENGTH)]
-			public byte[] iv;	/* working iv */
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
-			public byte[] buf;/* saved partial block */
-			public int num;				/* used by cfb/ofb mode */
-
-			public IntPtr app_data;		/* application stuff */
-			public int key_len;		/* May change for variable length cipher */
-			public uint flags;	/* Various flags */
-			public IntPtr cipher_data; /* per EVP data */
-			public int final_used;
-			public int block_mask;
-
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
-			public byte[] final;/* possible final block */
-		}
-		#endregion
-
 		private Cipher cipher;
 
 		/// <summary>
