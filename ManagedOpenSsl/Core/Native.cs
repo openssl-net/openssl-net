@@ -1464,7 +1464,7 @@ namespace OpenSSL.Core
         public extern static int CMAC_Update(IntPtr ctx, byte[] data, int dlen);
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public extern static int CMAC_Final(IntPtr ctx, byte[] mac, int mlen);
+        public extern static int CMAC_Final(IntPtr ctx, byte[] mac, ref uint mlen);
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public extern static void CMAC_CTX_free(IntPtr ctx);

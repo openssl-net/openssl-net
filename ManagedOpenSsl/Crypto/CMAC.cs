@@ -36,20 +36,20 @@ namespace OpenSSL.Crypto {
         #region Raw Structures
         [StructLayout(LayoutKind.Sequential)]
         struct CMAC_CTX {
-            /* Cipher context to use */                                                                             |
-            public EVP_CIPHER_CTX cctx;                                                                                    |# define HMAC_size(e)    (EVP_MD_size((e)->md))
-            /* Keys k1 and k2 */                                                                                    |
+            /* Cipher context to use */                                                                             
+            public EVP_CIPHER_CTX cctx;                                                                                    
+            /* Keys k1 and k2 */                                                                                    
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
             public byte[] k1;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
             public byte[] k2;
-            /* Temporary block */                                                                                   |
+            /* Temporary block */                                                                                  
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
             public byte[] tbl;
-            /* Last (possibly partial) block */                                                                     |# define HMAC_cleanup(ctx) HMAC_CTX_cleanup(ctx)
+            /* Last (possibly partial) block */                                                                   
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
             public byte[] last_block;
-            /* Number of bytes in last block: -1 means context not initialised */                                   |/* deprecated */
+            /* Number of bytes in last block: -1 means context not initialised */                                
             int nlast_block;
         }
         #endregion
@@ -64,37 +64,25 @@ namespace OpenSSL.Crypto {
             ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(CMAC_CTX)));
 
             // Initialize the context
-            Native.CMAC_CTX_init(ptr);
+            ptr = Native.CMAC_CTX_new();
         }
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Calls CMAC()
-        /// </summary>
-        /// <param name="digest"></param>
-        /// <param name="key"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static byte[] Digest(MessageDigest digest, byte[] key, byte[] data) {
-            var hash_value = new byte[digest.Size];
-            uint hash_value_length = Native.EVP_MAX_MD_SIZE;
-            Native.CMAC(digest.Handle, key, key.Length, data, data.Length, hash_value, ref hash_value_length);
-
-            return hash_value;
-        }
-
-        /// <summary>
-        /// Calls CMAC_Init_ex()
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="digest"></param>
-        public void Init(byte[] key, MessageDigest digest) {
-            Native.CMAC_Init_ex(ptr, key, key.Length, digest.Handle, IntPtr.Zero);
-            digest_size = digest.Size;
-            initialized = true;
-        }
+		/// <summary>
+		/// Calls CMAC_Init()
+		/// </summary>
+		/// <param name="key"></param>
+		public void Init(byte[] key) {
+			if (key.Length != 16) {
+				throw new Exception("Using key-size which isn't implemented: " + key.Length);
+			}
+			Cipher cipher = Cipher.AES_128_CBC;
+			Native.CMAC_Init(ptr, key, key.Length, cipher.Handle, IntPtr.Zero);
+			initialized = true;
+			cmac_size = key.Length;
+		}
 
         /// <summary>
         /// Calls CMAC_Update()
@@ -109,46 +97,20 @@ namespace OpenSSL.Crypto {
         }
 
         /// <summary>
-        /// Calls CMAC_Update()
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="offset"></param>
-        /// <param name="count"></param>
-        public void Update(byte[] data, int offset, int count) {
-            if (!initialized) {
-                throw new Exception("Failed to call Initialize before calling Update");
-            }
-            if (data == null) {
-                throw new ArgumentNullException("data");
-            }
-            if (count <= 0) {
-                throw new ArgumentException("count must be greater than 0");
-            }
-            if (offset < 0) {
-                throw new ArgumentException("offset must be 0 or greater");
-            }
-            if (data.Length < (count - offset)) {
-                throw new ArgumentException("invalid length specified.  Count is greater than buffer length.");
-            }
-
-            var seg = new ArraySegment<byte>(data, offset, count);
-            Native.CMAC_Update(ptr, seg.Array, seg.Count);
-        }
-
-        /// <summary>
         /// Calls CMAC_Final()
         /// </summary>
         /// <returns></returns>
-        public byte[] DigestFinal() {
+        public byte[] Final() {
             if (!initialized) {
                 throw new Exception("Failed to call Initialize before calling DigestFinal");
             }
 
-            var hash_value = new byte[digest_size];
-            uint hash_value_length = Native.EVP_MAX_MD_SIZE;
 
-            Native.CMAC_Final(ptr, hash_value, ref hash_value_length);
-            return hash_value;
+            var mac_value = new byte[cmac_size];
+            uint mac_value_length = (uint) cmac_size;
+
+            Native.CMAC_Final(ptr, mac_value, ref mac_value_length);
+            return mac_value;
         }
 
         #endregion
@@ -159,16 +121,13 @@ namespace OpenSSL.Crypto {
         /// </summary>
         protected override void OnDispose() {
             // Clean up the context
-            Native.CMAC_CTX_cleanup(ptr);
-
-            // Free the structure allocation
-            Native.OPENSSL_free(ptr);
+            Native.CMAC_CTX_free(ptr);
         }
         #endregion
 
         #region Fields
         private bool initialized = false;
-        private int digest_size = 0;
+        private int cmac_size = 0;
         #endregion
     }
 }
