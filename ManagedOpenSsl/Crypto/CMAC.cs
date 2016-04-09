@@ -24,51 +24,50 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using OpenSSL.Core;
-using OpenSSL.Crypto;
 using System;
 using System.Runtime.InteropServices;
 
 namespace OpenSSL.Crypto {
-    /// <summary>
-    /// Wraps CMAC
-    /// </summary>
-    public class CMAC : Base {
-        #region Raw Structures
-        [StructLayout(LayoutKind.Sequential)]
-        struct CMAC_CTX {
-            /* Cipher context to use */                                                                             
-            public EVP_CIPHER_CTX cctx;                                                                                    
-            /* Keys k1 and k2 */                                                                                    
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
-            public byte[] k1;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
-            public byte[] k2;
-            /* Temporary block */                                                                                  
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
-            public byte[] tbl;
-            /* Last (possibly partial) block */                                                                   
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
-            public byte[] last_block;
-            /* Number of bytes in last block: -1 means context not initialised */                                
-            int nlast_block;
-        }
-        #endregion
+	/// <summary>
+	/// Wraps CMAC
+	/// </summary>
+	public class CMAC : Base {
+		#region Raw Structures
+		[StructLayout(LayoutKind.Sequential)]
+		struct CMAC_CTX {
+			/* Cipher context to use */
+			public EVP_CIPHER_CTX cctx;
+			/* Keys k1 and k2 */
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
+			public byte[] k1;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
+			public byte[] k2;
+			/* Temporary block */
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
+			public byte[] tbl;
+			/* Last (possibly partial) block */
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = Native.EVP_MAX_BLOCK_LENGTH)]
+			public byte[] last_block;
+			/* Number of bytes in last block: -1 means context not initialised */
+			int nlast_block;
+		}
+		#endregion
 
-        #region Initialization
-        /// <summary>
-        /// Calls OPENSSL_malloc() and then CMAC_CTX_init()
-        /// </summary>
-        public CMAC()
-            : base(IntPtr.Zero, true) {
-            // Allocate the context
-            ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(CMAC_CTX)));
+		#region Initialization
+		/// <summary>
+		/// Calls OPENSSL_malloc() and then CMAC_CTX_new()
+		/// </summary>
+		public CMAC()
+		: base(IntPtr.Zero, true) {
+			// Allocate the context
+			ptr = Native.OPENSSL_malloc(Marshal.SizeOf(typeof(CMAC_CTX)));
 
-            // Initialize the context
-            ptr = Native.CMAC_CTX_new();
-        }
-        #endregion
+			// Initialize the context
+			ptr = Native.CMAC_CTX_new();
+		}
+		#endregion
 
-        #region Methods
+		#region Methods
 
 		/// <summary>
 		/// Calls CMAC_Init()
@@ -84,50 +83,47 @@ namespace OpenSSL.Crypto {
 			cmac_size = key.Length;
 		}
 
-        /// <summary>
-        /// Calls CMAC_Update()
-        /// </summary>
-        /// <param name="data"></param>
-        public void Update(byte[] data) {
-            if (!initialized) {
-                throw new Exception("Failed to call Initialize before calling Update");
-            }
+		/// <summary>
+		/// Calls CMAC_Update()
+		/// </summary>
+		/// <param name="data"></param>
+		public void Update(byte[] data) {
+			if (!initialized) {
+				throw new Exception("Failed to call Initialize before calling Update");
+			}
+			Native.CMAC_Update(ptr, data, data.Length);
+		}
 
-            Native.CMAC_Update(ptr, data, data.Length);
-        }
+		/// <summary>
+		/// Calls CMAC_Final()
+		/// </summary>
+		/// <returns>byte[] of cmac value</returns>
+		public byte[] Final() {
+			if (!initialized) {
+				throw new Exception("Failed to call Initialize before calling DigestFinal");
+			}
 
-        /// <summary>
-        /// Calls CMAC_Final()
-        /// </summary>
-        /// <returns></returns>
-        public byte[] Final() {
-            if (!initialized) {
-                throw new Exception("Failed to call Initialize before calling DigestFinal");
-            }
+			var mac_value = new byte[cmac_size];
+			uint mac_value_length = (uint)cmac_size;
+			Native.CMAC_Final(ptr, mac_value, ref mac_value_length);
+			return mac_value;
+		}
 
+		#endregion
 
-            var mac_value = new byte[cmac_size];
-            uint mac_value_length = (uint) cmac_size;
+		#region Overrides
+		/// <summary>
+		/// Calls CMAC_CTX_free() 
+		/// </summary>
+		protected override void OnDispose() {
+			// Clean up the context
+			Native.CMAC_CTX_free(ptr);
+		}
+		#endregion
 
-            Native.CMAC_Final(ptr, mac_value, ref mac_value_length);
-            return mac_value;
-        }
-
-        #endregion
-
-        #region Overrides
-        /// <summary>
-        /// Calls CMAC_CTX_cleanup() and then OPENSSL_free()
-        /// </summary>
-        protected override void OnDispose() {
-            // Clean up the context
-            Native.CMAC_CTX_free(ptr);
-        }
-        #endregion
-
-        #region Fields
-        private bool initialized = false;
-        private int cmac_size = 0;
-        #endregion
-    }
+		#region Fields
+		private bool initialized = false;
+		private int cmac_size = 0;
+		#endregion
+	}
 }

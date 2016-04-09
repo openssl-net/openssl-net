@@ -1451,28 +1451,28 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr HMAC(IntPtr evp_md, byte[] key, int key_len, byte[] d, int n, byte[] md, ref uint md_len);
 
-        #endregion
+		#endregion
 
-        #region CMAC
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public extern static IntPtr CMAC_CTX_new();
+		#region CMAC
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static IntPtr CMAC_CTX_new();
 
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public extern static int CMAC_Init(IntPtr ctx, byte[] key, int len, IntPtr cipher, IntPtr engine_impl);
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CMAC_Init(IntPtr ctx, byte[] key, int len, IntPtr cipher, IntPtr engine_impl);
 
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public extern static int CMAC_Update(IntPtr ctx, byte[] data, int dlen);
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CMAC_Update(IntPtr ctx, byte[] data, int dlen);
 
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public extern static int CMAC_Final(IntPtr ctx, byte[] mac, ref uint mlen);
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CMAC_Final(IntPtr ctx, byte[] mac, ref uint mlen);
 
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public extern static void CMAC_CTX_free(IntPtr ctx);
-        #endregion
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static void CMAC_CTX_free(IntPtr ctx);
+		#endregion
 
-        #region Ciphers
+		#region Ciphers
 
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_get_cipherbyname(byte[] name);
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
