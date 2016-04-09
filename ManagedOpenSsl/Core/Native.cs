@@ -1453,6 +1453,23 @@ namespace OpenSSL.Core
 
 		#endregion
 
+		#region CMAC
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static IntPtr CMAC_CTX_new();
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CMAC_Init(IntPtr ctx, byte[] key, int len, IntPtr cipher, IntPtr engine_impl);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CMAC_Update(IntPtr ctx, byte[] data, int dlen);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int CMAC_Final(IntPtr ctx, byte[] mac, ref uint mlen);
+
+		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+		public extern static void CMAC_CTX_free(IntPtr ctx);
+		#endregion
+
 		#region Ciphers
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
