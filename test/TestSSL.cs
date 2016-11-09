@@ -43,9 +43,9 @@ namespace UnitTests
 {
 	public class SslTestContext : IDisposable
 	{
-		public SslTestContext()
+		public SslTestContext(string configPath = "openssl.cnf")
 		{
-			using (var cfg = new Configuration("openssl.cnf"))
+			using (var cfg = new Configuration(configPath))
 			using (var ca = X509CertificateAuthority.SelfSigned(
 								cfg,
 								new SimpleSerialNumber(),
@@ -462,6 +462,78 @@ namespace UnitTests
 			}, null);
 
 			evtDone.WaitOne();
+		}
+
+		[Test]
+		public void TestSyncLargeCertificate()
+		{
+			IPEndPoint ep = null;
+			var evtReady = new AutoResetEvent(false);
+			var largeCtx = new SslTestContext("openssl_largecert.cnf");
+			var timeout = TimeSpan.FromMilliseconds(3000);
+
+			var serverTask = Task.Factory.StartNew(() =>
+			{
+				var listener = new TcpListener(IPAddress.Loopback, 0);
+				listener.Start(5);
+				ep = (IPEndPoint)listener.LocalEndpoint;
+
+				evtReady.Set();
+
+				Console.WriteLine("Server> waiting for accept");
+
+				using (var tcp = listener.AcceptTcpClient())
+				using (var sslStream = new SslStream(tcp.GetStream()))
+				{
+					Console.WriteLine("Server> authenticate");
+					sslStream.AuthenticateAsServer(largeCtx.ServerCertificate);
+
+					Console.WriteLine("Server> ALPN: {0}", sslStream.Ssl.AlpnSelectedProtocol);
+					Console.WriteLine("Server> CurrentCipher: {0}", sslStream.Ssl.CurrentCipher.Name);
+					Assert.AreEqual("AES256-GCM-SHA384", sslStream.Ssl.CurrentCipher.Name);
+
+					Console.WriteLine("Server> rx msg");
+					var buf = new byte[256];
+					sslStream.Read(buf, 0, buf.Length);
+					Assert.AreEqual(clientMessage.ToString(), buf.ToString());
+
+					Console.WriteLine("Server> tx msg");
+					sslStream.Write(serverMessage, 0, serverMessage.Length);
+
+					Console.WriteLine("Server> done");
+				}
+
+				listener.Stop();
+			});
+
+			var clientTask = Task.Factory.StartNew(() =>
+			{
+				evtReady.WaitOne();
+
+				Console.WriteLine("Client> Connecting to: {0}:{1}", ep.Address, ep.Port);
+
+				using (var tcp = new TcpClient(ep.Address.ToString(), ep.Port))
+				using (var sslStream = new SslStream(tcp.GetStream()))
+				{
+					Console.WriteLine("Client> authenticate");
+					sslStream.AuthenticateAsClient("localhost");
+
+					Console.WriteLine("Client> CurrentCipher: {0}", sslStream.Ssl.CurrentCipher.Name);
+					Assert.AreEqual("AES256-GCM-SHA384", sslStream.Ssl.CurrentCipher.Name);
+
+					Console.WriteLine("Client> tx msg");
+					sslStream.Write(clientMessage, 0, clientMessage.Length);
+
+					Console.WriteLine("Client> rx msg");
+					var buf = new byte[256];
+					sslStream.Read(buf, 0, buf.Length);
+					Assert.AreEqual(serverMessage.ToString(), buf.ToString());
+
+					Console.WriteLine("Client> done");
+				}
+			});
+
+			Assert.IsTrue(Task.WaitAll(new Task[] { serverTask, clientTask }, timeout));
 		}
 
 		bool ValidateRemoteCert(
