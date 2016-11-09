@@ -855,9 +855,18 @@ namespace OpenSSL.SSL
 						}
 						else
 						{
-							// Not complete with the handshake yet, write the handshake packet out
-							internalAsyncResult.IsWriteOperation = true;
-							BeginWrite(new byte[0], 0, 0, AsyncHandshakeCallback, internalAsyncResult);
+							// Not complete with the handshake yet, write the handshake packet out if available
+							// or poll for additional data
+							if (write_bio.BytesPending > 0)
+							{
+								internalAsyncResult.IsWriteOperation = true;
+								BeginWrite(new byte[0], 0, 0, AsyncHandshakeCallback, internalAsyncResult);
+							}
+							else
+							{
+								internalAsyncResult.IsWriteOperation = false;
+								BeginRead(new byte[0], 0, 0, AsyncHandshakeCallback, internalAsyncResult);
+							}
 						}
 					}
 					else
