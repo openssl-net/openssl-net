@@ -13,3 +13,4 @@ dist
 test-results
 TestResult.xml
 test/openssl.net.VisualState.xml
+.vs/*
