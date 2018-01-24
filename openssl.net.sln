@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Files", "Project Files", "{0B96FB71-2BB0-48F8-B3E0-E3848A4F9E87}"
 	ProjectSection(SolutionItems) = preProject
@@ -18,6 +18,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli", "cli\cli.csproj", "{F50628FD-5AE4-4A16-A062-4687B2EAD7EE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\UnitTests.csproj", "{779FA0D7-D7CB-4408-A94D-B5718F118894}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedOpenSsl.NetCore", "ManagedOpenSsl.NetCore\ManagedOpenSsl.NetCore.csproj", "{242C1A2A-51A0-429B-982E-7CB706EB908F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Afonin.Test", "Afonin.Test\Afonin.Test.csproj", "{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,9 +48,24 @@ Global
 		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Release|Any CPU.Build.0 = Release|Any CPU
 		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Trace|Any CPU.ActiveCfg = Trace|Any CPU
 		{779FA0D7-D7CB-4408-A94D-B5718F118894}.Trace|Any CPU.Build.0 = Trace|Any CPU
+		{242C1A2A-51A0-429B-982E-7CB706EB908F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{242C1A2A-51A0-429B-982E-7CB706EB908F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{242C1A2A-51A0-429B-982E-7CB706EB908F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{242C1A2A-51A0-429B-982E-7CB706EB908F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{242C1A2A-51A0-429B-982E-7CB706EB908F}.Trace|Any CPU.ActiveCfg = Debug|Any CPU
+		{242C1A2A-51A0-429B-982E-7CB706EB908F}.Trace|Any CPU.Build.0 = Debug|Any CPU
+		{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}.Trace|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EF8C8E0-E882-4BF7-9B02-5695D013EEBA}.Trace|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B21F10C2-6200-4D9E-9D5B-03176226F728}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
