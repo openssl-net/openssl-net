@@ -92,7 +92,14 @@ namespace OpenSSL.X509
 			#region ASN1_ENCODING enc;
 
 			public IntPtr enc_enc;
+			// enc_len is declared natively as long
+			// http://stackoverflow.com/questions/384502/what-is-the-bit-size-of-long-on-64-bit-windows
+			// this is an attempt to map it in a portable way:
+#if _WIN64
 			public int enc_len;
+#else
+			public IntPtr enc_len;
+#endif
 			public int enc_modified;
 
 			#endregion
