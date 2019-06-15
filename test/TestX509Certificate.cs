@@ -213,17 +213,19 @@ namespace UnitTests
 		}
 
 		[Test]
-		[ExpectedException(typeof(ArgumentException))]
 		public void CannotSetUnmatchedPrivateKey()
 		{
-			var start = DateTime.Now;
-			var end = start + TimeSpan.FromMinutes(10);
-			using (var key = new CryptoKey(new DSA(true)))
-			using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
-			{
-				var other = new CryptoKey(new DSA(true));
-				cert.PrivateKey = other;
-			}
+	  Assert.Throws<ArgumentException>(() =>
+	  {
+		var start = DateTime.Now;
+		var end = start + TimeSpan.FromMinutes(10);
+		using (var key = new CryptoKey(new DSA(true)))
+		using (var cert = new X509Certificate(101, "CN=localhost", "CN=Root", key, start, end))
+		{
+		  var other = new CryptoKey(new DSA(true));
+		  cert.PrivateKey = other;
+		}
+	  });
 		}
 
 		[Test]

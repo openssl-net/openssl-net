@@ -43,7 +43,7 @@ namespace UnitTests
 		[Test]
 		public void Bug2993305()
 		{
-			BIO mb = BIO.MemoryBuffer();
+	  BIO mb = BIO.MemoryBuffer();
 			mb.Write("Some junk");
 			ArraySegment<byte> result = mb.ReadBytes(0);
 			Assert.AreEqual(0, result.Count);
@@ -53,14 +53,16 @@ namespace UnitTests
 		/// WritePrivateKey fails with null Cipher type
 		/// </summary>
 		[Test]
-		[ExpectedException(typeof(OpenSslException))]
 		public void Bug3017248()
 		{
-			CryptoKey key = new CryptoKey(new DSA(true));
-			BIO output = BIO.MemoryBuffer();
-			key.WritePrivateKey(output, Cipher.Null, "password");
-			output.SetClose(BIO.CloseOption.Close);
-			Console.WriteLine(output.ReadString());
+	  Assert.Throws<OpenSslException>(() =>
+	  {
+		CryptoKey key = new CryptoKey(new DSA(true));
+		BIO output = BIO.MemoryBuffer();
+		key.WritePrivateKey(output, Cipher.Null, "password");
+		output.SetClose(BIO.CloseOption.Close);
+		Console.WriteLine(output.ReadString());
+	  });
 		}
 
 		/// <summary>
@@ -68,11 +70,14 @@ namespace UnitTests
 		/// Check for invalid directory
 		/// </summary>
 		[Test]
-		[ExpectedException(typeof(DirectoryNotFoundException))]
 		public void Bug3018093_1()
 		{
-			FileSerialNumber fsn = new FileSerialNumber("/does/not/exist");
-			fsn.Next();
+	  Assert.Throws<DirectoryNotFoundException>(() =>
+	  {
+		FileSerialNumber fsn = new FileSerialNumber("/does/not/exist");
+		fsn.Next();
+
+	  });
 		}
 
 		/// <summary>
