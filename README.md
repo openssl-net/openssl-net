@@ -1,5 +1,7 @@
 ## OpenSSL.NET (openssl-net)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/inohsmiy6kdpvjwg?svg=true)](https://ci.appveyor.com/project/tmacharia/openssl-net)
+
 ### Description
 
 A managed [OpenSSL](https://www.openssl.org/) wrapper written in C# for the 2.0 .NET Framework that exposes both the [Crypto API](https://www.openssl.org/docs/crypto/crypto.html) and the [SSL API](https://www.openssl.org/docs/ssl/ssl.html).
