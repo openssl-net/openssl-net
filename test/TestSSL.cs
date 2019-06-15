@@ -38,6 +38,7 @@ using OpenSSL.Core;
 using OpenSSL.X509;
 using OpenSSL.SSL;
 using OpenSSL.Crypto;
+using System.IO;
 
 namespace UnitTests
 {
@@ -45,7 +46,7 @@ namespace UnitTests
 	{
 		public SslTestContext()
 		{
-			using (var cfg = new Configuration("openssl.cnf"))
+			using (var cfg = new Configuration(Resources.OpenSslCfgFilePath))
 			using (var ca = X509CertificateAuthority.SelfSigned(
 								cfg,
 								new SimpleSerialNumber(),

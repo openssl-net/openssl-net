@@ -20,6 +20,9 @@ namespace UnitTests
 		public const string ServerPfx = "UnitTests.certs.server.pfx";
 		public const string ServerKey = "UnitTests.certs.server.key";
 		public const string Password = "p@ssw0rd";
+
+	public static string OpenSslCfgFilePath = $"{AppDomain.CurrentDomain.BaseDirectory}" +
+  $"{Path.DirectorySeparatorChar.ToString()}openssl.cnf";
 	}
 
 	public class Util

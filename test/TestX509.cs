@@ -41,7 +41,7 @@ namespace UnitTests
 		[Test]
 		public void TestDefaultDSA()
 		{
-			using (var cfg = new Configuration("openssl.cnf"))
+			using (var cfg = new Configuration(Resources.OpenSslCfgFilePath))
 			{
 				// Test default DSA method
 				using (var root = X509CertificateAuthority.SelfSigned(
@@ -59,7 +59,7 @@ namespace UnitTests
 		[Test]
 		public void TestRsaSha1()
 		{
-			using (Configuration cfg = new Configuration("openssl.cnf"))
+			using (Configuration cfg = new Configuration(Resources.OpenSslCfgFilePath))
 			{
 				// Test RSA/SHA1 with other SelfSigned method
 				BigNumber bn = 0x10001;
