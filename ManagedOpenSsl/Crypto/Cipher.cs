@@ -351,10 +351,15 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public static Cipher AES_128_OFB = new Cipher(Native.EVP_aes_128_ofb(), false);
 
-		/// <summary>
-		/// EVP_aes_192_ecb()
+        /// <summary>
+		/// EVP_aes_128_ofb()
 		/// </summary>
-		public static Cipher AES_192_ECB = new Cipher(Native.EVP_aes_192_ecb(), false);
+		public static Cipher AES_128_GCM = new Cipher(Native.EVP_aes_128_gcm(), false);
+
+        /// <summary>
+        /// EVP_aes_192_ecb()
+        /// </summary>
+        public static Cipher AES_192_ECB = new Cipher(Native.EVP_aes_192_ecb(), false);
 
 		/// <summary>
 		/// EVP_aes_192_cbc()
@@ -381,10 +386,15 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public static Cipher AES_192_OFB = new Cipher(Native.EVP_aes_192_ofb(), false);
 
-		/// <summary>
-		/// EVP_aes_256_ecb()
+        /// <summary>
+		/// EVP_aes_128_ofb()
 		/// </summary>
-		public static Cipher AES_256_ECB = new Cipher(Native.EVP_aes_256_ecb(), false);
+		public static Cipher AES_192_GCM = new Cipher(Native.EVP_aes_192_gcm(), false);
+
+        /// <summary>
+        /// EVP_aes_256_ecb()
+        /// </summary>
+        public static Cipher AES_256_ECB = new Cipher(Native.EVP_aes_256_ecb(), false);
 
 		/// <summary>
 		/// EVP_aes_256_cbc()
@@ -411,14 +421,19 @@ namespace OpenSSL.Crypto
 		/// </summary>
 		public static Cipher AES_256_OFB = new Cipher(Native.EVP_aes_256_ofb(), false);
 
-		#endregion
-
-		#region Properties
-
-		/// <summary>
-		/// Returns the key_len field
+        /// <summary>
+		/// EVP_aes_256_gcm()
 		/// </summary>
-		public int KeyLength
+		public static Cipher AES_256_GCM = new Cipher(Native.EVP_aes_256_gcm(), false);
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Returns the key_len field
+        /// </summary>
+        public int KeyLength
 		{
 			get { return raw.key_len; }
 		}
