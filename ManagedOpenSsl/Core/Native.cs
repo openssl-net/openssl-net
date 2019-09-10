@@ -1608,7 +1608,10 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_aes_128_ofb();
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static IntPtr EVP_aes_128_gcm();
+
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_aes_192_ecb();
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
@@ -1626,7 +1629,10 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_aes_192_ofb();
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static IntPtr EVP_aes_192_gcm();
+
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_aes_256_ecb();
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
@@ -1644,11 +1650,14 @@ namespace OpenSSL.Core
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_aes_256_ofb();
 
-		#endregion
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public extern static IntPtr EVP_aes_256_gcm();
 
-		#region EVP_PKEY
+        #endregion
 
-		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        #region EVP_PKEY
+
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
 		public extern static IntPtr EVP_PKEY_new();
 
 		[DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
